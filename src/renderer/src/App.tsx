@@ -7,6 +7,7 @@ import { Home } from './components/Home';
 import { VendorWarning } from './components/VendorWarning';
 import { Onboarding } from './components/Onboarding';
 import { DeviceSetup } from './components/DeviceSetup';
+import { modelById } from '@shared/models';
 import { useStore } from './store';
 import { pullFromDevice } from './apply';
 import { registerBridges } from './bridges';
@@ -24,12 +25,17 @@ export default function App() {
   useEffect(() => { void init(); }, [init]);
   useEffect(() => { if (ready) registerBridges(); }, [ready]);
 
-  // When a device shows up, read its current settings into the profile. Nothing is written on connect.
+  // When a device shows up, read its current settings into the profile. Only the clock gets written.
   useEffect(() => {
     for (const d of devices) {
       if (seen.current.has(d.key)) continue;
       seen.current.add(d.key);
-      setTimeout(() => { void useStore.getState().ensureSettings(d.modelId).then(() => pullFromDevice(d.modelId)); }, 500);
+      setTimeout(() => {
+        void useStore.getState().ensureSettings(d.modelId).then(() => pullFromDevice(d.modelId)).then(() => {
+          // not store.call(): no toast if it fails
+          if (modelById(d.modelId)?.features.clock) return window.aula.call(d.key, 'syncTime', 1).catch(() => undefined);
+        });
+      }, 500);
     }
     for (const k of [...seen.current]) if (!devices.some((d) => d.key === k)) seen.current.delete(k);
   }, [devices]);
