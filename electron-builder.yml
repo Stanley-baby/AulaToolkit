@@ -1,0 +1,33 @@
+appId: dev.aulatoolkit.app
+productName: AULA Toolkit
+publish:
+  provider: github
+  owner: Livvaa
+  repo: aula-toolkit
+  releaseType: release
+directories:
+  output: release
+files:
+  - out/**
+  - package.json
+  - resources/icon.png
+extraResources:
+  - from: resources/cli
+    to: cli
+  - from: resources/bin
+    to: bin
+asarUnpack:
+  - "**/node_modules/node-hid/**"
+win:
+  target:
+    - nsis
+    - portable
+  icon: resources/icon.ico
+nsis:
+  artifactName: AULA-Toolkit-Setup-${version}.${ext}
+  license: LICENSE
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+portable:
+  artifactName: AULA-Toolkit-${version}-portable.${ext}

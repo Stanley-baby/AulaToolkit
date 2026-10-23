@@ -1,0 +1,321 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.png">
+    <img height="88" src="docs/brand/wordmark-light.png" alt="AULA Toolkit">
+  </picture>
+
+  [![Latest Release](https://img.shields.io/github/v/release/Livvaa/aula-toolkit?include_prereleases&logo=github&logoColor=white&color=blue&label=version)](https://github.com/Livvaa/aula-toolkit/releases)
+  [![Release Date](https://img.shields.io/github/release-date-pre/Livvaa/aula-toolkit?logo=github&logoColor=white&label=updated)](https://github.com/Livvaa/aula-toolkit/releases)
+  [![Downloads](https://img.shields.io/github/downloads/Livvaa/aula-toolkit/total?color=brightgreen)](https://github.com/Livvaa/aula-toolkit/releases)
+  <br>
+  [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6?logo=windows&logoColor=white)](https://github.com/Livvaa/aula-toolkit)
+  [![Electron](https://img.shields.io/badge/Electron-React%20%2B%20TypeScript-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+  [![Architecture](https://img.shields.io/badge/Arch-x64-informational?logo=intel&logoColor=white)](https://github.com/Livvaa/aula-toolkit)
+  [![License](https://img.shields.io/badge/License-GPLv3-informational?logo=gnu&logoColor=white)](LICENSE)
+  <br>
+  [![GitHub Stars](https://img.shields.io/github/stars/Livvaa/aula-toolkit?logo=github&style=flat)](https://github.com/Livvaa/aula-toolkit/stargazers)
+  [![Contributors](https://img.shields.io/github/contributors/Livvaa/aula-toolkit?logo=github)](https://github.com/Livvaa/aula-toolkit/graphs/contributors)
+  [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/u9FbaJGtCe)
+</div>
+
+## 🚨 Project Status Notice
+
+> [!IMPORTANT]
+> - AULA Toolkit is in **early development** (version 0.x). Expect rough edges.
+> - It is an **unofficial** project and is **not affiliated with AULA**. Product names and images belong to their owners.
+> - Only some devices have been tested on real hardware; see [Compatibility](#compatibility).
+
+#### Other language versions of this README file:
+* [Türkçe README](README_tr-TR.md)
+
+---
+
+AULA Toolkit is a Windows desktop app that controls AULA keyboards and mice from one place, in the spirit of Logitech G HUB. It replaces the separate driver that AULA ships for every model.
+
+It runs no background services, keeps no telemetry and only talks to the internet to check GitHub for updates. Changes are written to the device the moment you make them and are stored in the device's own memory, so they keep working on other computers and over Bluetooth.
+
+# Screenshots
+
+### Home and device overview
+<img src="docs/screenshots/home.png" width="49%" /> <img src="docs/screenshots/keyboard-overview.png" width="49%" />
+
+### Keyboards
+<img src="docs/screenshots/keyboard-lighting.png" width="49%" /> <img src="docs/screenshots/keyboard-keys.png" width="49%" />
+<img src="docs/screenshots/keyboard-screen.png" width="49%" /> <img src="docs/screenshots/f75-lighting.png" width="49%" />
+
+### Mice
+<img src="docs/screenshots/mouse-overview.png" width="49%" /> <img src="docs/screenshots/mouse-dpi.png" width="49%" />
+<img src="docs/screenshots/mouse-buttons.png" width="49%" /> <img src="docs/screenshots/mouse-performance.png" width="49%" />
+
+### Tray summary and on-screen display
+<img src="docs/screenshots/tray-flyout.png" width="30%" /> &nbsp; <img src="docs/screenshots/osd.png" width="40%" />
+
+### Settings
+<img src="docs/screenshots/settings-general.png" width="49%" /> <img src="docs/screenshots/settings-software.png" width="49%" />
+<img src="docs/screenshots/settings-updates.png" width="49%" /> <img src="docs/screenshots/settings-about.png" width="49%" />
+<img src="docs/screenshots/settings-notifications.png" width="49%" /> <img src="docs/screenshots/settings-backup.png" width="49%" />
+
+---
+
+# Table of Contents
+  - [Disclaimer](#disclaimer)
+  - [Download](#download)
+  - [Compatibility](#compatibility)
+  - [Features](#features)
+  - [Credits](#credits)
+  - [FAQ](#faq)
+  - [Arguments](#arguments)
+  - [How to collect logs?](#how-to-collect-logs)
+  - [Contribution](#contribution)
+  - [License](#license)
+
+## Disclaimer
+
+**The tool comes with no warranty. Use at your own risk.**
+
+AULA Toolkit talks to your devices with protocols that were reverse-engineered from the official drivers. Please read this file before reporting problems — it answers the most common questions.
+
+## Download
+
+[![Download](https://img.shields.io/badge/Download-Latest%20Installer-success?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Livvaa/aula-toolkit/releases)
+
+Two builds are published with every release:
+* **Installer** — installs for the current user only, so no administrator rights are needed.
+* **Portable** — a single `.exe` that runs without installing.
+
+#### Updating
+
+AULA Toolkit can update itself. Configure it in **Settings → Updates**:
+* **Channel** — **Stable** or **Beta** releases.
+* **Check frequency** — from every hour to monthly, or never.
+* **Download and install updates automatically** — updates download in the background and install when you close the app. You can also install them right away.
+
+Installing a new version over an existing one keeps your settings, profiles and macros.
+
+#### Next steps
+
+AULA Toolkit works best when it runs in the tray. In **Settings → General**:
+1. Set **Autorun** to *Enabled* (or *Enabled (delayed)* to start 30 seconds after sign-in).
+2. Turn on **Minimise to tray on close**.
+3. In **Settings → Software control**, turn on **Disable official AULA software** so the AULA drivers do not fight AULA Toolkit over the same device.
+
+> [!WARNING]
+> If you close AULA Toolkit completely, features that need it running stop: the on-screen display, battery notifications, the tray summary and the `aula` command. Settings already written to your devices keep working.
+
+## Compatibility
+
+| Device | Connection | Status |
+|---|---|---|
+| **AULA S75 Pro** | USB, 2.4 GHz receiver | ✅ Tested on hardware |
+| **AULA SC900 Pro** | USB, 2.4 GHz receiver | ✅ Tested on hardware |
+| **AULA SC900** (other versions that use the SC900 Pro driver) | USB, 2.4 GHz receiver | ⚠️ Recognised, not yet tested on hardware |
+| **AULA F75** | USB | ⚠️ Recognised, not yet tested on hardware |
+
+AULA sells the same mouse in several colours under one USB ID, so AULA Toolkit cannot tell them apart. Pick your colour during device setup or in the device's **Device** tab.
+
+Your AULA device is not on the list? It may still use one of the protocols above — see [Can you add support for my AULA device?](#can-you-add-support-for-my-aula-device).
+
+#### What works over which connection
+
+| Feature | S75 Pro · USB | S75 Pro · 2.4 GHz | SC900 Pro · USB / 2.4 GHz | F75 · USB |
+|---|:---:|:---:|:---:|:---:|
+| Lighting effects | ✅ | ✅ | — | ✅ |
+| Per-key lighting | ✅ | ✅ | — | — |
+| Live keyboard view, knob / Fn changes followed | ✅ | — | — | — |
+| Key mapping, Fn layer, macros | ✅ | ✅ | — | ✅ |
+| Keyboard settings (Win lock, sleep, debounce) | ✅ | ✅ | — | ✅ |
+| TFT screen and clock | ✅ | Clock only | — | — |
+| Side light bar | ✅ | ✅ | — | — |
+| DPI, polling rate, sensor, buttons, macros | — | — | ✅ | — |
+| Battery level | — | ✅ | ✅ | — |
+| Settings read back when connecting | — | — | ✅ | ✅ |
+| On-screen display for changes made on the device | ✅ | — | ✅ (DPI button) | — |
+
+> [!NOTE]
+> Devices can only be configured over **USB** or the **2.4 GHz receiver**. Over Bluetooth the device does not expose its configuration interface — the official AULA software has the same limitation. Settings you saved earlier keep working over Bluetooth.
+
+### AULA's software
+
+Running the official AULA driver and AULA Toolkit at the same time makes both talk to the same device, which can undo changes or cause read errors. AULA Toolkit shows a thin warning band at the top of the window when it detects an official AULA program, and **Settings → Software control** can close them and stop them from starting with Windows. Nothing is uninstalled, and turning the option off restores their autostart entries.
+
+## Features
+
+The app allows you to:
+
+- Configure every supported device from one window, with changes applied instantly.
+- Never overwrite what is already on a device by itself: the mouse's settings are read back when it connects, and on the S75 Pro the effect, colour and brightness you change with the knob or Fn keys are picked up live and saved to your profile.
+- Keep several **profiles** per device and export or import them as files.
+- See a live **on-screen display** when you press the DPI button on the mouse or run a command.
+- Get a detailed **tray summary** of every connected device by hovering the tray icon.
+- Receive **low-battery notifications** and, if you like, view **battery statistics**.
+- Disable the official AULA software without uninstalling it.
+- Control devices from the **command line** with `aula`.
+- Use it in **10 languages**: English, Türkçe, Русский, 简体中文, Українська, Tiếng Việt, Português (Brasil), Español, Deutsch and Français.
+- Pick a **light, dark or system theme** and an accent colour.
+
+### Keyboards
+
+* **Lighting** — every hardware effect with colour, brightness, speed and direction, plus a preview drawn on a photo of your keyboard.
+* **Live view** (S75 Pro, USB) — the keyboard picture shows what the LEDs show right now. When you change the effect with the knob or the Fn keys, the app recognises it within a few seconds, selects it and shows it on screen. The keyboard does not report its effect, so this works from the LED colours: effects that stay dark until you press a key look the same while idle, and very quick turns can skip an effect in between.
+* **Per-key lighting** (S75 Pro) — paint keys one by one or fill the whole board.
+* **Key mapping** — remap keys on the base layer and the Fn layer to keys, mouse buttons, media keys, shortcuts or macros.
+* **Macros** — record keystrokes with real timing and edit them afterwards.
+* **TFT screen** (S75 Pro, USB) — upload a picture or an animated GIF, and sync the clock.
+* **Configuration** — lock the Windows key, Alt+F4 and Alt+Tab, set sleep time and key response time.
+* **Reset** — restore the keyboard's defaults or do a full factory reset.
+
+### Mice
+
+* **DPI** — up to six stages, the active stage, the number of stages in the cycle and the DPI indicator LED.
+* **Polling rate** — up to 8000 Hz. Rates above 1000 Hz need the 2.4 GHz receiver.
+* **Sensor** — lift-off distance, motion sync, angle snapping, ripple control and sensor mode.
+* **Buttons** — remap any button except left click, including rapid fire and macros.
+* **Timing** — click debounce and sleep time.
+* **Battery** — level and charging state.
+
+### On-screen display
+
+When you change the DPI with the mouse's own button, a small indicator appears on the screen with the new value and the active stage. On the S75 Pro (USB) it also shows the new effect, colour or brightness when you change them on the keyboard, and it confirms changes made with the `aula` command. In **Settings → Notifications** you can turn it off, choose its position and duration, keep it above full-screen games, or show it on every display.
+
+### Backups
+
+**Settings → Backup settings** saves the app settings and every device profile to a single file, and restores them from one later, for example after reinstalling Windows.
+
+### Battery statistics
+
+Turn on **Settings → General → Battery statistics** to see a battery card in each device's overview: equivalent charge cycles, daily drain, estimated time left, estimated health and a chart of the battery level over time.
+
+> [!NOTE]
+> AULA devices only report their battery percentage. Cycles, drain and health are **estimates** calculated from the levels AULA Toolkit records while it runs.
+
+### CLI
+
+You can control AULA Toolkit from the command line. The command is called `aula` and is installed in `resources\bin` inside the install folder (by default `%LOCALAPPDATA%\Programs\AULA Toolkit\resources\bin\aula.cmd`). Add that folder to your `PATH` to call it from anywhere. **Settings → General → Command line** shows the exact path with a copy button.
+
+The command talks to the running app. If AULA Toolkit is not running, `aula` starts it in the tray first. It does not need administrator rights.
+
+<details>
+<summary>Commands</summary>
+
+* `aula status` — list connected devices (add `--json` for machine-readable output)
+* `aula profile list` — list the profiles of a device
+* `aula profile set <name>` — switch to a profile
+* `aula dpi` — show the mouse's DPI stages
+* `aula dpi stage <n>` — activate DPI stage `<n>` (1-based)
+* `aula dpi <value>` — set the active stage to `<value>` DPI
+* `aula polling <hz>` — set the mouse polling rate
+* `aula light list` — list the keyboard's effects
+* `aula light <effect> [--color #rrggbb] [--brightness n] [--speed n]` — set the keyboard effect
+* `aula brightness <n>` — set the keyboard lighting brightness
+* `aula osd on|off` — turn the on-screen display on or off
+* `aula show` / `aula hide` — show or hide the window
+* `aula version` — print the app version
+
+When more than one device of a kind is connected, pick one with `-d <id>`, for example `aula profile list -d sc900`. The command exits with code `0` on success and `1` on failure, so it can be used in scripts.
+
+</details>
+
+## Credits
+
+AULA Toolkit is created and maintained by **Livvaa** ([GitHub](https://github.com/Livvaa)).
+
+Special thanks to the projects whose public reverse-engineering work made this possible:
+* [open-aula](https://github.com/paulcoding810/open-aula) — AULA keyboard protocols.
+* [AulaSofwareLinux](https://github.com/thought-train/AulaSofwareLinux) — the protocol used by the AULA F75 family.
+* [IncottHIDApp](https://github.com/romkazor/IncottHIDApp) and [OpenMouse](https://github.com/OpenMouse-Project/mouse-protocol) — the PixArt 8K mouse protocol.
+
+All protocol details were cross-checked against the official AULA drivers. Product images © AULA ([aulastar.com](https://www.aulastar.com)).
+
+### Third-party libraries
+
+* **Electron** ([electron/electron](https://github.com/electron/electron))
+* **React** ([facebook/react](https://github.com/facebook/react))
+* **node-hid** ([node-hid/node-hid](https://github.com/node-hid/node-hid))
+* **Tailwind CSS** ([tailwindlabs/tailwindcss](https://github.com/tailwindlabs/tailwindcss))
+* **Zustand** ([pmndrs/zustand](https://github.com/pmndrs/zustand))
+* **Lucide** ([lucide-icons/lucide](https://github.com/lucide-icons/lucide))
+* **electron-vite** ([alex8088/electron-vite](https://github.com/alex8088/electron-vite)), **Vite** ([vitejs/vite](https://github.com/vitejs/vite)) and **Vitest** ([vitest-dev/vitest](https://github.com/vitest-dev/vitest))
+* **electron-builder** and **electron-updater** ([electron-userland/electron-builder](https://github.com/electron-userland/electron-builder))
+
+### Translations
+
+The interface is available in 10 languages. Not all translations have been reviewed by native speakers yet. If you spot a mistake, please open a pull request — each language is a single file in [`src/shared/locales`](src/shared/locales).
+
+## FAQ
+
+#### Why can't I change settings over Bluetooth?
+
+Over Bluetooth the keyboard and mouse only appear to Windows as a standard keyboard and mouse. The configuration interface that USB and the 2.4 GHz receiver provide does not exist there, so neither AULA Toolkit nor the official software can change settings. Connect with the cable or the receiver, make your changes, and switch back to Bluetooth — the settings stay on the device.
+
+#### Why doesn't my keyboard show a battery level?
+
+The S75 Pro only reports its battery level over the 2.4 GHz receiver. Over USB it is charging and the firmware does not report a level.
+
+#### Why are battery cycles and health only estimates?
+
+AULA devices have no battery chip that counts cycles or measures wear. They only report a percentage, so AULA Toolkit estimates everything else from the levels it records while running.
+
+#### Can AULA Toolkit read the picture on the S75 Pro screen or the firmware version?
+
+No. The keyboard firmware can receive a picture but has no command to send it back, and none of the supported devices report their firmware version. The official software cannot do this either.
+
+#### Why does Windows warn me when I run the installer?
+
+The installers are not code-signed yet, so Windows SmartScreen shows a warning for an unknown publisher. AULA Toolkit is open source and you can build it yourself from this repository. Choose **More info → Run anyway** to continue.
+
+#### My mouse is a different colour than the picture.
+
+AULA uses the same USB ID for every colour of a model. Choose your colour in the device's **Device** tab.
+
+#### Can you add support for my AULA device?
+
+Possibly. Most AULA keyboards and mice reuse one of the protocol families AULA Toolkit already speaks. See [Contribution](#contribution) for what to include in a request.
+
+## Arguments
+
+* `--hidden` — start minimised to the tray. Used by *Autorun*.
+* `--delayed` — wait 30 seconds before connecting to devices. Used by *Autorun → Enabled (delayed)*.
+
+## How to collect logs?
+
+Logs help a lot with any problem. **Always** attach them to your issues.
+
+#### Method 1: Diagnostics bundle (recommended)
+1. Open **AULA Toolkit**.
+2. Go to **Settings → About**.
+3. Click **Save diagnostics bundle**. It saves the device status and the communication log into one file you can attach to your issue.
+
+#### Method 2: Log files
+1. Reproduce the problem.
+2. Open `Run` (Win+R), type `"%APPDATA%\AULA Toolkit\logs"` and press OK.
+3. Attach the newest `hid-<date>.log` file.
+
+You can also watch the log live in **Settings → General → Advanced**.
+
+## Contribution
+
+Feedback is very welcome, so please don't hesitate to report issues. Pull requests are welcome too. Please read the [contributing guide](CONTRIBUTING.md) first.
+
+Questions, ideas or just want to chat? Join the [Discord server](https://discord.gg/u9FbaJGtCe).
+
+#### Device support
+
+Support for more AULA devices needs testers. When you open a request, please include:
+
+1. The full model name (for example *AULA F87 Pro*).
+2. The USB IDs, found in **Device Manager → your device → Details → Hardware Ids** (for example `VID_0C45&PID_800A`).
+3. Which connection you used (USB or 2.4 GHz).
+4. A diagnostics bundle (see [How to collect logs?](#how-to-collect-logs)).
+
+## License
+
+Copyright (C) 2026 Livvaa
+
+AULA Toolkit is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. See [LICENSE](LICENSE) for the full text.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+AULA Toolkit is not affiliated with AULA. Product names and images belong to their owners.
