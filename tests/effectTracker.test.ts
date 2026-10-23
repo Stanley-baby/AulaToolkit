@@ -29,6 +29,20 @@ describe('EffectTracker on a real knob recording', () => {
   });
 });
 
+describe('EffectTracker on vendor music frames', () => {
+  // Music Rhythm from the official driver, recorded with the app running. Used to be read as a dark
+  // effect and overwrote the profile (Glittering became Single On).
+  const music = JSON.parse(gunzipSync(readFileSync(join(__dirname, 'fixtures', 's75pro-vendor-music.json.gz'))).toString()) as { frames: { t: number; c: number[] }[] };
+  it('never reports a change', () => {
+    for (const start of [1, 4, 11, 16, 18]) {
+      const tr = new EffectTracker(S75PRO_KEYS);
+      tr.setMode(start);
+      const got = music.frames.map((f) => tr.push(toColors(f.c), f.t)).filter((m) => m !== null);
+      expect(got, `starting from ${start}`).toEqual([]);
+    }
+  });
+});
+
 describe('effectFeatures', () => {
   const pairs = neighbourPairs(S75PRO_KEYS);
   const n = S75PRO_KEYS.length;

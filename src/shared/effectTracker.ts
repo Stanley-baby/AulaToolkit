@@ -47,6 +47,12 @@ const WINDOW_MS = 2000;
 const EVAL_MS = 500;
 const CHANGED = 0.12;  // feature distance that counts as a different picture (noise within one effect stays below ~0.15 only briefly)
 const STEP_COST = 0.07; // per knob step away from the current effect
+// dark effects (2, 13, 14, 15, Off) only if the board is really dark. music rhythm bars hit 0.47+
+// against the dark signature, an idle dark effect ~0
+const DARK_FIT = 0.15;
+// above this it's not an effect at all, don't guess (knob steps were <= 0.53, music rhythm >= 0.7).
+// rather miss a step than save the wrong effect
+const MAX_FIT = 0.6;
 
 interface Pairs { rows: [number, number][]; cols: [number, number][] }
 
@@ -119,17 +125,23 @@ export class EffectTracker {
     this.changeSince = null;
   }
 
+  private isDark(mode: number): boolean {
+    return (this.signatures[mode] ?? [DARK]).every((s) => s.every((x) => x === 0));
+  }
+
   private fit(f: number[], mode: number): number {
     return Math.min(...(this.signatures[mode] ?? [DARK]).map((s) => distance(f, s)));
   }
 
   private decide(f: number[]): number | null {
     const all = this.order;
+    const candidates = all.filter((m) => !this.isDark(m) || this.fit(f, m) <= DARK_FIT);
+    if (!candidates.length) return null;
     if (this.mode === null) {
-      const global = all.reduce((a, b) => (this.fit(f, b) < this.fit(f, a) ? b : a));
+      const global = candidates.reduce((a, b) => (this.fit(f, b) < this.fit(f, a) ? b : a));
       // Without a starting point, a dark picture could be any of the dark effects: don't guess.
-      const alike = all.filter((m) => this.fit(f, m) - this.fit(f, global) < 0.05);
-      return alike.length > 1 ? null : global;
+      const alike = candidates.filter((m) => this.fit(f, m) - this.fit(f, global) < 0.05);
+      return alike.length > 1 || this.fit(f, global) > MAX_FIT ? null : global;
     }
     // The knob moves one step at a time, but a step between similar pictures can go unseen; so every
     // effect is a candidate, at a cost for each step away from the current one (forward slightly
@@ -140,7 +152,9 @@ export class EffectTracker {
       const cost = fwd === 0 ? 0 : Math.min(fwd * STEP_COST, back * STEP_COST + 0.01);
       return this.fit(f, m) + cost;
     };
-    return [this.mode, ...all.filter((m) => m !== this.mode)].reduce((a, b) => (score(b) < score(a) ? b : a));
+    const pool = candidates.includes(this.mode) ? [this.mode, ...candidates.filter((m) => m !== this.mode)] : candidates;
+    const best = pool.reduce((a, b) => (score(b) < score(a) ? b : a));
+    return this.fit(f, best) > MAX_FIT ? null : best;
   }
 
   /** Adds one reading (LED colours in `keys` order). Returns the new effect when it changes. */
