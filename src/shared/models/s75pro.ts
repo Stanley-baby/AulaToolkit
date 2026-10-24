@@ -32,7 +32,7 @@ export const S75PRO: DeviceModel = {
     { label: 'Switches', value: 'Hot-swappable 3/5-pin' },
     { label: 'Lighting', value: 'Per-key RGB · 19 effects' },
   ],
-  features: { lighting: true, perkey: true, keymap: true, fnLayer: true, macros: true, screen: true, settings: true, bar: true, battery: true, clock: true },
+  features: { lighting: true, perkey: true, keymap: true, fnLayer: true, macros: true, screen: true, settings: true, bar: true, battery: true, clock: true, displayBlackout: true },
   layout: S75PRO_KEYS,
   lightRange: { brightness: 5, speed: 5 },
   lightModes: [

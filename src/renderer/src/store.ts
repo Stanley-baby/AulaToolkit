@@ -27,6 +27,7 @@ interface State {
   setupModel: string | null;
   finishSetup(modelId: string): void;
   setNickname(modelId: string, nickname: string): void;
+  setDisplayBlackout(modelId: string, on: boolean): void;
   displayName(modelId: string): string;
   init(): Promise<void>;
   select(modelId: string): void;
@@ -116,6 +117,10 @@ export const useStore = create<State>((set, get) => ({
   },
   setNickname(modelId, nickname) {
     set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], nickname } } }));
+    scheduleSave(modelId, get);
+  },
+  setDisplayBlackout(modelId, on) {
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], displayBlackout: on } } }));
     scheduleSave(modelId, get);
   },
   displayName: (modelId) => get().settings[modelId]?.nickname || (modelById(modelId)?.name ?? modelId),

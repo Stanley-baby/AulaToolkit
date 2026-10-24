@@ -47,6 +47,7 @@ export const CH = {
   DEV_NAVIGATE: 'dev:navigate',
   FLYOUT_REFRESH: 'flyout:refresh',
   DEVICE_LIVE_LIGHT: 'device:liveLight',
+  DISPLAY_POWER: 'display:power',
 } as const;
 
 export interface AppPrefs {
@@ -156,6 +157,7 @@ export interface AulaApi {
   onHwEvent(cb: (e: HwEvent) => void): () => void;
   /** Live keyboard LED colours, sent about twice a second while the window is visible (USB only). */
   onLiveLight(cb: (l: LiveLight) => void): () => void;
+  onDisplayPower(cb: (state: DisplayPowerState) => void): () => void;
   /** OSD window only: payload to display. */
   onOsd(cb: (p: OsdPayload) => void): () => void;
   /** CLI bridge: requests from the `aula` command, answered with cliReply. */
@@ -173,6 +175,8 @@ export interface AulaApi {
 }
 
 export interface DevNavigate { page: 'home' | 'device' | 'settings'; model?: string; tab?: string; settingsTab?: string; dialog?: 'notifications' | 'backup' }
+
+export type DisplayPowerState = 'on' | 'off';
 
 /** A change reported by the device without the app asking (button presses on the hardware). */
 export type HwEvent =

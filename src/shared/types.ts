@@ -87,6 +87,8 @@ export interface DeviceModel {
     buttons?: boolean;
     battery?: boolean;
     clock?: boolean;
+    /** lights off with the monitor. only tried on the S75 Pro so far */
+    displayBlackout?: boolean;
   };
   layout?: KeyDef[];
   lightModes?: LightMode[];
@@ -181,6 +183,8 @@ export interface DeviceSettingsFile {
   macros: Macro[];
   variant?: string;
   nickname?: string;
+  /** default on */
+  displayBlackout?: boolean;
 }
 
 // ---- Runtime device state reported by the main process ----

@@ -8,6 +8,7 @@ import type { LightingState } from '@shared/types';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { useStore } from './store';
 import { flush } from './apply';
+import { isOverridden, registerOverrides } from './overrides';
 
 const norm = (s: string): string => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
 const ok = (out: string): CliResult => ({ ok: true, out });
@@ -131,9 +132,12 @@ export function registerBridges(): void {
   if (registered) return;
   registered = true;
   window.aula.onLiveLight((l) => useStore.setState((s) => ({ liveLight: { ...s.liveLight, [l.modelId]: { colors: l.colors, at: l.t } } })));
+  registerOverrides();
   window.aula.onHwEvent((e) => {
     const s = useStore.getState();
     if (!s.settings[e.modelId]) return;
+    // temporary lighting is not the user's effect
+    if (e.kind === 'light' && isOverridden(e.modelId)) return;
     // Changed with the keyboard's own keys or knob: keep the profile in step without writing back.
     // The keyboard does not say which effect is active, so only colour and brightness can be recorded.
     if (e.kind === 'light') {

@@ -10,6 +10,8 @@ export const KbSettingsPanel = ({ modelId }: { modelId: string }) => {
   const update = useStore((s) => s.updateProfile);
   const call = useStore((s) => s.call);
   const dev = useStore((s) => s.deviceFor(modelId));
+  const blackout = useStore((s) => s.settings[modelId]?.displayBlackout !== false);
+  const setBlackout = useStore((s) => s.setDisplayBlackout);
   const kb = profile?.keyboard;
   if (!kb) return null;
   const set = (key: string, v: number): void => update(modelId, (p) => { if (p.keyboard) p.keyboard.settings[key] = v; }, 'settings');
@@ -24,6 +26,9 @@ export const KbSettingsPanel = ({ modelId }: { modelId: string }) => {
           ) : (
             <Select key={s.key} label={label(s.key, s.label)} value={kb.settings[s.key] ?? s.default} options={(s.options ?? []).map(([v, l]) => ({ value: v, label: tn(l) }))} onChange={(v) => set(s.key, v)} />
           ),
+        )}
+        {model.features.displayBlackout && (
+          <Toggle label={t('displayBlackout')} hint={t('displayBlackoutHint')} on={blackout} onChange={(v) => setBlackout(modelId, v)} />
         )}
       </Card>
       {model.features.clock && (

@@ -12,6 +12,8 @@ files:
   - package.json
   - resources/icon.png
 extraResources:
+  - from: resources/display-watch.ps1
+    to: display-watch.ps1
   - from: resources/cli
     to: cli
   - from: resources/bin

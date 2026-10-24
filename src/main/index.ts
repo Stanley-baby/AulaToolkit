@@ -28,6 +28,7 @@ import { startCliServer } from './cli';
 import type { CliRequest, CliResult, HwEvent, LiveLight, OsdPayload } from '@shared/ipc';
 import { colorKey } from '@shared/lightWatch';
 import * as battery from './battery';
+import { watchDisplayPower } from './displayPower';
 
 declare const __BUILD_STAMP__: string;
 const BUILD_STAMP = typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev';
@@ -84,6 +85,7 @@ function applyAutostart(p: AppPrefs): void {
   app.setLoginItemSettings({ openAtLogin: on, args: on ? ['--hidden', ...(p.autostart === 'delayed' ? ['--delayed'] : [])] : [] });
 }
 let prefs: AppPrefs;
+let stopDisplayPowerWatch: (() => void) | null = null;
 
 const iconPath = (): string => join(__dirname, '../../resources/icon.png');
 
@@ -370,6 +372,10 @@ if (!gotLock) {
     createWindow();
     createTray();
     createOsd();
+    stopDisplayPowerWatch = watchDisplayPower((state) => {
+      manager.addLog('i', `display turned ${state}`);
+      win?.webContents.send(CH.DISPLAY_POWER, state);
+    }, (message) => manager.addLog('!', message));
     if (process.env.AULA_SCREENSHOTS && win) {
       const shotSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
       void runScreenshots(process.env.AULA_SCREENSHOTS, win, {
@@ -391,6 +397,6 @@ if (!gotLock) {
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
   });
 
-  app.on('before-quit', () => { quitting = true; void manager.stop(); });
+  app.on('before-quit', () => { quitting = true; stopDisplayPowerWatch?.(); void manager.stop(); });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }

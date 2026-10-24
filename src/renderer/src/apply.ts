@@ -4,6 +4,7 @@ import { modelById } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import type { LightingState, MouseProfile, Profile } from '@shared/types';
 import { activeProfile, useStore } from './store';
+import { isBarOverridden, isOverridden } from './overrides';
 
 export type Section = 'lighting' | 'perKey' | 'bar' | 'settings' | 'keymap' | 'fnKeymap' | 'macros' | 'dpi' | 'buttons' | 'perf' | 'all';
 
@@ -36,11 +37,13 @@ async function push(modelId: string, sections: Set<Section>): Promise<void> {
       if (has('keymap')) await s.call(modelId, 'setKeymap', 'base', k.keymap);
       if (has('fnKeymap') && model.features.fnLayer) await s.call(modelId, 'setKeymap', 'fn', k.fnKeymap);
       if (has('settings')) await s.call(modelId, 'setSettings', k.settings);
-      if (has('lighting') || has('perKey')) {
+      // skip while blackout/music/gif is on, overrides.ts writes it back after
+      const lit = !isOverridden(modelId);
+      if (lit && (has('lighting') || has('perKey'))) {
         if (k.lighting.mode === USER_LIGHT_MODE) await s.call(modelId, 'setUserLight', k.perKey, k.lighting.brightness);
         else await s.call(modelId, 'setLighting', k.lighting);
       }
-      if (has('bar') && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode);
+      if (!isBarOverridden(modelId) && has('bar') && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode);
       if (all && model.features.clock) await s.call(modelId, 'syncTime', 1).catch(() => undefined);
     }
     if (model.kind === 'mouse' && p.mouse) {
