@@ -41,6 +41,16 @@ describe('aula04 USB framing', () => {
     expect(P.decodeUserLightBlock(S75PRO_KEYS, block)[S75PRO_KEYS[0].code]).toEqual([1, 2, 3]);
   });
 
+  it('packs live frames like the vendor driver', () => {
+    const k = S75PRO_KEYS.find((x) => x.light === 0x27)!;
+    const block = P.liveLightBlock(S75PRO_KEYS, { [k.code]: [0xff, 0x00, 0x7f] });
+    expect(block.length).toBe(512);
+    // captured from the vendor driver (Music Rhythm, S75 Pro)
+    expect(hex(block.subarray(0, 64))).toBe('01 00 00 00 02 00 00 00 03 00 00 00 04 00 00 00 05 00 00 00 06 00 00 00 07 00 00 00 08 00 00 00 09 00 00 00 0a 00 00 00 0b 00 00 00 0c 00 00 00 0d 00 00 00 77 00 00 00 13 00 00 00 14 00 00 00');
+    expect(hex(block.subarray(124, 128))).toBe('27 ff 00 7f');
+    expect(block.subarray(80 * 4).every((b) => b === 0)).toBe(true);
+  });
+
   it('lays out macros with a 400-byte offset table', () => {
     const { data, packets } = P.macroBlock([{ id: 'a', name: 'a', steps: [{ kind: 'KEY_DOWN', code: 0x04 }, { kind: 'delay', ms: 50 }, { kind: 'KEY_UP', code: 0x04 }] }]);
     expect(hex(data.subarray(0, 4))).toBe('90 01 00 00');

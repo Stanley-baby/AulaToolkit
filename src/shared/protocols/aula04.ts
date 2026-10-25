@@ -93,6 +93,20 @@ export function keymapBlock(keys: KeyDef[], actions: Record<number, KeyAction>):
   return buf;
 }
 
+// Live lighting (op 0x20), captured from the official driver's Music Rhythm: 04 20 ... 08, then
+// 8 x 64 bytes of [led, r, g, b] in layout order (rest zero, no AA 55 tag), then END. No BEGIN/APPLY,
+// nothing is stored. The official driver sends one every ~47 ms.
+export const LIVE_PACKETS = 8;
+
+export function liveLightBlock(keys: KeyDef[], colors: Record<number, [number, number, number]>): Uint8Array {
+  const buf = new Uint8Array(LIVE_PACKETS * 64);
+  keys.slice(0, buf.length / 4).forEach((k, i) => {
+    const c = colors[k.code] ?? [0, 0, 0];
+    buf.set([k.light, c[0], c[1], c[2]], i * 4);
+  });
+  return buf;
+}
+
 export function userLightBlock(keys: KeyDef[], colors: Record<number, [number, number, number]>): Uint8Array {
   const buf = new Uint8Array(BLOCK);
   for (const k of keys) {

@@ -17,6 +17,8 @@ export class Aula04Driver implements Driver {
   readonly key: string;
   readonly link: Link;
   private battery: number | null = null;
+  private liveBusy = 0;
+  private liveBusyLogged = 0;
   private screenBusy = false;
 
   private constructor(readonly model: DeviceModel, private ports: Ports, private ctx: DriverContext) {
@@ -284,6 +286,37 @@ export class Aula04Driver implements Driver {
       }
       await this.usbWrite(P.OP.LIGHT, p);
       await this.usbBlock(P.OP.USER_LIGHT, block);
+    });
+  }
+
+  // live frame, see liveLightBlock. usb only, not logged (runs every frame)
+  setLiveLight(colors: Record<number, [number, number, number]>): Promise<boolean> {
+    if (this.link !== 'usb') return Promise.reject(new Error('Live lighting needs the USB cable'));
+    return this.port.exclusive(async () => {
+      const main = this.ports.main!;
+      // 0xff = busy, happens now and then. retry twice, then drop the frame
+      let ack: Uint8Array = new Uint8Array(0);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt) await waitPrecise(20);
+        await main.sendFeature(0, P.command(P.OP.LIVE_LIGHT, 0, P.LIVE_PACKETS));
+        await waitPrecise(5);
+        ack = (await main.getFeature(0, 65)).subarray(1);
+        if (ack[1] !== P.OP.LIVE_LIGHT || ack[3] !== 0xff) break;
+      }
+      if (ack[1] === P.OP.LIVE_LIGHT && ack[3] === 0xff) {
+        this.liveBusy++;
+        if (Date.now() - this.liveBusyLogged > 10_000) { this.ctx.log('!', `live frames skipped, keyboard busy: ${this.liveBusy}`); this.liveBusy = 0; this.liveBusyLogged = Date.now(); }
+        return false;
+      }
+      if (ack[1] !== P.OP.LIVE_LIGHT || ack[3] !== 0x01) throw new Error(`live frame refused (${hex(ack, 8)})`);
+      const block = P.liveLightBlock(this.keys, colors);
+      for (let i = 0; i < block.length; i += 64) await main.sendFeature(0, block.subarray(i, i + 64));
+      await waitPrecise(5);
+      // END sometimes answers 0xff too, the official driver ignores it
+      await main.sendFeature(0, P.command(P.OP.END));
+      await waitPrecise(5);
+      await main.getFeature(0, 65);
+      return true;
     });
   }
 
