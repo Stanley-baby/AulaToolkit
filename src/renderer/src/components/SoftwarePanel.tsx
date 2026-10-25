@@ -14,6 +14,14 @@ export const SoftwarePanel = () => {
   const load = (): Promise<void> => window.aula.vendorStatus().then(setSt);
   useEffect(() => { void load(); const id = setInterval(() => void load(), 5000); return () => clearInterval(id); }, []);
 
+  const setBlock = async (on: boolean): Promise<void> => {
+    setBusy(true);
+    const ok = await window.aula.vendorSetBlock(on);
+    if (ok) await setPrefs({ blockVendorSoftware: on }); // declined: keep the old value
+    setBusy(false);
+    await load();
+  };
+
   const kill = async (): Promise<void> => {
     setBusy(true);
     const n = await window.aula.vendorKill();
@@ -25,7 +33,7 @@ export const SoftwarePanel = () => {
   return (
     <div className="flex flex-col gap-5 fade-in">
       <Card title={t('vendorBlock')}>
-        <Toggle label={t('vendorBlock')} hint={t('vendorBlockHint')} on={!!prefs.blockVendorSoftware} onChange={(v) => void setPrefs({ blockVendorSoftware: v }).then(load)} />
+        <Toggle label={t('vendorBlock')} hint={t('vendorBlockHint')} on={!!prefs.blockVendorSoftware} onChange={(v) => { if (!busy) void setBlock(v); }} />
       </Card>
       <Card title={t('vendorDetected')} right={<button className="btn btn-sm" onClick={() => void load()}><RefreshCw size={14} />{t('refresh')}</button>}>
         {!st ? <div className="text-sm text-muted">…</div> : (

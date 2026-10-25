@@ -89,10 +89,19 @@ export class Aula04Driver implements Driver {
   private closed = false;
 
   private watchLight(): void {
+    let paused = false;
     const tick = async (): Promise<void> => {
       if (this.closed) return;
+      // official driver running: the LEDs show its stuff, not ours. start over once it's gone
+      const pause = this.ctx.watchPaused?.() ?? false;
+      if (pause !== paused) {
+        paused = pause;
+        this.held = [];
+        this.watcher.reset();
+        this.effects?.setMode(this.effects.mode);
+      }
       // Skip while the app is writing, and briefly afterwards so its own changes are not reported back.
-      if (!this.port.busy && Date.now() >= this.quietUntil) {
+      if (!paused && !this.port.busy && Date.now() >= this.quietUntil) {
         const colors = await this.readLive().catch(() => null);
         if (colors && Date.now() >= this.quietUntil) {
           const now = Date.now();

@@ -31,6 +31,7 @@ export const CH = {
   APP_RESTORE: 'app:restore',
   VENDOR_STATUS: 'vendor:status',
   VENDOR_KILL: 'vendor:kill',
+  VENDOR_SET_BLOCK: 'vendor:setBlock',
   UPDATE_CHECK: 'update:check',
   UPDATE_DOWNLOAD: 'update:download',
   UPDATE_INSTALL: 'update:install',
@@ -146,6 +147,8 @@ export interface AulaApi {
   restore(): Promise<'ok' | 'canceled' | 'invalid'>;
   vendorStatus(): Promise<VendorStatus>;
   vendorKill(): Promise<number>;
+  /** false if the UAC prompt was declined */
+  vendorSetBlock(on: boolean): Promise<boolean>;
   updateCheck(): Promise<UpdateState>;
   updateDownload(): Promise<void>;
   updateInstall(): void;

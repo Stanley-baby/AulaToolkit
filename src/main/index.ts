@@ -1,3 +1,4 @@
+import './elevatedHelper'; // must stay first
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, Notification, screen, shell, systemPreferences, Tray } from 'electron';
 import { MODELS } from '@shared/models';
 import { en } from '@shared/locales/en';
@@ -34,18 +35,43 @@ declare const __BUILD_STAMP__: string;
 const BUILD_STAMP = typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev';
 const manager = new DeviceManager();
 
-// Keeps the official AULA apps out of the way while the user has opted in: ends them and parks their autostart entries.
+// Keeps the official AULA apps out of the way while the user has opted in: renames their exes, ends them
+// and parks their autostart entries. no UAC prompt at startup, and LED watching pauses while one runs
 let vendorBusy = false;
+let vendorRunning = false;
+let vendorExesFor: boolean | null = null;
+let vendorExesDeclined = false;
 async function applyVendorBlock(): Promise<void> {
   if (vendorBusy || !prefs) return;
   vendorBusy = true;
   try {
-    await vendor.setVendorAutostart(!prefs.blockVendorSoftware);
-    if (prefs.blockVendorSoftware) {
+    const block = prefs.blockVendorSoftware;
+    await vendor.setVendorAutostart(!block);
+    if (vendorExesFor !== null && vendorExesFor !== block) {
+      vendorExesDeclined = (await setVendorExes(!block)) === 'declined';
+    }
+    vendorExesFor = block;
+    if (block) {
+      // one started anyway (reinstalled?), disable again
+      if (!vendorExesDeclined && (await vendor.runningVendorApps()).length) {
+        vendorExesDeclined = (await setVendorExes(false)) === 'declined';
+      }
       const n = await vendor.killVendorApps();
       if (n) manager.addLog('i', `closed ${n} official AULA driver process(es)`);
     }
+    const running = (await vendor.runningVendorApps()).length > 0;
+    if (running !== vendorRunning) {
+      vendorRunning = running;
+      manager.addLog('i', running ? 'AULA driver is running, pausing LED watch' : 'AULA driver gone, LED watch back on');
+    }
   } catch { /* best effort */ } finally { vendorBusy = false; }
+}
+manager.watchPaused = () => vendorRunning;
+
+async function setVendorExes(enable: boolean): Promise<'unchanged' | 'done' | 'declined'> {
+  const r = await vendor.setVendorExecutables(enable);
+  if (r !== 'unchanged') manager.addLog(r === 'done' ? 'i' : '!', `official AULA driver programs ${enable ? 'restored' : 'disabled'}${r === 'done' ? '' : ': administrator approval declined'}`);
+  return r;
 }
 
 // Low-battery alerts: one notification per device each time the level drops under the threshold
@@ -224,7 +250,14 @@ function registerIpc(): void {
   ipcMain.on(CH.APP_OPEN_EXTERNAL, (_e, url: string) => { if (/^https?:\/\//.test(url)) void shell.openExternal(url); });
   ipcMain.handle(CH.APP_RESCAN, () => manager.rescan());
   ipcMain.handle(CH.VENDOR_STATUS, () => vendor.vendorStatus());
-  ipcMain.handle(CH.VENDOR_KILL, () => vendor.killVendorApps());
+  ipcMain.handle(CH.VENDOR_KILL, () => vendor.killVendorApps(true));
+  // the renderer only saves the setting when this returns true (UAC not declined)
+  ipcMain.handle(CH.VENDOR_SET_BLOCK, async (_e, on: boolean) => {
+    if ((await setVendorExes(!on)) === 'declined') return false;
+    vendorExesFor = on;
+    vendorExesDeclined = false;
+    return true;
+  });
   ipcMain.handle(CH.APP_FULL_RESET, async () => {
     quitting = true;
     app.setLoginItemSettings({ openAtLogin: false });

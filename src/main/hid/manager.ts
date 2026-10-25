@@ -25,6 +25,7 @@ export class DeviceManager extends EventEmitter {
   private scanning = false;
   /** Whether a window that shows live lighting is on screen; drivers poll faster while it is. */
   liveViewActive: () => boolean = () => true;
+  watchPaused: () => boolean = () => false;
   private scanTimer: NodeJS.Timeout | null = null;
   private statusTimer: NodeJS.Timeout | null = null;
   private lastSignature = '';
@@ -161,6 +162,7 @@ export class DeviceManager extends EventEmitter {
       onEvent: (e: DriverEvent) => this.emit('hw-event', { ...e, modelId: model.id }),
       onLiveLight: (colors: Record<number, [number, number, number]>) => this.emit('live-light', { modelId: model.id, colors, t: Date.now() }),
       liveViewActive: () => this.liveViewActive(),
+      watchPaused: () => this.watchPaused(),
     };
     switch (model.protocol) {
       case 'aula04': return Aula04Driver.attach(model, devices, ctx);

@@ -23,6 +23,8 @@ export interface DriverContext {
   onLiveLight?: (colors: Record<number, [number, number, number]>) => void;
   /** True while live lighting is on screen; otherwise drivers poll only as fast as change detection needs. */
   liveViewActive?: () => boolean;
+  /** Official AULA driver is running: stop watching the LEDs. */
+  watchPaused?: () => boolean;
 }
 
 export type DriverEvent =

@@ -40,6 +40,7 @@ const api: AulaApi = {
   restore: () => ipcRenderer.invoke(CH.APP_RESTORE),
   vendorStatus: () => ipcRenderer.invoke(CH.VENDOR_STATUS),
   vendorKill: () => ipcRenderer.invoke(CH.VENDOR_KILL),
+  vendorSetBlock: (on) => ipcRenderer.invoke(CH.VENDOR_SET_BLOCK, on),
   updateCheck: () => ipcRenderer.invoke(CH.UPDATE_CHECK),
   updateDownload: () => ipcRenderer.invoke(CH.UPDATE_DOWNLOAD),
   updateInstall: () => ipcRenderer.send(CH.UPDATE_INSTALL),
