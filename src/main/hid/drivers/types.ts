@@ -25,6 +25,7 @@ export interface DriverContext {
   liveViewActive?: () => boolean;
   /** Official AULA driver is running: stop watching the LEDs. */
   watchPaused?: () => boolean;
+  onProgress?: (task: 'screen', done: number, total: number) => void;
 }
 
 export type DriverEvent =

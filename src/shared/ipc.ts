@@ -48,6 +48,13 @@ export const CH = {
   DEV_NAVIGATE: 'dev:navigate',
   FLYOUT_REFRESH: 'flyout:refresh',
   DEVICE_LIVE_LIGHT: 'device:liveLight',
+  DEVICE_PROGRESS: 'device:progress',
+  SCREEN_LOAD: 'screen:load',
+  SCREEN_SAVE: 'screen:save',
+  LIBRARY_LIST: 'library:list',
+  LIBRARY_ADD: 'library:add',
+  LIBRARY_GET: 'library:get',
+  LIBRARY_DELETE: 'library:delete',
   DISPLAY_POWER: 'display:power',
 } as const;
 
@@ -160,6 +167,14 @@ export interface AulaApi {
   onHwEvent(cb: (e: HwEvent) => void): () => void;
   /** Live keyboard LED colours, sent about twice a second while the window is visible (USB only). */
   onLiveLight(cb: (l: LiveLight) => void): () => void;
+  onProgress(cb: (p: DeviceProgress) => void): () => void;
+  /** Last uploaded screen picture. */
+  loadScreen(modelId: string, slot: number): Promise<StoredScreen | null>;
+  saveScreen(modelId: string, slot: number, s: StoredScreen): Promise<void>;
+  libraryList(): Promise<LibraryItem[]>;
+  libraryAdd(item: { name: string; dataUrl: string; thumb: string; frames: number }): Promise<LibraryItem | null>;
+  libraryGet(id: string): Promise<string | null>;
+  libraryDelete(id: string): Promise<void>;
   onDisplayPower(cb: (state: DisplayPowerState) => void): () => void;
   /** OSD window only: payload to display. */
   onOsd(cb: (p: OsdPayload) => void): () => void;
@@ -180,6 +195,9 @@ export interface AulaApi {
 export interface DevNavigate { page: 'home' | 'device' | 'settings'; model?: string; tab?: string; settingsTab?: string; dialog?: 'notifications' | 'backup' }
 
 export type DisplayPowerState = 'on' | 'off';
+export interface DeviceProgress { modelId: string; task: 'screen'; done: number; total: number }
+export interface StoredScreen { name: string; dataUrl: string; mode: 'cover' | 'fit'; frames: number; thumb?: string; pos?: { x: number; y: number } }
+export interface LibraryItem { id: string; name: string; thumb: string; frames: number; addedAt: number }
 
 /** A change reported by the device without the app asking (button presses on the hardware). */
 export type HwEvent =
@@ -193,7 +211,7 @@ export interface LiveLight { modelId: string; colors: Record<number, [number, nu
 /** What the OSD shows: a device, a headline value and optionally a stage strip. */
 export interface OsdPayload {
   device: string;
-  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect';
+  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect' | 'upload';
   value: string;
   /** Translation key shown instead of `value` (the OSD window translates it). */
   valueKey?: string;
@@ -204,6 +222,10 @@ export interface OsdPayload {
   count?: number;
   /** Colour sample next to the value: a CSS colour, or 'multi' for a rainbow. */
   swatch?: string;
+  /** Small text under the value. */
+  note?: string;
+  /** 0..100, shows a progress bar. */
+  progress?: number;
 }
 
 export interface CliRequest { cmd: string; modelId: string; args: string[]; opts: Record<string, string> }

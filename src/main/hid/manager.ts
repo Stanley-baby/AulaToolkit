@@ -163,6 +163,7 @@ export class DeviceManager extends EventEmitter {
       onLiveLight: (colors: Record<number, [number, number, number]>) => this.emit('live-light', { modelId: model.id, colors, t: Date.now() }),
       liveViewActive: () => this.liveViewActive(),
       watchPaused: () => this.watchPaused(),
+      onProgress: (task: 'screen', done: number, total: number) => this.emit('progress', { modelId: model.id, task, done, total }),
     };
     switch (model.protocol) {
       case 'aula04': return Aula04Driver.attach(model, devices, ctx);

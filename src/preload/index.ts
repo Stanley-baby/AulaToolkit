@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH, type AulaApi } from '@shared/ipc';
 import type { DeviceStatus, LogEntry } from '@shared/types';
-import type { CliRequest, CliResult, DevNavigate, DisplayPowerState, HwEvent, LiveLight, OsdPayload, UpdateState } from '@shared/ipc';
+import type { CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, OsdPayload, UpdateState } from '@shared/ipc';
 
 const api: AulaApi = {
   getDevices: () => ipcRenderer.invoke(CH.DEVICES),
@@ -52,6 +52,17 @@ const api: AulaApi = {
     ipcRenderer.on(CH.UPDATE_EVENT, h);
     return () => ipcRenderer.off(CH.UPDATE_EVENT, h);
   },
+  onProgress: (cb) => {
+    const h = (_e: unknown, p: DeviceProgress): void => cb(p);
+    ipcRenderer.on(CH.DEVICE_PROGRESS, h);
+    return () => ipcRenderer.off(CH.DEVICE_PROGRESS, h);
+  },
+  loadScreen: (modelId, slot) => ipcRenderer.invoke(CH.SCREEN_LOAD, modelId, slot),
+  saveScreen: (modelId, slot, s) => ipcRenderer.invoke(CH.SCREEN_SAVE, modelId, slot, s),
+  libraryList: () => ipcRenderer.invoke(CH.LIBRARY_LIST),
+  libraryAdd: (item) => ipcRenderer.invoke(CH.LIBRARY_ADD, item),
+  libraryGet: (id) => ipcRenderer.invoke(CH.LIBRARY_GET, id),
+  libraryDelete: (id) => ipcRenderer.invoke(CH.LIBRARY_DELETE, id),
   onLiveLight: (cb) => {
     const h = (_e: unknown, l: LiveLight): void => cb(l);
     ipcRenderer.on(CH.DEVICE_LIVE_LIGHT, h);

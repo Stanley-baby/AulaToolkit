@@ -26,9 +26,10 @@ import * as vendor from './vendorSoftware';
 import { configureOsd, createOsd, osdWindow, showOsd } from './osd';
 import { runScreenshots } from './screenshots';
 import { startCliServer } from './cli';
-import type { CliRequest, CliResult, HwEvent, LiveLight, OsdPayload } from '@shared/ipc';
+import type { CliRequest, CliResult, DeviceProgress, HwEvent, LiveLight, OsdPayload, StoredScreen } from '@shared/ipc';
 import { colorKey } from '@shared/lightWatch';
 import * as battery from './battery';
+import * as library from './library';
 import { watchDisplayPower } from './displayPower';
 
 declare const __BUILD_STAMP__: string;
@@ -262,7 +263,7 @@ function registerIpc(): void {
     quitting = true;
     app.setLoginItemSettings({ openAtLogin: false });
     await manager.stop().catch(() => undefined);
-    for (const sub of ['settings', 'battery', 'logs']) rmSync(join(app.getPath('userData'), sub), { recursive: true, force: true });
+    for (const sub of ['settings', 'battery', 'logs', 'screen', 'library']) rmSync(join(app.getPath('userData'), sub), { recursive: true, force: true });
     app.relaunch();
     app.exit(0);
   });
@@ -329,11 +330,41 @@ function registerIpc(): void {
   manager.on('attached', () => void applyVendorBlock());
   setInterval(() => void applyVendorBlock(), 10_000);
   void applyVendorBlock();
+  // last uploaded screen picture per model/slot
+  const screenFile = (modelId: string, slot: number): string | null => {
+    if (!/^[a-z0-9-]+$/.test(modelId) || !Number.isInteger(slot) || slot < 1 || slot > 9) return null;
+    return join(app.getPath('userData'), 'screen', `${modelId}-slot${slot}.json`);
+  };
+  ipcMain.handle(CH.SCREEN_LOAD, (_e, modelId: string, slot: number): StoredScreen | null => {
+    const f = screenFile(modelId, slot);
+    try { return f && existsSync(f) ? (JSON.parse(readFileSync(f, 'utf8')) as StoredScreen) : null; } catch { return null; }
+  });
+  ipcMain.handle(CH.SCREEN_SAVE, (_e, modelId: string, slot: number, s: StoredScreen) => {
+    const f = screenFile(modelId, slot);
+    if (!f || typeof s?.dataUrl !== 'string' || !s.dataUrl.startsWith('data:image/')) return;
+    mkdirSync(join(app.getPath('userData'), 'screen'), { recursive: true });
+    const thumb = typeof s.thumb === 'string' && s.thumb.startsWith('data:image/') ? s.thumb : undefined;
+    const clamp = (v: unknown): number => (Number.isFinite(Number(v)) ? Math.max(0, Math.min(1, Number(v))) : 0.5);
+    const pos = s.pos ? { x: clamp(s.pos.x), y: clamp(s.pos.y) } : undefined;
+    writeFileSync(f, JSON.stringify({ name: String(s.name), dataUrl: s.dataUrl, mode: s.mode === 'fit' ? 'fit' : 'cover', frames: Number(s.frames) || 1, thumb, pos }));
+  });
+  ipcMain.handle(CH.LIBRARY_LIST, () => library.list());
+  ipcMain.handle(CH.LIBRARY_ADD, (_e, item: { name: string; dataUrl: string; thumb: string; frames: number }) => library.add(item));
+  ipcMain.handle(CH.LIBRARY_GET, (_e, id: string) => library.get(id));
+  ipcMain.handle(CH.LIBRARY_DELETE, (_e, id: string) => library.remove(id));
   ipcMain.handle(CH.BATTERY_STATS, (_e, id: string) => battery.stats(id));
   ipcMain.handle(CH.BATTERY_CLEAR, (_e, id: string) => battery.clear(id));
   manager.on('log', (e) => win?.webContents.send(CH.LOG_EVENT, e));
   const windowOnScreen = (): boolean => !!win && win.isVisible() && !win.isMinimized();
   manager.liveViewActive = windowOnScreen;
+  manager.on('progress', (p: DeviceProgress) => {
+    win?.webContents.send(CH.DEVICE_PROGRESS, p);
+    if (p.task === 'screen') {
+      const pct = Math.floor((p.done * 100) / p.total);
+      const name = loadDeviceSettings(p.modelId).nickname || (MODELS.find((m) => m.id === p.modelId)?.name ?? p.modelId);
+      showOsd({ device: name, kind: 'upload', value: prefs.language === 'tr' ? `%${pct}` : `${pct}%`, note: tx(pct >= 100 ? 'uploadDone' : 'uploading'), progress: pct });
+    }
+  });
   manager.on('live-light', (l: LiveLight) => { if (windowOnScreen()) win!.webContents.send(CH.DEVICE_LIVE_LIGHT, l); });
   manager.on('hw-event', (e: HwEvent) => {
     win?.webContents.send(CH.DEVICE_HW_EVENT, e);

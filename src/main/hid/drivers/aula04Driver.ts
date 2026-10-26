@@ -381,7 +381,10 @@ export class Aula04Driver implements Driver {
         const { data, chunks } = P.screenImage(frames.map((f) => ({ ...f, pixels: toU8(f.pixels) })), this.model.screen);
         await this.cmd(P.OP.BEGIN);
         await this.cmd(P.OP.SCREEN, slot, chunks);
+        let pct = -1;
         for (let i = 0; i < chunks; i++) {
+          const now = Math.floor((i * 100) / chunks);
+          if (now !== pct) { pct = now; this.ctx.onProgress?.('screen', i, chunks); }
           const chunk = data.subarray(i * this.model.screen.chunk, (i + 1) * this.model.screen.chunk);
           screen.flushInput();
           await screen.write(0, chunk);
@@ -389,6 +392,7 @@ export class Aula04Driver implements Driver {
           if (i % 8 === 0) this.ctx.log('→', `screen chunk ${i + 1}/${chunks}`);
         }
         await this.cmd(P.OP.END);
+        this.ctx.onProgress?.('screen', chunks, chunks);
         this.ctx.log('i', `screen upload done (${frames.length} frames, ${chunks} chunks)`);
       } finally { this.screenBusy = false; }
     });

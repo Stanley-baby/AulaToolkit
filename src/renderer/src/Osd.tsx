@@ -1,7 +1,7 @@
 // The on-screen display: device name, the new value and, for DPI and brightness, a strip of stage dots
 // (a colour sample for colour changes). Rendered by a click-through, non-focusable window under the #osd hash.
-import { useEffect, useState } from 'react';
-import { Gauge, Keyboard, Layers, Lightbulb, MousePointer2, Palette, Sparkles, Sun, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Gauge, Keyboard, Layers, Lightbulb, MousePointer2, Palette, Sparkles, Sun, Zap, UploadCloud } from 'lucide-react';
 import type { OsdPayload } from '@shared/ipc';
 import { DICT, NAMES, type Lang } from './i18n';
 import { applyTheme } from './theme';
@@ -9,21 +9,24 @@ import { applyTheme } from './theme';
 export const Osd = () => {
   const [p, setP] = useState<OsdPayload | null>(null);
   const [seq, setSeq] = useState(0);
+  const lastKind = useRef<string | null>(null);
   const [lang, setLang] = useState<Lang>('en');
 
   useEffect(() => {
     void window.aula.loadPrefs().then((pr) => { setLang(pr.language); applyTheme(pr); });
     return window.aula.onOsd((payload) => {
+      // upload progress updates in place
+      if (!(payload.kind === 'upload' && lastKind.current === 'upload')) setSeq((n) => n + 1);
+      lastKind.current = payload.kind;
       setP(payload);
-      setSeq((n) => n + 1);
       void window.aula.loadPrefs().then((pr) => { setLang(pr.language); applyTheme(pr); });
     });
   }, []);
 
   if (!p) return null;
   const t = (k: string): string => (DICT[lang] as Record<string, string>)[k] ?? (DICT.en as Record<string, string>)[k] ?? k;
-  const caption = { dpi: t('dpi'), polling: t('polling'), profile: t('profile'), light: t('effect'), effect: t('effect'), color: t('color'), brightness: t('brightness') }[p.kind];
-  const Icon = { dpi: Gauge, polling: Zap, profile: Layers, light: Lightbulb, effect: Sparkles, color: Palette, brightness: Sun }[p.kind];
+  const caption = { dpi: t('dpi'), polling: t('polling'), profile: t('profile'), light: t('effect'), effect: t('effect'), color: t('color'), brightness: t('brightness'), upload: t('screenTitle') }[p.kind];
+  const Icon = { dpi: Gauge, polling: Zap, profile: Layers, light: Lightbulb, effect: Sparkles, color: Palette, brightness: Sun, upload: UploadCloud }[p.kind];
   const DeviceIcon = p.kind === 'dpi' || p.kind === 'polling' ? MousePointer2 : p.kind === 'profile' ? Layers : Keyboard;
   const value = p.valueKey ? t(p.valueKey) : p.valueName ? NAMES[lang]?.[p.valueName] ?? p.valueName : p.value;
 
@@ -54,6 +57,12 @@ export const Osd = () => {
             <span className={`${value.length > 11 ? 'text-[22px]' : 'text-[28px]'} leading-8 font-bold tabular-nums whitespace-nowrap`}>{value}</span>
             {p.unit && <span className="text-sm text-muted font-semibold">{p.unit}</span>}
           </div>
+          {p.note && <div className="text-[13px] text-muted mt-0.5" style={{ maxWidth: 300 }}>{p.note}</div>}
+          {p.progress != null && (
+            <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ width: 200, background: 'var(--color-line-2)' }}>
+              <div className="h-full rounded-full" style={{ width: `${p.progress}%`, background: 'linear-gradient(90deg, var(--color-accent), var(--color-accent-2))', transition: 'width .2s' }} />
+            </div>
+          )}
           {p.count != null && p.stage != null && p.count > 1 && (
             <div className="flex gap-1.5 mt-1">
               {Array.from({ length: p.count }, (_, i) => (
