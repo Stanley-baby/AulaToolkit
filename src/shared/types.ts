@@ -185,6 +185,36 @@ export interface DeviceSettingsFile {
   nickname?: string;
   /** default on */
   displayBlackout?: boolean;
+  music?: MusicEffect;
+  keyAnimation?: KeyAnimation;
+}
+
+export interface MusicEffect {
+  enabled: boolean;
+  /** rhythm needs USB */
+  kind?: 'rhythm' | 'effect';
+  /** also the rhythm's fallback on the receiver */
+  mode: number;
+  speed: number;
+  /** RHYTHM_SCHEMES index */
+  scheme?: number;
+  /** 10..100 %. */
+  amplitude?: number;
+  /** BACKGROUNDS index, -1 = off */
+  background?: number;
+  /** 0..100 %. */
+  backgroundBrightness?: number;
+}
+
+export interface KeyAnimation {
+  enabled: boolean;
+  libraryId: string;
+  name: string;
+  mode: 'cover' | 'fit';
+  /** 1 = original speed */
+  speed: number;
+  /** 10..100 %. */
+  brightness: number;
 }
 
 // ---- Runtime device state reported by the main process ----

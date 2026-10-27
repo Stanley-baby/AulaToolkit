@@ -1,5 +1,5 @@
 import './elevatedHelper'; // must stay first
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, Notification, screen, shell, systemPreferences, Tray } from 'electron';
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeImage, Notification, screen, session, shell, systemPreferences, Tray } from 'electron';
 import { MODELS } from '@shared/models';
 import { en } from '@shared/locales/en';
 import { tr } from '@shared/locales/tr';
@@ -31,6 +31,7 @@ import { colorKey } from '@shared/lightWatch';
 import * as battery from './battery';
 import * as library from './library';
 import { watchDisplayPower } from './displayPower';
+import { setMediaWatch, stopMediaWatch } from './mediaPlayback';
 
 declare const __BUILD_STAMP__: string;
 const BUILD_STAMP = typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev';
@@ -132,6 +133,8 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
+      // live lighting runs in this page at ~21 fps, also when it's hidden in the tray
+      backgroundThrottling: false,
     },
   });
 
@@ -409,6 +412,10 @@ function registerIpc(): void {
     hideWindow: () => win?.hide(),
     forward,
   }, (msg) => manager.addLog('i', msg));
+  ipcMain.on(CH.MEDIA_WATCH, (_e, on: boolean) => setMediaWatch(on, (state) => {
+    manager.addLog('i', `media ${state}`);
+    win?.webContents.send(CH.MEDIA_PLAYBACK, state);
+  }, (message) => manager.addLog('!', message)));
   ipcMain.on(CH.OSD_SHOW, (_e, p: OsdPayload) => { if (prefs.osd) showOsd(p); });
   ipcMain.on(CH.FLYOUT_SIZE, (_e, h: number) => {
     flyoutHeight = Math.max(60, Math.min(720, Math.round(h)));
@@ -432,6 +439,10 @@ if (!gotLock) {
     applyAutostart(prefs);
     battery.setEnabled(true);
     app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window));
+    // system audio for the music rhythm (loopback, no picker)
+    session.defaultSession.setDisplayMediaRequestHandler((_req, cb) => {
+      void desktopCapturer.getSources({ types: ['screen'] }).then((s) => cb(s[0] ? { video: s[0], audio: 'loopback' } : {})).catch(() => cb({}));
+    });
     registerIpc();
     createWindow();
     createTray();
@@ -461,6 +472,6 @@ if (!gotLock) {
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
   });
 
-  app.on('before-quit', () => { quitting = true; stopDisplayPowerWatch?.(); void manager.stop(); });
+  app.on('before-quit', () => { quitting = true; stopDisplayPowerWatch?.(); stopMediaWatch(); void manager.stop(); });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }

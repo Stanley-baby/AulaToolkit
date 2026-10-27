@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { DeviceSettingsFile, DeviceStatus, LogEntry, Macro, Profile } from '@shared/types';
+import type { DeviceSettingsFile, DeviceStatus, KeyAnimation, LogEntry, Macro, MusicEffect, Profile } from '@shared/types';
 import type { AppPrefs } from '@shared/ipc';
 import { DEFAULT_PREFS } from '@shared/ipc';
 import { MODELS, modelById } from '@shared/models';
@@ -28,6 +28,8 @@ interface State {
   finishSetup(modelId: string): void;
   setNickname(modelId: string, nickname: string): void;
   setDisplayBlackout(modelId: string, on: boolean): void;
+  setMusic(modelId: string, music: MusicEffect): void;
+  setKeyAnimation(modelId: string, a: KeyAnimation): void;
   displayName(modelId: string): string;
   init(): Promise<void>;
   select(modelId: string): void;
@@ -121,6 +123,14 @@ export const useStore = create<State>((set, get) => ({
   },
   setDisplayBlackout(modelId, on) {
     set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], displayBlackout: on } } }));
+    scheduleSave(modelId, get);
+  },
+  setMusic(modelId, music) {
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], music } } }));
+    scheduleSave(modelId, get);
+  },
+  setKeyAnimation(modelId, keyAnimation) {
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], keyAnimation } } }));
     scheduleSave(modelId, get);
   },
   displayName: (modelId) => get().settings[modelId]?.nickname || (modelById(modelId)?.name ?? modelId),

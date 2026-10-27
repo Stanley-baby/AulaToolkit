@@ -1,12 +1,20 @@
-// lighting that temporarily replaces the profile's (the profile itself isn't touched), for now only
-// monitor off. profile writes + knob tracking wait meanwhile (apply.ts, bridges.ts)
+// lighting that temporarily replaces the profile's (the profile itself isn't touched).
+// priority: monitor off > music > gif on the keys. profile writes + knob tracking wait meanwhile
+// (apply.ts, bridges.ts)
 import { modelById } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
+import { acquireAudio, releaseAudio } from './audio';
+import { animationSource, rhythmSource, startLive, stopLive } from './liveEngine';
 import { activeProfile, useStore } from './store';
 
-type Look = 'dark' | 'base';
+type Look = 'dark' | 'rhythm' | 'effect' | 'animation' | 'base';
+const LIVE: Look[] = ['rhythm', 'animation'];
+
+const MUSIC_STOP_DELAY_MS = 3000; // players pause briefly between tracks
 
 let displayOff = false;
+let mediaPlaying = false;
+let stopTimer: ReturnType<typeof setTimeout> | undefined;
 const shown = new Map<string, Exclude<Look, 'base'>>();
 let queue: Promise<void> = Promise.resolve();
 const serial = (job: () => Promise<void>): void => { queue = queue.then(job).catch(() => undefined); };
@@ -21,6 +29,9 @@ function wanted(modelId: string): Look {
   const file = s.settings[modelId];
   if (!model?.features.lighting || !file) return 'base';
   if (displayOff && model.features.displayBlackout && file.displayBlackout !== false) return 'dark';
+  const usb = s.deviceFor(modelId)?.link === 'usb' && model.protocol === 'aula04';
+  if (mediaPlaying && file.music?.enabled) return (file.music.kind ?? 'rhythm') === 'rhythm' && usb ? 'rhythm' : 'effect';
+  if (file.keyAnimation?.enabled && file.keyAnimation.libraryId && usb) return 'animation';
   return 'base';
 }
 
@@ -29,10 +40,12 @@ async function show(modelId: string, look: Look, force = false): Promise<void> {
   const model = modelById(modelId);
   const k = activeProfile(s, modelId)?.keyboard;
   const was: Look = shown.get(modelId) ?? 'base';
-  if (!model || !k) { shown.delete(modelId); return; }
+  if (!model || !k) { await leaveLive(modelId, was); shown.delete(modelId); return; }
   if (was === look && !force) return;
   if (!s.deviceFor(modelId)) return; // not connected, done on reconnect
+  await leaveLive(modelId, was);
   if (look !== 'base') shown.set(modelId, look);
+  const file = s.settings[modelId];
   try {
     if (look === 'dark') {
       // S75 Pro: brightness 0 turns the strip back on and mode 0 is ignored, so the bar goes first and
@@ -45,12 +58,31 @@ async function show(modelId: string, look: Look, force = false): Promise<void> {
     }
     // bar first, see above
     if (was === 'dark' && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode);
-    if (k.lighting.mode === USER_LIGHT_MODE) await s.call(modelId, 'setUserLight', k.perKey, k.lighting.brightness);
+    if (look === 'rhythm' && file?.music) {
+      if (!(await acquireAudio())) s.toast(s.t('audioUnavailable'), 'error');
+      startLive(modelId, rhythmSource(modelId, file.music));
+      return;
+    }
+    if (look === 'animation' && file?.keyAnimation) {
+      const source = await animationSource(modelId, file.keyAnimation);
+      if (source) { startLive(modelId, source); return; }
+      shown.delete(modelId); // deleted from the library
+      look = 'base';
+    }
+    if (look === 'effect' && file?.music) await s.call(modelId, 'setLighting', { ...k.lighting, mode: file.music.mode, speed: file.music.speed });
+    else if (k.lighting.mode === USER_LIGHT_MODE) await s.call(modelId, 'setUserLight', k.perKey, k.lighting.brightness);
     else await s.call(modelId, 'setLighting', k.lighting);
-    shown.delete(modelId);
+    if (look === 'base') shown.delete(modelId);
   } catch {
     // call() already showed a toast, the next change or reconnect tries again
   }
+}
+
+async function leaveLive(modelId: string, was: Look): Promise<void> {
+  if (!LIVE.includes(was)) return;
+  await stopLive(modelId);
+  if (was === 'rhythm') releaseAudio();
+  useStore.setState((st) => { const liveLight = { ...st.liveLight }; delete liveLight[modelId]; return { liveLight }; });
 }
 
 function syncAll(): void {
@@ -60,6 +92,8 @@ function syncAll(): void {
   });
 }
 
+const musicWanted = (): boolean => Object.values(useStore.getState().settings).some((f) => f?.music?.enabled);
+
 export function registerOverrides(): void {
   window.aula.onDisplayPower((state) => {
     if (displayOff === (state === 'off')) return;
@@ -67,11 +101,33 @@ export function registerOverrides(): void {
     syncAll();
   });
 
+  window.aula.onMediaPlayback((state) => {
+    clearTimeout(stopTimer);
+    if (state === 'playing') {
+      if (!mediaPlaying) { mediaPlaying = true; syncAll(); }
+    } else if (mediaPlaying) {
+      stopTimer = setTimeout(() => { mediaPlaying = false; syncAll(); }, MUSIC_STOP_DELAY_MS);
+    }
+  });
+
+  let watching = musicWanted();
+  if (watching) window.aula.setMediaWatch(true);
+  syncAll();
+
   useStore.subscribe((s, prev) => {
+    // media watcher only while some keyboard has music on
+    const want = musicWanted();
+    if (want !== watching) {
+      watching = want;
+      window.aula.setMediaWatch(want);
+      if (!want) { clearTimeout(stopTimer); mediaPlaying = false; }
+    }
     for (const id of Object.keys(s.settings)) {
       const a = s.settings[id], b = prev.settings[id];
-      if (a === b || a?.displayBlackout === b?.displayBlackout) continue;
-      serial(() => show(id, wanted(id)));
+      if (a === b || (a?.music === b?.music && a?.keyAnimation === b?.keyAnimation && a?.displayBlackout === b?.displayBlackout)) continue;
+      const look = wanted(id);
+      const edited = (look === 'rhythm' || look === 'effect') ? a?.music !== b?.music : look === 'animation' ? a?.keyAnimation !== b?.keyAnimation : false;
+      serial(() => show(id, look, edited));
     }
     // reconnected (or switched between cable and receiver)
     if (s.devices !== prev.devices) {

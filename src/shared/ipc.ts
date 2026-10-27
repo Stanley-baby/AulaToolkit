@@ -56,6 +56,8 @@ export const CH = {
   LIBRARY_GET: 'library:get',
   LIBRARY_DELETE: 'library:delete',
   DISPLAY_POWER: 'display:power',
+  MEDIA_WATCH: 'media:watch',
+  MEDIA_PLAYBACK: 'media:playback',
 } as const;
 
 export interface AppPrefs {
@@ -176,6 +178,8 @@ export interface AulaApi {
   libraryGet(id: string): Promise<string | null>;
   libraryDelete(id: string): Promise<void>;
   onDisplayPower(cb: (state: DisplayPowerState) => void): () => void;
+  setMediaWatch(on: boolean): void;
+  onMediaPlayback(cb: (state: MediaPlaybackState) => void): () => void;
   /** OSD window only: payload to display. */
   onOsd(cb: (p: OsdPayload) => void): () => void;
   /** CLI bridge: requests from the `aula` command, answered with cliReply. */
@@ -198,6 +202,7 @@ export type DisplayPowerState = 'on' | 'off';
 export interface DeviceProgress { modelId: string; task: 'screen'; done: number; total: number }
 export interface StoredScreen { name: string; dataUrl: string; mode: 'cover' | 'fit'; frames: number; thumb?: string; pos?: { x: number; y: number } }
 export interface LibraryItem { id: string; name: string; thumb: string; frames: number; addedAt: number }
+export type MediaPlaybackState = 'playing' | 'stopped';
 
 /** A change reported by the device without the app asking (button presses on the hardware). */
 export type HwEvent =

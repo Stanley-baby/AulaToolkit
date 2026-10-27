@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH, type AulaApi } from '@shared/ipc';
 import type { DeviceStatus, LogEntry } from '@shared/types';
-import type { CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, OsdPayload, UpdateState } from '@shared/ipc';
+import type { CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
 
 const api: AulaApi = {
   getDevices: () => ipcRenderer.invoke(CH.DEVICES),
@@ -72,6 +72,12 @@ const api: AulaApi = {
     const h = (_e: unknown, state: DisplayPowerState): void => cb(state);
     ipcRenderer.on(CH.DISPLAY_POWER, h);
     return () => ipcRenderer.off(CH.DISPLAY_POWER, h);
+  },
+  setMediaWatch: (on) => ipcRenderer.send(CH.MEDIA_WATCH, on),
+  onMediaPlayback: (cb) => {
+    const h = (_e: unknown, state: MediaPlaybackState): void => cb(state);
+    ipcRenderer.on(CH.MEDIA_PLAYBACK, h);
+    return () => ipcRenderer.off(CH.MEDIA_PLAYBACK, h);
   },
   onHwEvent: (cb) => {
     const h = (_e: unknown, ev: HwEvent): void => cb(ev);

@@ -14,6 +14,8 @@ files:
 extraResources:
   - from: resources/display-watch.ps1
     to: display-watch.ps1
+  - from: resources/media-watch.ps1
+    to: media-watch.ps1
   - from: resources/vendor-restore.ps1
     to: vendor-restore.ps1
   - from: resources/cli
