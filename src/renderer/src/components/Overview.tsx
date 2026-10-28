@@ -1,4 +1,4 @@
-import { BatteryCharging, BatteryMedium, Cable, Radio, RefreshCw, Moon } from 'lucide-react';
+import { BatteryCharging, BatteryMedium, Bluetooth, Cable, Radio, RefreshCw, Moon } from 'lucide-react';
 import { modelById } from '@shared/models';
 import { imageFor } from '../assets';
 import { useStore, useT, useTn } from '../store';
@@ -13,6 +13,8 @@ export const Overview = ({ modelId }: { modelId: string }) => {
   const variant = useStore((s) => s.settings[modelId]?.variant);
   const image = model.variants?.find((v) => v.id === variant)?.image ?? model.image;
   const online = !!dev;
+  const bluetooth = useStore((s) => s.bluetooth[modelId]);
+  const bt = !online && bluetooth?.connected ? bluetooth : undefined;
   const statsOn = useStore((s) => s.prefs.batteryStats);
 
   return (
@@ -25,12 +27,14 @@ export const Overview = ({ modelId }: { modelId: string }) => {
             <h1 className="text-4xl font-bold tracking-tight">{model.name}</h1>
             <p className="text-muted max-w-sm">{tn(model.tagline)}</p>
             <div className="flex items-center gap-2 flex-wrap mt-2">
-              <span className={`chip ${online ? 'chip-ok' : ''}`}>
-                {online ? (dev.link === 'usb' ? <Cable size={13} /> : <Radio size={13} />) : null}
-                {online ? (dev.link === 'usb' ? t('usb') : t('wireless')) : t('disconnected')}
+              <span className={`chip ${online || bt ? 'chip-ok' : ''}`}>
+                {online ? (dev.link === 'usb' ? <Cable size={13} /> : <Radio size={13} />) : bt ? <Bluetooth size={13} /> : null}
+                {online ? (dev.link === 'usb' ? t('usb') : t('wireless')) : bt ? t('bluetooth') : t('disconnected')}
               </span>
-              {dev?.battery !== null && dev?.battery !== undefined && (
+              {dev?.battery !== null && dev?.battery !== undefined ? (
                 <span className="chip">{dev.charging ? <BatteryCharging size={13} /> : <BatteryMedium size={13} />}{dev.battery}% {dev.charging ? `· ${t('charging')}` : ''}</span>
+              ) : bt?.pct != null && (
+                <span className="chip"><BatteryMedium size={13} />{bt.pct}%</span>
               )}
               {dev?.live?.sensor && <span className="chip chip-accent">{t('sensor')} {dev.live.sensor}</span>}
               {dev?.live?.receiver8k && <span className="chip chip-accent">8K {t('receiver')}</span>}

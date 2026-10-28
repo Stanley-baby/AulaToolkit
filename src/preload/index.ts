@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH, type AulaApi } from '@shared/ipc';
 import type { DeviceStatus, LogEntry } from '@shared/types';
-import type { CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
+import type { BluetoothState, CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
 
 const api: AulaApi = {
   getDevices: () => ipcRenderer.invoke(CH.DEVICES),
@@ -59,6 +59,12 @@ const api: AulaApi = {
   },
   loadScreen: (modelId, slot) => ipcRenderer.invoke(CH.SCREEN_LOAD, modelId, slot),
   saveScreen: (modelId, slot, s) => ipcRenderer.invoke(CH.SCREEN_SAVE, modelId, slot, s),
+  getBluetooth: () => ipcRenderer.invoke(CH.BLUETOOTH_GET),
+  onBluetooth: (cb) => {
+    const h = (_e: unknown, s: BluetoothState): void => cb(s);
+    ipcRenderer.on(CH.BLUETOOTH_EVENT, h);
+    return () => ipcRenderer.off(CH.BLUETOOTH_EVENT, h);
+  },
   libraryList: () => ipcRenderer.invoke(CH.LIBRARY_LIST),
   libraryAdd: (item) => ipcRenderer.invoke(CH.LIBRARY_ADD, item),
   libraryGet: (id) => ipcRenderer.invoke(CH.LIBRARY_GET, id),

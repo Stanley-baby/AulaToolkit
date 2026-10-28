@@ -5,6 +5,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { BatteryCharging, BatteryFull, BatteryLow, BatteryMedium, Keyboard, MousePointer2 } from 'lucide-react';
 import type { DeviceSettingsFile, DeviceStatus } from '@shared/types';
+import type { BluetoothState } from '@shared/ipc';
 import { MODELS } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { DICT, NAMES, type Lang } from './i18n';
@@ -14,7 +15,8 @@ import { Wordmark } from './components/Wordmark';
 type Live = { dpiStages?: number[]; dpiActive?: number; dpiCount?: number; polling?: number; sensor?: string };
 
 export const Flyout = () => {
-  const [devices, setDevices] = useState<DeviceStatus[]>([]);
+  const [hid, setDevices] = useState<DeviceStatus[]>([]);
+  const [bluetooth, setBluetooth] = useState<BluetoothState>({});
   const [settings, setSettings] = useState<Record<string, DeviceSettingsFile>>({});
   const [lang, setLang] = useState<Lang>('en');
   const panel = useRef<HTMLDivElement>(null);
@@ -25,13 +27,28 @@ export const Flyout = () => {
     }
   };
 
+  // plus the ones only on Bluetooth (from Windows)
+  const devices: DeviceStatus[] = [
+    ...hid,
+    ...MODELS.filter((m) => bluetooth[m.id]?.connected && !hid.some((d) => d.modelId === m.id)).map((m) => ({
+      key: `${m.id}:bluetooth`, modelId: m.id, link: 'bluetooth' as const, productName: m.name, battery: bluetooth[m.id].pct, charging: false,
+    })),
+  ];
+
   useEffect(() => {
+    for (const id of Object.keys(bluetooth)) if (bluetooth[id].connected && !settings[id]) void window.aula.loadSettings(id).then((f) => setSettings((s) => ({ ...s, [id]: f })));
+  }, [bluetooth]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    void window.aula.getBluetooth().then(setBluetooth);
+    const offBt = window.aula.onBluetooth(setBluetooth);
     void window.aula.getDevices().then((d) => { setDevices(d); loadSettings(d); });
     const off = window.aula.onDevices((d) => { setDevices(d); loadSettings(d); });
     const refresh = (): void => {
       if (document.visibilityState !== 'visible') return;
       void window.aula.loadPrefs().then((p) => { setLang(p.language); applyTheme(p); });
       void window.aula.getDevices().then((d) => { setDevices(d); loadSettings(d); });
+      void window.aula.getBluetooth().then(setBluetooth);
     };
     refresh();
     void window.aula.loadPrefs().then((p) => { setLang(p.language); applyTheme(p); });
@@ -40,7 +57,7 @@ export const Flyout = () => {
       void window.aula.loadPrefs().then((p) => { setLang(p.language); applyTheme(p); });
       void window.aula.getDevices().then((d) => { setDevices(d); loadSettings(d); });
     });
-    return () => { off(); offShow(); document.removeEventListener('visibilitychange', refresh); };
+    return () => { off(); offShow(); offBt(); document.removeEventListener('visibilitychange', refresh); };
   }, []);
 
   // Tell the main process how tall we are, so the window hugs the content.
@@ -85,7 +102,8 @@ export const Flyout = () => {
           const model = MODELS.find((m) => m.id === s.modelId);
           const name = settings[s.modelId]?.nickname || model?.name || s.productName;
           const file = settings[s.modelId];
-          const profile = file?.profiles.find((p) => p.id === file.activeProfile);
+          // can't read the device over Bluetooth, so no profile
+          const profile = s.link === 'bluetooth' ? undefined : file?.profiles.find((p) => p.id === file.activeProfile);
           const live = (s.live ?? {}) as Live;
           const stages = live.dpiStages ?? profile?.mouse?.dpiStages;
           const active = live.dpiActive ?? profile?.mouse?.dpiActive;

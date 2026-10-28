@@ -26,10 +26,11 @@ import * as vendor from './vendorSoftware';
 import { configureOsd, createOsd, osdWindow, showOsd } from './osd';
 import { runScreenshots } from './screenshots';
 import { startCliServer } from './cli';
-import type { CliRequest, CliResult, DeviceProgress, HwEvent, LiveLight, OsdPayload, StoredScreen } from '@shared/ipc';
+import type { BluetoothState, CliRequest, CliResult, DeviceProgress, HwEvent, LiveLight, OsdPayload, StoredScreen } from '@shared/ipc';
 import { colorKey } from '@shared/lightWatch';
 import * as battery from './battery';
 import * as library from './library';
+import { readBluetoothBatteries } from './bluetoothBattery';
 import { watchDisplayPower } from './displayPower';
 import { setMediaWatch, stopMediaWatch } from './mediaPlayback';
 
@@ -114,6 +115,7 @@ function applyAutostart(p: AppPrefs): void {
 }
 let prefs: AppPrefs;
 let stopDisplayPowerWatch: (() => void) | null = null;
+let bluetoothState: BluetoothState = {};
 
 const iconPath = (): string => join(__dirname, '../../resources/icon.png');
 
@@ -331,6 +333,23 @@ function registerIpc(): void {
 
   manager.on('devices', (d: DeviceStatus[]) => { win?.webContents.send(CH.DEVICES_EVENT, d); checkBattery(d); battery.record(d); });
   manager.on('attached', () => void applyVendorBlock());
+  // Bluetooth state comes from Windows, poll it every minute
+  const pollBluetooth = (): void => {
+    void readBluetoothBatteries().then((list) => {
+      bluetoothState = Object.fromEntries(list.map((b) => [b.modelId, { connected: b.connected, pct: b.pct }]));
+      win?.webContents.send(CH.BLUETOOTH_EVENT, bluetoothState);
+      if (flyout && !flyout.isDestroyed()) flyout.webContents.send(CH.BLUETOOTH_EVENT, bluetoothState);
+    });
+  };
+  setTimeout(pollBluetooth, 3000);
+  setInterval(pollBluetooth, 60e3);
+  // a device that just disappeared may come back on Bluetooth
+  let lastModels = new Set<string>();
+  manager.on('devices', (d: DeviceStatus[]) => {
+    const now = new Set(d.map((x) => x.modelId));
+    if ([...lastModels].some((id) => !now.has(id))) { setTimeout(pollBluetooth, 3000); setTimeout(pollBluetooth, 10000); }
+    lastModels = now;
+  });
   setInterval(() => void applyVendorBlock(), 10_000);
   void applyVendorBlock();
   // last uploaded screen picture per model/slot
@@ -351,6 +370,7 @@ function registerIpc(): void {
     const pos = s.pos ? { x: clamp(s.pos.x), y: clamp(s.pos.y) } : undefined;
     writeFileSync(f, JSON.stringify({ name: String(s.name), dataUrl: s.dataUrl, mode: s.mode === 'fit' ? 'fit' : 'cover', frames: Number(s.frames) || 1, thumb, pos }));
   });
+  ipcMain.handle(CH.BLUETOOTH_GET, () => bluetoothState);
   ipcMain.handle(CH.LIBRARY_LIST, () => library.list());
   ipcMain.handle(CH.LIBRARY_ADD, (_e, item: { name: string; dataUrl: string; thumb: string; frames: number }) => library.add(item));
   ipcMain.handle(CH.LIBRARY_GET, (_e, id: string) => library.get(id));

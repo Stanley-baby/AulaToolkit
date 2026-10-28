@@ -47,6 +47,7 @@ export const S75PRO: DeviceModel = {
     { mode: 17, name: 'Pulsating', caps: 0x33 }, { mode: 18, name: 'Tilt', caps: 0x37 },
     { mode: 19, name: 'Shuttle', caps: 0x33 }, { mode: 0, name: 'Off', caps: 0x00 },
   ],
+  bluetoothName: 'S75',
   barModes: [
     { mode: 0x20, name: 'Flowing' }, { mode: 0x21, name: 'Red' }, { mode: 0x22, name: 'Blue' },
     { mode: 0x23, name: 'Neon' }, { mode: 0x24, name: 'Off' },

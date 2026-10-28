@@ -39,6 +39,7 @@ export const SC900: DeviceModel = {
     { label: 'Battery', value: '400 mAh swappable' },
   ],
   features: { dpi: true, buttons: true, macros: true, settings: true, battery: true },
+  bluetoothName: 'SC900',
   buttonSlots: [
     { slot: 0, name: 'Left click', x: 36, y: 30, locked: true },
     { slot: 1, name: 'Right click', x: 64, y: 30 },

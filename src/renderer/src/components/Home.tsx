@@ -1,4 +1,4 @@
-import { ArrowRight, BatteryCharging, BatteryMedium, Cable, Gauge, Lightbulb, Radio, Usb } from 'lucide-react';
+import { ArrowRight, BatteryCharging, BatteryMedium, Bluetooth, Cable, Gauge, Lightbulb, Radio, Usb } from 'lucide-react';
 import { MODELS } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { imageFor } from '../assets';
@@ -16,7 +16,11 @@ export const Home = () => {
   const t = useT();
   const tn = useTn();
   const s = useStore();
-  const connected = MODELS.filter((m) => s.devices.some((d) => d.modelId === m.id));
+  // Bluetooth-only devices last
+  const connected = [
+    ...MODELS.filter((m) => s.devices.some((d) => d.modelId === m.id)),
+    ...MODELS.filter((m) => !s.devices.some((d) => d.modelId === m.id) && s.bluetooth[m.id]?.connected),
+  ];
 
   return (
     <div className="p-8 flex flex-col gap-8 fade-in max-w-6xl">
@@ -48,12 +52,13 @@ export const Home = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {connected.map((m) => {
-              const dev = s.devices.find((d) => d.modelId === m.id)!;
+              const dev = s.devices.find((d) => d.modelId === m.id);
+              const bt = dev ? undefined : s.bluetooth[m.id];
               const file = s.settings[m.id];
               const prof = activeProfile(s, m.id);
               const img = m.variants?.find((v) => v.id === file?.variant)?.image ?? m.image;
-              const effect = prof?.keyboard ? (prof.keyboard.lighting.mode === USER_LIGHT_MODE ? t('perKey') : tn(m.lightModes?.find((x) => x.mode === prof.keyboard!.lighting.mode)?.name ?? '')) : null;
-              const dpi = prof?.mouse ? prof.mouse.dpiStages[prof.mouse.dpiActive] : null;
+              const effect = dev && prof?.keyboard ? (prof.keyboard.lighting.mode === USER_LIGHT_MODE ? t('perKey') : tn(m.lightModes?.find((x) => x.mode === prof.keyboard!.lighting.mode)?.name ?? '')) : null;
+              const dpi = dev && prof?.mouse ? prof.mouse.dpiStages[prof.mouse.dpiActive] : null;
               return (
                 <div key={m.id} className="panel p-5 flex gap-5 relative overflow-hidden group">
                   <div className="h-28 w-28 rounded-2xl overflow-hidden shrink-0">
@@ -63,13 +68,16 @@ export const Home = () => {
                     <div className="text-[11px] text-muted tracking-widest">{m.brand}</div>
                     <div className="text-xl font-semibold">{file?.nickname || m.name}</div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <span className="chip chip-ok">{dev.link === 'usb' ? <Cable size={12} /> : <Radio size={12} />}{dev.link === 'usb' ? t('usb') : t('wireless')}</span>
-                      {dev.battery !== null && <span className="chip">{dev.charging ? <BatteryCharging size={12} /> : <BatteryMedium size={12} />}{dev.battery}%</span>}
+                      {dev
+                        ? <span className="chip chip-ok">{dev.link === 'usb' ? <Cable size={12} /> : <Radio size={12} />}{dev.link === 'usb' ? t('usb') : t('wireless')}</span>
+                        : <span className="chip chip-ok"><Bluetooth size={12} />{t('bluetooth')}</span>}
+                      {dev && dev.battery !== null && <span className="chip">{dev.charging ? <BatteryCharging size={12} /> : <BatteryMedium size={12} />}{dev.battery}%</span>}
+                      {bt?.pct != null && <span className="chip"><BatteryMedium size={12} />{bt.pct}%</span>}
                       {effect && <span className="chip"><Lightbulb size={12} />{effect}</span>}
                       {dpi && <span className="chip"><Gauge size={12} />{dpi} DPI</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-3">
-                      {file && (
+                      {file && dev && (
                         <Dropdown value={file.activeProfile} options={file.profiles.map((p) => ({ value: p.id, label: p.name }))} onChange={(id) => s.setActiveProfile(m.id, id)} minWidth={150} />
                       )}
                       <div className="flex-1" />

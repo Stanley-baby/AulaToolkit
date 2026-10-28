@@ -51,6 +51,8 @@ export const CH = {
   DEVICE_PROGRESS: 'device:progress',
   SCREEN_LOAD: 'screen:load',
   SCREEN_SAVE: 'screen:save',
+  BLUETOOTH_GET: 'bluetooth:get',
+  BLUETOOTH_EVENT: 'bluetooth:event',
   LIBRARY_LIST: 'library:list',
   LIBRARY_ADD: 'library:add',
   LIBRARY_GET: 'library:get',
@@ -173,6 +175,8 @@ export interface AulaApi {
   /** Last uploaded screen picture. */
   loadScreen(modelId: string, slot: number): Promise<StoredScreen | null>;
   saveScreen(modelId: string, slot: number, s: StoredScreen): Promise<void>;
+  getBluetooth(): Promise<BluetoothState>;
+  onBluetooth(cb: (s: BluetoothState) => void): () => void;
   libraryList(): Promise<LibraryItem[]>;
   libraryAdd(item: { name: string; dataUrl: string; thumb: string; frames: number }): Promise<LibraryItem | null>;
   libraryGet(id: string): Promise<string | null>;
@@ -199,6 +203,7 @@ export interface AulaApi {
 export interface DevNavigate { page: 'home' | 'device' | 'settings'; model?: string; tab?: string; settingsTab?: string; dialog?: 'notifications' | 'backup' }
 
 export type DisplayPowerState = 'on' | 'off';
+export type BluetoothState = Record<string, { connected: boolean; pct: number | null }>;
 export interface DeviceProgress { modelId: string; task: 'screen'; done: number; total: number }
 export interface StoredScreen { name: string; dataUrl: string; mode: 'cover' | 'fit'; frames: number; thumb?: string; pos?: { x: number; y: number } }
 export interface LibraryItem { id: string; name: string; thumb: string; frames: number; addedAt: number }

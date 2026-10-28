@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { DeviceSettingsFile, DeviceStatus, KeyAnimation, LogEntry, Macro, MusicEffect, Profile } from '@shared/types';
-import type { AppPrefs } from '@shared/ipc';
+import type { AppPrefs, BluetoothState } from '@shared/ipc';
 import { DEFAULT_PREFS } from '@shared/ipc';
 import { MODELS, modelById } from '@shared/models';
 import { newProfile } from '@shared/defaults';
@@ -21,6 +21,8 @@ interface State {
   dirty: Record<string, boolean>;
   /** Latest live LED colours per keyboard model, with the time they arrived. */
   liveLight: Record<string, { colors: Record<number, [number, number, number]>; at: number }>;
+  /** Bluetooth links from Windows, per model. */
+  bluetooth: BluetoothState;
   page: 'home' | 'device' | 'settings';
   ready: boolean;
   /** Model currently going through the first-connection setup, if any. */
@@ -70,6 +72,7 @@ export const useStore = create<State>((set, get) => ({
   busy: {},
   dirty: {},
   liveLight: {},
+  bluetooth: {},
   page: 'home',
   ready: false,
   setupModel: null,
@@ -91,6 +94,8 @@ export const useStore = create<State>((set, get) => ({
       if (fresh && !get().setupModel && get().prefs.onboarded) set({ setupModel: fresh });
     };
     remember(devices);
+    void window.aula.getBluetooth().then((bluetooth) => set({ bluetooth }));
+    window.aula.onBluetooth((bluetooth) => set({ bluetooth }));
     window.aula.onDevices((d) => {
       const prev = get().devices;
       set({ devices: d });

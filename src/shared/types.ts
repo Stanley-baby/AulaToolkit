@@ -93,6 +93,8 @@ export interface DeviceModel {
   layout?: KeyDef[];
   lightModes?: LightMode[];
   barModes?: { mode: number; name: string }[];
+  /** Regex for the Bluetooth device name. */
+  bluetoothName?: string;
   lightRange?: { brightness: number; speed: number };
   settings?: SettingDef[];
   screen?: { width: number; height: number; headLength: number; maxFrames: number; chunk: number };
