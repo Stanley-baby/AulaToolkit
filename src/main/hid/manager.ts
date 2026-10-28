@@ -29,7 +29,7 @@ export class DeviceManager extends EventEmitter {
   private scanTimer: NodeJS.Timeout | null = null;
   private statusTimer: NodeJS.Timeout | null = null;
   private lastSignature = '';
-  private failedSignatures = new Map<string, number>();
+  private failedSignatures = new Map<string, { at: number; count: number }>();
 
   start(): void {
     for (const id of (process.env.AULA_SIM ?? '').split(',').map((x) => x.trim()).filter(Boolean)) {
@@ -111,11 +111,13 @@ export class DeviceManager extends EventEmitter {
       this.lastSignature = signature;
       const groups = this.groups(devices);
 
-      // Detach drivers whose model is gone or whose ports vanished.
+      // Detach drivers whose ports vanished. check the driver's own paths, cable -> dongle keeps the
+      // model in the list but the usb path is gone
       for (const [key, drv] of [...this.drivers]) {
         if (key.endsWith(':sim')) continue; // simulated devices have no USB port
         const g = groups.get(drv.model.id);
-        const stillThere = g && g.devices.some((d) => devices.some((x) => x.path === d.path));
+        const own = drv.paths ?? [];
+        const stillThere = own.length ? own.every((p) => devices.some((x) => x.path === p)) : !!g;
         if (!stillThere) {
           await drv.close();
           this.drivers.delete(key);
@@ -126,6 +128,7 @@ export class DeviceManager extends EventEmitter {
       }
 
       // Attach drivers for new groups (one driver per model; USB preferred over the dongle).
+      let retryLater = false;
       for (const [modelId, g] of groups) {
         const existing = [...this.drivers.values()].find((d) => d.model.id === modelId);
         const gsig = modelId + ':' + g.devices.map((d) => d.path).sort().join('|');
@@ -137,10 +140,12 @@ export class DeviceManager extends EventEmitter {
           this.drivers.delete(existing.key);
           this.statuses.delete(existing.key);
         }
-        const lastFail = this.failedSignatures.get(gsig) ?? 0;
-        if (!force && Date.now() - lastFail < 15000) continue;
-        const drv = await this.attach(g.model, g.devices);
-        if (!drv) { this.failedSignatures.set(gsig, Date.now()); continue; }
+        const lastFail = this.failedSignatures.get(gsig);
+        const wait = lastFail ? Math.min(15000, 3000 * 2 ** (lastFail.count - 1)) : 0;
+        if (!force && lastFail && Date.now() - lastFail.at < wait) { retryLater = true; continue; }
+        // retry after 3, 6, 12, then every 15 s (a keyboard moved to the dongle needs a moment to pair)
+        const drv = await this.attach(g.model, g.devices, lastFail !== undefined);
+        if (!drv) { this.failedSignatures.set(gsig, { at: Date.now(), count: (lastFail?.count ?? 0) + 1 }); retryLater = true; continue; }
         this.failedSignatures.delete(gsig);
         this.drivers.set(drv.key, drv);
         this.statuses.set(drv.key, { key: drv.key, modelId: drv.model.id, link: drv.link, productName: drv.productName, battery: null, charging: false });
@@ -148,6 +153,7 @@ export class DeviceManager extends EventEmitter {
         this.emit('attached', drv.key);
         void this.refresh(drv.key);
       }
+      if (retryLater) this.lastSignature = ''; // force a rescan
     } catch (e) {
       this.addLog('!', `scan failed: ${(e as Error).message}`);
     } finally {
@@ -155,9 +161,10 @@ export class DeviceManager extends EventEmitter {
     }
   }
 
-  private attach(model: DeviceModel, devices: Device[]): Promise<Driver | null> {
+  private async attach(model: DeviceModel, devices: Device[], quiet = false): Promise<Driver | null> {
+    let attaching = true;
     const ctx = {
-      log: (dir: LogEntry['dir'], text: string) => this.addLog(dir, text, model.id),
+      log: (dir: LogEntry['dir'], text: string) => { if (!(quiet && attaching && dir === '!')) this.addLog(dir, text, model.id); },
       onStatus: () => void this.refresh(`${model.id}:usb`, `${model.id}:2.4g`),
       onEvent: (e: DriverEvent) => this.emit('hw-event', { ...e, modelId: model.id }),
       onLiveLight: (colors: Record<number, [number, number, number]>) => this.emit('live-light', { modelId: model.id, colors, t: Date.now() }),
@@ -165,11 +172,15 @@ export class DeviceManager extends EventEmitter {
       watchPaused: () => this.watchPaused(),
       onProgress: (task: 'screen', done: number, total: number) => this.emit('progress', { modelId: model.id, task, done, total }),
     };
-    switch (model.protocol) {
-      case 'aula04': return Aula04Driver.attach(model, devices, ctx);
-      case 'incott': return IncottDriver.attach(model, devices, ctx);
-      case 'g5kb': return G5kbDriver.attach(model, devices, ctx);
-      default: return Promise.resolve(null);
+    try {
+      switch (model.protocol) {
+        case 'aula04': return await Aula04Driver.attach(model, devices, ctx);
+        case 'incott': return await IncottDriver.attach(model, devices, ctx);
+        case 'g5kb': return await G5kbDriver.attach(model, devices, ctx);
+        default: return null;
+      }
+    } finally {
+      attaching = false;
     }
   }
 
@@ -179,10 +190,12 @@ export class DeviceManager extends EventEmitter {
       if (!d) continue;
       try {
         const s = await d.status();
+        // unplugged while reading
+        if (this.drivers.get(key) !== d) continue;
         this.statuses.set(key, s);
         this.emitDevices();
       } catch (e) {
-        this.addLog('!', `status: ${(e as Error).message}`, key);
+        if (this.drivers.get(key) === d) this.addLog('!', `status: ${(e as Error).message}`, key);
       }
     }
   }

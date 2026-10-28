@@ -19,6 +19,7 @@ export class G5kbDriver implements Driver {
   }
 
   get productName(): string { return this.port.info.product ?? this.model.name; }
+  get paths(): string[] { return [this.port.path]; }
   private get effects(): Effects { return (this.model.lightModes ?? []) as unknown as Effects; }
   private get keys(): (KeyDef & { def: number[] })[] { return (this.model.layout ?? []) as (KeyDef & { def: number[] })[]; }
 

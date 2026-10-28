@@ -7,6 +7,8 @@ export interface Driver {
   readonly link: Link;
   readonly key: string;
   readonly productName: string;
+  /** HID paths in use; the driver is dropped when one of them disappears. */
+  readonly paths?: string[];
   /** Live status including battery and any read-back values. */
   status(): Promise<DeviceStatus>;
   /** Generic dispatcher so IPC can reach driver methods by name. */

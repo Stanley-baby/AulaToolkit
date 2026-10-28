@@ -36,6 +36,7 @@ export class Aula04Driver implements Driver {
   }
 
   get productName(): string { return (this.ports.main ?? this.ports.dongle)?.info.product ?? this.model.name; }
+  get paths(): string[] { return [this.port.path]; }
 
   /** Finds the configuration collections among `devices` (all collections of the matching USB ids). */
   static async attach(model: DeviceModel, devices: Device[], ctx: DriverContext): Promise<Aula04Driver | null> {

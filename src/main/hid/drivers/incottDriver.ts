@@ -91,7 +91,8 @@ export class IncottDriver implements Driver {
     return fn.apply(this, args);
   }
 
-  async close(): Promise<void> { this.unsubInput?.(); await this.port.close(); }
+  private closed = false;
+  async close(): Promise<void> { this.closed = true; this.unsubInput?.(); await this.port.close(); }
 
   // ---- transport ----
   private async read(): Promise<Uint8Array | null> {
@@ -101,6 +102,7 @@ export class IncottDriver implements Driver {
   /** Sends a request and waits for a frame whose command (and sub) echo it. */
   private exchange(frame: Uint8Array, cmd: number, sub: number | null, axis: number | null = null): Promise<Uint8Array | null> {
     return this.port.exclusive(async () => {
+      if (this.closed) return null; // unplugged
       try {
         await this.read(); // discard the latched frame
         this.ctx.log('→', hex(frame));
