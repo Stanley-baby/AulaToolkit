@@ -65,6 +65,7 @@ export const zh: UiDict = {
   uploading: '正在上传到屏幕', uploadDone: '已上传', library: '素材库', libraryHint: '用于屏幕和按键的图片与 GIF。', libraryAdd: '添加图片或 GIF', libraryEmpty: '还没有内容。添加一张图片或动态 GIF。', libraryRemove: '从素材库移除', needsCable: '此功能需要用 USB 线连接键盘。当前通过无线接收器连接。',
   musicEffect: '播放音乐时', musicEffectHint: '播放音乐或视频时，让键盘灯光随之变化。', musicRhythm: '音乐律动', musicRhythmHint: '按键上随声音跳动的光柱。', musicKeyEffect: '键盘灯效', musicFallback: '无线连接时的灯效', rhythmColors: '颜色', amplitude: '幅度', background: '背景', backgroundBrightness: '背景亮度', schemeTraffic: '绿 / 黄 / 红', schemeRainbow: '彩虹', schemeRainbowRev: '反向彩虹', schemeGradient: '渐变', schemeCycle: '光谱循环', schemeAmbient: '环境光', audioUnavailable: '无法获取系统声音，音乐律动无法随声音变化。', keyAnim: '按键动画', keyAnimHint: '在按键上播放素材库中的图片或 GIF。', keyAnimActive: '按键动画播放中。',
   batteryInUse: '使用中每 1%', batteryChargeTime: '充满时间', batteryCharging: '充电中', batteryAgo: '{t}前', batteryCollecting: '正在收集数据', batteryNotSeen: '尚未记录', batteryWatched: '已记录 {d}', batteryPacks: '电池', batteryPack: '电池 {n}', batteryInUse2: '使用中', batteryAdd: '添加电池', batteryPacksHint: '更换电池时选择当前装入的电池；每块电池的数据分开记录。', batteryNoFastCharge: '请勿使用快充充电',
+  batteryCare: '电池养护', batteryCareHint: '充电达到 80% 时提醒您拔下设备。', batteryCareTitle: '{name} 已充至 {pct}%', batteryCareBody: '请断开充电，以延长电池寿命。',
 };
 
 export const names: Record<string, string> = {

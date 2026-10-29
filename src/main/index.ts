@@ -100,6 +100,34 @@ function checkBattery(statuses: DeviceStatus[]): void {
   }
   for (const k of [...batteryAlerted.keys()]) if (!statuses.some((s) => s.key === k)) batteryAlerted.delete(k);
 }
+// battery care: remind to unplug at 80% (once per charge, and only if it was below 80 before)
+const CARE_PCT = 80;
+const careBelow = new Set<string>();
+const careReminded = new Set<string>();
+function checkBatteryCare(): void {
+  if (!prefs?.batteryStats || prefs.batteryCare === false) return;
+  const statuses = manager.getStatuses();
+  for (const m of MODELS) {
+    if (!m.features.battery) continue;
+    const lv = battery.stats(m.id, statuses.find((s) => s.modelId === m.id)).level;
+    if (!lv?.live || !lv.charging) { careBelow.delete(m.id); careReminded.delete(m.id); continue; }
+    const pct = lv.pct ?? (lv.full ? 100 : null);
+    if (pct === null) continue;
+    if (pct < CARE_PCT) { careBelow.add(m.id); continue; }
+    if (!careBelow.has(m.id) || careReminded.has(m.id)) continue;
+    careReminded.add(m.id);
+    const name = loadDeviceSettings(m.id).nickname || m.name;
+    const shown = prefs.language === 'tr' ? `%${pct}` : `${pct}%`;
+    const title = tx('batteryCareTitle').replace('{name}', name).replace('{pct}', String(pct));
+    const body = tx('batteryCareBody');
+    if (Notification.isSupported()) {
+      const n = new Notification({ title, body, icon: iconPath() });
+      n.on('click', () => { win?.show(); win?.focus(); });
+      n.show();
+    }
+    showOsd({ device: name, kind: 'battery', value: shown, note: body });
+  }
+}
 let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let flyout: BrowserWindow | null = null;
@@ -334,7 +362,10 @@ function registerIpc(): void {
     return { name: p, dataUrl: `data:${mime};base64,${readFileSync(p).toString('base64')}` };
   });
 
-  manager.on('devices', (d: DeviceStatus[]) => { win?.webContents.send(CH.DEVICES_EVENT, d); checkBattery(d); battery.record(d); });
+  manager.on('devices', (d: DeviceStatus[]) => { win?.webContents.send(CH.DEVICES_EVENT, d); checkBattery(d); battery.record(d); scheduleCare(); });
+  let careTimer: NodeJS.Timeout | null = null;
+  const scheduleCare = (): void => { if (!careTimer) careTimer = setTimeout(() => { careTimer = null; checkBatteryCare(); }, 2000); };
+  setInterval(checkBatteryCare, 30e3);
   manager.on('attached', () => void applyVendorBlock());
   // Bluetooth state comes from Windows, poll it every minute
   const pollBluetooth = (): void => {

@@ -89,6 +89,8 @@ export interface AppPrefs {
   autoDownload: boolean;
   /** Opt-in battery history and estimates (cycles, drain, health). */
   batteryStats: boolean;
+  /** Remind to unplug at 80 % (needs batteryStats). */
+  batteryCare?: boolean;
   /** On-screen display for changes made on the hardware (mouse DPI button) or from the CLI. */
   osd: boolean;
   /** Keep the OSD above full-screen apps and games. */
@@ -116,7 +118,7 @@ export interface UpdateState {
   checkedAt?: number;
 }
 
-export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal' };
+export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, batteryCare: true, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal' };
 
 export interface AulaApi {
   getDevices(): Promise<DeviceStatus[]>;
@@ -213,7 +215,7 @@ export interface LiveLight { modelId: string; colors: Record<number, [number, nu
 /** What the OSD shows: a device, a headline value and optionally a stage strip. */
 export interface OsdPayload {
   device: string;
-  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect' | 'upload';
+  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect' | 'battery' | 'upload';
   value: string;
   /** Translation key shown instead of `value` (the OSD window translates it). */
   valueKey?: string;

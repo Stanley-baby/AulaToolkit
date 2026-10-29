@@ -61,7 +61,8 @@ export const AppSettings = () => {
         <Toggle label={t('minimizeToTray')} hint={t('minimizeToTrayHint')} on={prefs.minimizeToTrayOnMinimize} onChange={(v) => void setPrefs({ minimizeToTrayOnMinimize: v })} />
         <Toggle label={t('minimizeTray')} hint={t('minimizeTrayHint')} on={prefs.minimizeToTray} onChange={(v) => void setPrefs({ minimizeToTray: v })} />
         <Toggle label={t('batteryAlerts')} hint={t('batteryAlertsHint')} on={prefs.batteryAlerts} onChange={(v) => void setPrefs({ batteryAlerts: v })} />
-        <Toggle label={t('batteryStatsOpt')} hint={t('batteryStatsHint')} on={prefs.batteryStats} onChange={(v) => void setPrefs({ batteryStats: v })} />
+        <Toggle label={t('batteryStatsOpt')} hint={t('batteryStatsHint')} on={prefs.batteryStats} onChange={(v) => void setPrefs({ batteryStats: v, ...(v ? { batteryCare: true } : {}) })} />
+        {prefs.batteryStats && <Toggle label={t('batteryCare')} hint={t('batteryCareHint')} on={prefs.batteryCare !== false} onChange={(v) => void setPrefs({ batteryCare: v })} />}
         {prefs.batteryAlerts && <Select label={t('batteryThreshold')} value={prefs.batteryThreshold} options={[10, 15, 20, 25, 30].map((v) => ({ value: v, label: prefs.language === 'tr' ? `%${v}` : `${v}%` }))} onChange={(v) => void setPrefs({ batteryThreshold: v })} />}
       </Card>
       <div className="flex flex-col gap-2">
