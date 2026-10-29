@@ -100,14 +100,14 @@ AULA Toolkit works best when it runs in the tray. In **Settings → General**:
 3. In **Settings → Software control**, turn on **Disable official AULA software** so the AULA drivers do not fight AULA Toolkit over the same device.
 
 > [!WARNING]
-> If you close AULA Toolkit completely, features that need it running stop: the on-screen display, battery notifications, the tray summary and the `aula` command. Settings already written to your devices keep working.
+> If you close AULA Toolkit completely, features that need it running stop: the on-screen display, battery notifications, the tray summary, the music rhythm and animations on the keys, and the `aula` command. Settings already written to your devices keep working.
 
 ## Compatibility
 
 | Device | Connection | Status |
 |---|---|---|
-| **AULA S75 Pro** | USB, 2.4 GHz receiver | ✅ Tested on hardware |
-| **AULA SC900 Pro** | USB, 2.4 GHz receiver | ✅ Tested on hardware |
+| **AULA S75 Pro** | USB, 2.4 GHz receiver, Bluetooth (status and battery) | ✅ Tested on hardware |
+| **AULA SC900 Pro** | USB, 2.4 GHz receiver, Bluetooth (status and battery) | ✅ Tested on hardware |
 | **AULA SC900** (other versions that use the SC900 Pro driver) | USB, 2.4 GHz receiver | ⚠️ Recognised, not yet tested on hardware |
 | **AULA F75** | USB | ⚠️ Recognised, not yet tested on hardware |
 
@@ -121,10 +121,12 @@ Your AULA device is not on the list? It may still use one of the protocols above
 |---|:---:|:---:|:---:|:---:|
 | Lighting effects | ✅ | ✅ | — | ✅ |
 | Per-key lighting | ✅ | ✅ | — | — |
+| Music rhythm and animation on the keys (streamed from the PC) | ✅ | — | — | — |
+| Lights off while the monitor is off | ✅ | ✅ | — | — |
 | Live keyboard view, knob / Fn changes followed | ✅ | — | — | — |
 | Key mapping, Fn layer, macros | ✅ | ✅ | — | ✅ |
 | Keyboard settings (Win lock, sleep, debounce) | ✅ | ✅ | — | ✅ |
-| TFT screen and clock | ✅ | Clock only | — | — |
+| TFT screen and clock (synced on connect) | ✅ | Clock only | — | — |
 | Side light bar | ✅ | ✅ | — | — |
 | DPI, polling rate, sensor, buttons, macros | — | — | ✅ | — |
 | Battery level | — | ✅ | ✅ | — |
@@ -132,11 +134,11 @@ Your AULA device is not on the list? It may still use one of the protocols above
 | On-screen display for changes made on the device | ✅ | — | ✅ (DPI button) | — |
 
 > [!NOTE]
-> Devices can only be configured over **USB** or the **2.4 GHz receiver**. Over Bluetooth the device does not expose its configuration interface — the official AULA software has the same limitation. Settings you saved earlier keep working over Bluetooth.
+> Devices can only be configured over **USB** or the **2.4 GHz receiver**. Over Bluetooth the device does not expose its configuration interface — the official AULA software has the same limitation. Settings you saved earlier keep working over Bluetooth, and AULA Toolkit still shows the device as connected there, with the battery level Windows reports.
 
 ### AULA's software
 
-Running the official AULA driver and AULA Toolkit at the same time makes both talk to the same device, which can undo changes or cause read errors. AULA Toolkit shows a thin warning band at the top of the window when it detects an official AULA program, and **Settings → Software control** can close them and stop them from starting with Windows. Nothing is uninstalled, and turning the option off restores their autostart entries.
+Running the official AULA driver and AULA Toolkit at the same time makes both talk to the same device, which can undo changes or cause read errors. AULA Toolkit shows a warning band at the bottom of the window when it detects an official AULA program. **Settings → Software control → Disable official AULA software** keeps them from starting at all: they stay installed, but their programs are disabled (Windows asks once for administrator approval) and their autostart entries are parked. Turning the option off makes them usable again, and uninstalling AULA Toolkit restores them too.
 
 ## Features
 
@@ -146,8 +148,11 @@ The app allows you to:
 - Never overwrite what is already on a device by itself: the mouse's settings are read back when it connects, and on the S75 Pro the effect, colour and brightness you change with the knob or Fn keys are picked up live and saved to your profile.
 - Keep several **profiles** per device and export or import them as files.
 - See a live **on-screen display** when you press the DPI button on the mouse or run a command.
+- Play **music rhythm** bars and **animations (GIF)** on the keys of the S75 Pro, streamed from the PC.
+- Turn the keyboard lighting **off while the monitor is off**, and back on when it wakes.
+- Restart the app from anywhere with **Ctrl + Alt + Shift + A** when something gets stuck.
 - Get a detailed **tray summary** of every connected device by hovering the tray icon.
-- Receive **low-battery notifications** and, if you like, view **battery statistics**.
+- Receive **low-battery notifications**, a **battery care** reminder at 80 % while charging and, if you like, view **battery statistics**.
 - Disable the official AULA software without uninstalling it.
 - Control devices from the **command line** with `aula`.
 - Use it in **10 languages**: English, Türkçe, Русский, 简体中文, Українська, Tiếng Việt, Português (Brasil), Español, Deutsch and Français.
@@ -158,9 +163,12 @@ The app allows you to:
 * **Lighting** — every hardware effect with colour, brightness, speed and direction, plus a preview drawn on a photo of your keyboard.
 * **Live view** (S75 Pro, USB) — the keyboard picture shows what the LEDs show right now. When you change the effect with the knob or the Fn keys, the app recognises it within a few seconds, selects it and shows it on screen. The keyboard does not report its effect, so this works from the LED colours: effects that stay dark until you press a key look the same while idle, and very quick turns can skip an effect in between.
 * **Per-key lighting** (S75 Pro) — paint keys one by one or fill the whole board.
+* **While music plays** — bars on the keys follow the sound playing on the PC (12 colour schemes, amplitude and background, as in the official driver), or the keyboard switches to an effect you pick. The bars need the USB cable; on the receiver the effect is used.
+* **Animation on the keys** (S75 Pro, USB) — plays a picture or GIF from your library on the keys, at about 20 frames a second.
+* **Display off** (S75 Pro) — the keys and the side bar go dark while the monitor is off.
 * **Key mapping** — remap keys on the base layer and the Fn layer to keys, mouse buttons, media keys, shortcuts or macros.
 * **Macros** — record keystrokes with real timing and edit them afterwards.
-* **TFT screen** (S75 Pro, USB) — upload a picture or an animated GIF, and sync the clock.
+* **TFT screen** (S75 Pro, USB) — upload a picture or an animated GIF from your library. Drag the preview to choose the visible part; long GIFs are fitted to the screen's 141 frames without changing their pace. The clock is synced every time the keyboard connects.
 * **Configuration** — lock the Windows key, Alt+F4 and Alt+Tab, set sleep time and key response time.
 * **Reset** — restore the keyboard's defaults or do a full factory reset.
 
@@ -171,11 +179,11 @@ The app allows you to:
 * **Sensor** — lift-off distance, motion sync, angle snapping, ripple control and sensor mode.
 * **Buttons** — remap any button except left click, including rapid fire and macros.
 * **Timing** — click debounce and sleep time.
-* **Battery** — level and charging state.
+* **Battery** — level and charging state. The SC900 Pro's two batteries (and any extra ones you add) are tracked separately.
 
 ### On-screen display
 
-When you change the DPI with the mouse's own button, a small indicator appears on the screen with the new value and the active stage. On the S75 Pro (USB) it also shows the new effect, colour or brightness when you change them on the keyboard, and it confirms changes made with the `aula` command. In **Settings → Notifications** you can turn it off, choose its position and duration, keep it above full-screen games, or show it on every display.
+When you change the DPI with the mouse's own button, a small indicator appears on the screen with the new value and the active stage. On the S75 Pro (USB) it also shows the new effect, colour or brightness when you change them on the keyboard, and it confirms changes made with the `aula` command. Screen uploads, the 80 % reminder and restarts show up there too. In **Settings → Notifications** you can turn it off, choose its position and duration, keep it above full-screen games, or show it on every display.
 
 ### Backups
 
@@ -183,10 +191,21 @@ When you change the DPI with the mouse's own button, a small indicator appears o
 
 ### Battery statistics
 
-Turn on **Settings → General → Battery statistics** to see a battery card in each device's overview: equivalent charge cycles, daily drain, estimated time left, estimated health and a chart of the battery level over time.
+Turn on **Settings → General → Battery statistics** to see a battery card in each device's overview:
+
+* **Level** — the current level, or the last one with how long ago it was read. On the cable without a reading, an estimate and then 99+.
+* **1 % in use** — how long 1 % lasts while the device is in use on the receiver.
+* **Daily drain** and **time left** — over calendar time, including the hours it sleeps or the app is closed.
+* **Full charge** and **health** — from how fast the battery charges in the middle of its range.
+* **Equivalent cycles**, **last full charge** and a chart of the level over time.
+
+Figures are shown with a range, once enough has been recorded. Levels are recorded over USB, the 2.4 GHz receiver and Bluetooth (read from Windows). **Battery care**, on by default with the statistics, reminds you at 80 % while charging to unplug the device.
 
 > [!NOTE]
-> AULA devices only report their battery percentage. Cycles, drain and health are **estimates** calculated from the levels AULA Toolkit records while it runs.
+> AULA devices only report their battery percentage. Every figure above is an **estimate** calculated from the levels AULA Toolkit records.
+
+> [!WARNING]
+> Don't use a fast charger, the boxes say so too.
 
 ### CLI
 
@@ -245,15 +264,15 @@ The interface is available in 10 languages. Not all translations have been revie
 
 #### Why can't I change settings over Bluetooth?
 
-Over Bluetooth the keyboard and mouse only appear to Windows as a standard keyboard and mouse. The configuration interface that USB and the 2.4 GHz receiver provide does not exist there, so neither AULA Toolkit nor the official software can change settings. Connect with the cable or the receiver, make your changes, and switch back to Bluetooth — the settings stay on the device.
+Over Bluetooth the keyboard and mouse only appear to Windows as a standard keyboard and mouse. The configuration interface that USB and the 2.4 GHz receiver provide does not exist there, so neither AULA Toolkit nor the official software can change settings. Connect with the cable or the receiver, make your changes, and switch back to Bluetooth — the settings stay on the device. Over Bluetooth AULA Toolkit shows the connection and the battery level that Windows reports.
 
 #### Why doesn't my keyboard show a battery level?
 
-The S75 Pro only reports its battery level over the 2.4 GHz receiver. Over USB it is charging and the firmware does not report a level.
+The S75 Pro reports its battery level over the 2.4 GHz receiver, and Windows reports it over Bluetooth. Over USB it is charging and the firmware reports no level: AULA Toolkit shows an estimate from the measured charge speed, then 99+.
 
 #### Why are battery cycles and health only estimates?
 
-AULA devices have no battery chip that counts cycles or measures wear. They only report a percentage, so AULA Toolkit estimates everything else from the levels it records while running.
+AULA devices have no battery chip that counts cycles or measures wear. They only report a percentage, so AULA Toolkit estimates everything else from when that percentage changes. Health comes from how fast the battery charges, so it needs several charges over a month or more.
 
 #### Can AULA Toolkit read the picture on the S75 Pro screen or the firmware version?
 

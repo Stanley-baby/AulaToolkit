@@ -100,14 +100,14 @@ AULA Toolkit en iyi sistem tepsisinde çalışırken verim verir. **Ayarlar → 
 3. **Ayarlar → Yazılım kontrolü** bölümünde **Resmi AULA yazılımını devre dışı bırak** seçeneğini aç; böylece AULA sürücüleri aynı cihaz için AULA Toolkit ile çakışmaz.
 
 > [!WARNING]
-> AULA Toolkit'i tamamen kapatırsan çalışmasına ihtiyaç duyan özellikler durur: ekran göstergesi, düşük pil bildirimleri, sistem tepsisi özeti ve `aula` komutu. Cihazlarına daha önce yazılmış ayarlar çalışmaya devam eder.
+> AULA Toolkit'i tamamen kapatırsan çalışmasına ihtiyaç duyan özellikler durur: ekran göstergesi, düşük pil bildirimleri, sistem tepsisi özeti, müzik ritmi ve tuşlardaki animasyonlar ve `aula` komutu. Cihazlarına daha önce yazılmış ayarlar çalışmaya devam eder.
 
 ## Uyumluluk
 
 | Cihaz | Bağlantı | Durum |
 |---|---|---|
-| **AULA S75 Pro** | USB, 2.4 GHz alıcı | ✅ Donanımda test edildi |
-| **AULA SC900 Pro** | USB, 2.4 GHz alıcı | ✅ Donanımda test edildi |
+| **AULA S75 Pro** | USB, 2.4 GHz alıcı, Bluetooth (durum ve pil) | ✅ Donanımda test edildi |
+| **AULA SC900 Pro** | USB, 2.4 GHz alıcı, Bluetooth (durum ve pil) | ✅ Donanımda test edildi |
 | **AULA SC900** (SC900 Pro sürücüsünü kullanan diğer sürümler) | USB, 2.4 GHz alıcı | ⚠️ Tanınıyor, henüz donanımda test edilmedi |
 | **AULA F75** | USB | ⚠️ Tanınıyor, henüz donanımda test edilmedi |
 
@@ -121,10 +121,12 @@ AULA cihazın listede yok mu? Yine de yukarıdaki protokollerden birini kullanı
 |---|:---:|:---:|:---:|:---:|
 | Işık efektleri | ✅ | ✅ | — | ✅ |
 | Tuş bazlı aydınlatma | ✅ | ✅ | — | — |
+| Müzik ritmi ve tuşlarda animasyon (bilgisayardan gönderilir) | ✅ | — | — | — |
+| Ekran kapanınca ışıkları kapatma | ✅ | ✅ | — | — |
 | Canlı klavye görünümü, düğme / Fn değişikliklerinin takibi | ✅ | — | — | — |
 | Tuş atama, Fn katmanı, makrolar | ✅ | ✅ | — | ✅ |
 | Klavye ayarları (Win kilidi, uyku, tuş tepki süresi) | ✅ | ✅ | — | ✅ |
-| TFT ekran ve saat | ✅ | Yalnızca saat | — | — |
+| TFT ekran ve saat (bağlanınca eşitlenir) | ✅ | Yalnızca saat | — | — |
 | Yan ışık çubuğu | ✅ | ✅ | — | — |
 | DPI, yoklama hızı, sensör, tuşlar, makrolar | — | — | ✅ | — |
 | Pil seviyesi | — | ✅ | ✅ | — |
@@ -132,11 +134,11 @@ AULA cihazın listede yok mu? Yine de yukarıdaki protokollerden birini kullanı
 | Cihazda yapılan değişiklikler için ekran göstergesi | ✅ | — | ✅ (DPI tuşu) | — |
 
 > [!NOTE]
-> Cihazlar yalnızca **USB** veya **2.4 GHz alıcı** üzerinden yapılandırılabilir. Bluetooth'ta cihaz yapılandırma arayüzünü açmaz; resmi AULA yazılımında da aynı kısıtlama vardır. Daha önce kaydettiğin ayarlar Bluetooth'ta da çalışmaya devam eder.
+> Cihazlar yalnızca **USB** veya **2.4 GHz alıcı** üzerinden yapılandırılabilir. Bluetooth'ta cihaz yapılandırma arayüzünü açmaz; resmi AULA yazılımında da aynı kısıtlama vardır. Daha önce kaydettiğin ayarlar Bluetooth'ta da çalışmaya devam eder; AULA Toolkit de cihazı orada bağlı olarak, Windows'un bildirdiği pil seviyesiyle gösterir.
 
 ### AULA'nın yazılımı
 
-Resmi AULA sürücüsü ve AULA Toolkit aynı anda çalışırsa ikisi de aynı cihazla konuşur; bu da değişikliklerin geri alınmasına veya okuma hatalarına yol açabilir. AULA Toolkit, resmi bir AULA programı algıladığında pencerenin üstünde ince bir uyarı şeridi gösterir. **Ayarlar → Yazılım kontrolü** bölümünden bu programları kapatabilir ve Windows ile başlamalarını engelleyebilirsin. Hiçbir şey kaldırılmaz; seçeneği kapattığında otomatik başlatma kayıtları geri gelir.
+Resmi AULA sürücüsü ve AULA Toolkit aynı anda çalışırsa ikisi de aynı cihazla konuşur; bu da değişikliklerin geri alınmasına veya okuma hatalarına yol açabilir. AULA Toolkit, resmi bir AULA programı algıladığında pencerenin altında bir uyarı şeridi gösterir. **Ayarlar → Yazılım kontrolü → Resmi AULA yazılımını devre dışı bırak** bu programların açılmasını tamamen engeller: kurulu kalırlar ama programları devre dışı bırakılır (Windows bir kez yönetici onayı ister) ve otomatik başlatma kayıtları kapatılır. Seçeneği kapattığında yeniden kullanılabilir hâle gelirler; AULA Toolkit'i kaldırdığında da geri gelirler.
 
 ## Özellikler
 
@@ -146,8 +148,11 @@ Uygulama ile şunları yapabilirsin:
 - Cihazda zaten kayıtlı olanın üzerine kendiliğinden yazmamak: farenin ayarları bağlandığında cihazdan okunur; S75 Pro'da düğmeyle veya Fn tuşlarıyla değiştirdiğin efekt, renk ve parlaklık canlı olarak algılanıp profiline kaydedilir.
 - Her cihaz için birden fazla **profil** tutmak, bunları dosya olarak dışa ve içe aktarmak.
 - Faredeki DPI tuşuna bastığında veya bir komut çalıştırdığında canlı **ekran göstergesi** görmek.
+- S75 Pro'nun tuşlarında bilgisayardan gönderilen **müzik ritmi** barları ve **animasyonlar (GIF)** oynatmak.
+- Klavye ışıklarını **monitör kapalıyken kapatmak**, ekran açılınca geri getirmek.
+- Bir şey takıldığında uygulamayı her yerden **Ctrl + Alt + Shift + A** ile yeniden başlatmak.
 - Sistem tepsisi simgesinin üzerine gelerek bağlı tüm cihazların ayrıntılı **tepsi özetini** görmek.
-- **Düşük pil bildirimleri** almak ve istersen **pil istatistiklerini** görmek.
+- **Düşük pil bildirimleri**, şarj olurken %80'de **pil bakımı** hatırlatması almak ve istersen **pil istatistiklerini** görmek.
 - Resmi AULA yazılımını kaldırmadan devre dışı bırakmak.
 - Cihazları `aula` ile **komut satırından** yönetmek.
 - Uygulamayı **10 dilde** kullanmak: English, Türkçe, Русский, 简体中文, Українська, Tiếng Việt, Português (Brasil), Español, Deutsch ve Français.
@@ -158,9 +163,12 @@ Uygulama ile şunları yapabilirsin:
 * **Aydınlatma** — renk, parlaklık, hız ve yön ayarlarıyla tüm donanım efektleri; klavyenin fotoğrafı üzerinde önizleme.
 * **Canlı görünüm** (S75 Pro, USB) — klavye resmi ışıkların o anki halini gösterir. Efekti düğmeyle veya Fn tuşlarıyla değiştirdiğinde uygulama birkaç saniye içinde tanır, seçer ve ekranda gösterir. Klavye hangi efektte olduğunu bildirmediği için bu, ışık renklerinden çıkarılır: tuşa basılana kadar karanlık kalan efektler boştayken birbirinin aynısı görünür ve düğme çok hızlı çevrilirse aradaki bir efekt atlanabilir.
 * **Tuş bazlı aydınlatma** (S75 Pro) — tuşları tek tek boya ya da tüm klavyeyi doldur.
+* **Müzik çalarken** — tuşlardaki barlar bilgisayarda çalan sese göre hareket eder (resmi sürücüdeki gibi 12 renk şeması, genlik ve arka plan) ya da klavye seçtiğin bir efekte geçer. Barlar USB kablosu ister; alıcıyla bağlıyken efekt kullanılır.
+* **Tuşlarda animasyon** (S75 Pro, USB) — kütüphanendeki bir resmi veya GIF'i tuşlarda saniyede yaklaşık 20 kareyle oynatır.
+* **Ekran kapanınca** (S75 Pro) — monitör kapalıyken tuşlar ve yan ışık çubuğu söner.
 * **Tuş atama** — ana katmandaki ve Fn katmanındaki tuşları başka tuşlara, fare tuşlarına, medya tuşlarına, kısayollara veya makrolara ata.
 * **Makrolar** — tuş vuruşlarını gerçek zamanlamasıyla kaydet ve sonradan düzenle.
-* **TFT ekran** (S75 Pro, USB) — bir resim veya hareketli GIF yükle, saati eşitle.
+* **TFT ekran** (S75 Pro, USB) — kütüphanenden bir resim veya hareketli GIF yükle. Görünecek kısmı önizlemeyi sürükleyerek seç; uzun GIF'ler hızı değişmeden ekranın 141 karesine sığdırılır. Saat, klavye her bağlandığında eşitlenir.
 * **Konfigürasyon** — Windows tuşunu, Alt+F4 ve Alt+Tab kısayollarını kilitle; uyku süresini ve tuş tepki süresini ayarla.
 * **Sıfırlama** — klavyenin varsayılan ayarlarına dön ya da tam fabrika sıfırlaması yap.
 
@@ -171,11 +179,11 @@ Uygulama ile şunları yapabilirsin:
 * **Sensör** — kaldırma mesafesi, motion sync, açı düzeltme, ripple kontrolü ve sensör modu.
 * **Tuşlar** — sol tık hariç tüm tuşları yeniden ata; hızlı ateş ve makrolar dahil.
 * **Zamanlama** — tık gecikmesi ve uyku süresi.
-* **Pil** — seviye ve şarj durumu.
+* **Pil** — seviye ve şarj durumu. SC900 Pro'nun iki pili (ve eklediğin yedek piller) ayrı ayrı takip edilir.
 
 ### Ekran göstergesi
 
-Farenin kendi tuşuyla DPI'ı değiştirdiğinde ekranda yeni değeri ve aktif kademeyi gösteren küçük bir gösterge belirir. S75 Pro'da (USB) klavyeden değiştirdiğin efekti, rengi veya parlaklığı da gösterir; `aula` komutuyla yapılan değişiklikleri de bu şekilde onaylar. **Ayarlar → Bildirimler** bölümünden kapatabilir, konumunu ve süresini seçebilir, tam ekran oyunların üzerinde ya da tüm ekranlarda gösterilmesini sağlayabilirsin.
+Farenin kendi tuşuyla DPI'ı değiştirdiğinde ekranda yeni değeri ve aktif kademeyi gösteren küçük bir gösterge belirir. S75 Pro'da (USB) klavyeden değiştirdiğin efekti, rengi veya parlaklığı da gösterir; `aula` komutuyla yapılan değişiklikleri de bu şekilde onaylar. Ekrana yükleme, %80 hatırlatması ve yeniden başlatma da orada çıkar. **Ayarlar → Bildirimler** bölümünden kapatabilir, konumunu ve süresini seçebilir, tam ekran oyunların üzerinde ya da tüm ekranlarda gösterilmesini sağlayabilirsin.
 
 ### Yedekleme
 
@@ -183,10 +191,21 @@ Farenin kendi tuşuyla DPI'ı değiştirdiğinde ekranda yeni değeri ve aktif k
 
 ### Pil istatistikleri
 
-Her cihazın genel bakış sayfasında bir pil kartı görmek için **Ayarlar → Genel → Pil istatistikleri (tahmini)** seçeneğini aç. Kartta eşdeğer şarj döngüsü, günlük tüketim, tahmini kalan süre, tahmini pil sağlığı ve zamana göre pil seviyesi grafiği yer alır.
+Her cihazın genel bakış sayfasında bir pil kartı görmek için **Ayarlar → Genel → Pil istatistikleri (tahmini)** seçeneğini aç:
+
+* **Seviye** — şu anki seviye ya da son okunan seviye ve ne kadar önce okunduğu. Kabloda okuma yoksa önce tahmin, sonra %99+.
+* **Kullanımda %1** — cihaz alıcıyla kullanılırken %1'in ne kadar sürdüğü.
+* **Günlük tüketim** ve **tahmini kalan** — uyku ve uygulamanın kapalı olduğu saatler dahil, takvim süresine göre.
+* **Tam şarj süresi** ve **pil sağlığı** — pilin orta bölgede ne kadar hızlı dolduğundan.
+* **Eşdeğer döngü**, **son tam şarj** ve zamana göre seviye grafiği.
+
+Değerler bir aralıkla ve yeterli kayıt biriktikten sonra gösterilir. Seviyeler USB, 2.4 GHz alıcı ve Bluetooth (Windows'tan) üzerinden kaydedilir. İstatistiklerle birlikte varsayılan olarak açılan **Pil bakımı**, şarj olurken %80'de cihazı şarjdan çıkarmanı hatırlatır.
 
 > [!NOTE]
-> AULA cihazları yalnızca pil yüzdesini bildirir. Döngü, tüketim ve sağlık değerleri, AULA Toolkit'in çalışırken kaydettiği seviyelerden hesaplanan **tahminlerdir**.
+> AULA cihazları yalnızca pil yüzdesini bildirir. Yukarıdaki değerlerin hepsi AULA Toolkit'in kaydettiği seviyelerden hesaplanan **tahminlerdir**.
+
+> [!WARNING]
+> Hızlı şarj cihazı kullanma, kutusunda da yazıyor.
 
 ### Komut satırı (CLI)
 
@@ -245,15 +264,15 @@ Arayüz 10 dilde kullanılabilir. Çevirilerin hepsi henüz ana dili konuşanlar
 
 #### Neden Bluetooth üzerinden ayar değiştiremiyorum?
 
-Bluetooth'ta klavye ve fare Windows'a yalnızca standart bir klavye ve fare olarak görünür. USB ve 2.4 GHz alıcının sağladığı yapılandırma arayüzü orada yoktur; bu yüzden ne AULA Toolkit ne de resmi yazılım ayar değiştirebilir. Kabloyla veya alıcıyla bağlan, değişikliklerini yap ve Bluetooth'a geri dön; ayarlar cihazda kalır.
+Bluetooth'ta klavye ve fare Windows'a yalnızca standart bir klavye ve fare olarak görünür. USB ve 2.4 GHz alıcının sağladığı yapılandırma arayüzü orada yoktur; bu yüzden ne AULA Toolkit ne de resmi yazılım ayar değiştirebilir. Kabloyla veya alıcıyla bağlan, değişikliklerini yap ve Bluetooth'a geri dön; ayarlar cihazda kalır. Bluetooth'ta AULA Toolkit bağlantıyı ve Windows'un bildirdiği pil seviyesini gösterir.
 
 #### Klavyem neden pil seviyesini göstermiyor?
 
-S75 Pro pil seviyesini yalnızca 2.4 GHz alıcı üzerinden bildirir. USB'de şarj olur ve yazılımı pil seviyesi bildirmez.
+S75 Pro pil seviyesini 2.4 GHz alıcı üzerinden bildirir; Bluetooth'ta ise Windows bildirir. USB'de şarj olur ve yazılımı seviye bildirmez: AULA Toolkit ölçülen şarj hızından bir tahmin, ardından %99+ gösterir.
 
 #### Pil döngüsü ve sağlığı neden yalnızca tahmin?
 
-AULA cihazlarında döngü sayan veya yıpranmayı ölçen bir pil yongası yoktur. Yalnızca yüzde bildirirler; bu yüzden AULA Toolkit diğer her şeyi çalışırken kaydettiği seviyelerden tahmin eder.
+AULA cihazlarında döngü sayan veya yıpranmayı ölçen bir pil yongası yoktur. Yalnızca yüzde bildirirler; bu yüzden AULA Toolkit diğer her şeyi bu yüzdenin ne zaman değiştiğinden tahmin eder. Sağlık, pilin ne kadar hızlı dolduğundan hesaplandığı için bir ay ve daha uzun süreye yayılan birkaç şarj gerektirir.
 
 #### AULA Toolkit, S75 Pro ekranındaki resmi veya cihaz yazılım sürümünü okuyabilir mi?
 
