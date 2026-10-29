@@ -1,4 +1,5 @@
 // IPC contract between the renderer and the main process.
+import type { BatteryReport } from './batteryModel';
 import type { DeviceSettingsFile, DeviceStatus, LogEntry, Profile } from './types';
 import type { LightChange } from './lightWatch';
 
@@ -101,16 +102,7 @@ export interface AppPrefs {
 export type OsdPosition = 'top-left' | 'top-center' | 'top-right' | 'center' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 export interface OsdOptions { onTop: boolean; allDisplays: boolean; position: OsdPosition; duration: AppPrefs['osdDuration'] }
 
-export interface BatteryStats {
-  samples: number;
-  since: number | null;
-  cycles: number;
-  dailyDrain: number | null;
-  remainingHours: number | null;
-  lastFull: number | null;
-  health: number | null;
-  history: { day: number; pct: number }[];
-}
+export type BatteryStats = BatteryReport;
 
 export interface VendorStatus { running: { name: string; pid: number; path: string }[]; autostart: { name: string; location: string }[] }
 
@@ -165,7 +157,7 @@ export interface AulaApi {
   updateInstall(): void;
   updateState(): Promise<UpdateState>;
   onUpdate(cb: (s: UpdateState) => void): () => void;
-  batteryStats(modelId: string): Promise<BatteryStats>;
+  batteryStats(modelId: string, pack?: string): Promise<BatteryStats>;
   batteryClear(modelId: string): Promise<void>;
   /** Changes that originated on the device itself (e.g. the DPI button). */
   onHwEvent(cb: (e: HwEvent) => void): () => void;

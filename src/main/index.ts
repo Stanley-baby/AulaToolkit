@@ -237,7 +237,10 @@ function registerIpc(): void {
   ipcMain.handle(CH.LOG_GET, () => manager.getLog());
   ipcMain.handle(CH.LOG_CLEAR, () => manager.clearLog());
   ipcMain.handle(CH.SETTINGS_LOAD, (_e, modelId: string) => loadDeviceSettings(modelId));
-  ipcMain.handle(CH.SETTINGS_SAVE, (_e, modelId: string, data: DeviceSettingsFile) => saveDeviceSettings(modelId, data));
+  ipcMain.handle(CH.SETTINGS_SAVE, (_e, modelId: string, data: DeviceSettingsFile) => {
+    battery.setInstalledPack(modelId, data?.batteries?.installed);
+    return saveDeviceSettings(modelId, data);
+  });
   ipcMain.handle(CH.APP_PREFS_LOAD, () => prefs);
   ipcMain.handle(CH.APP_PREFS_SAVE, (_e, p: AppPrefs) => {
     const blockChanged = !!p.blockVendorSoftware !== !!prefs.blockVendorSoftware;
@@ -336,6 +339,7 @@ function registerIpc(): void {
   // Bluetooth state comes from Windows, poll it every minute
   const pollBluetooth = (): void => {
     void readBluetoothBatteries().then((list) => {
+      battery.recordBluetooth(list, manager.getStatuses());
       bluetoothState = Object.fromEntries(list.map((b) => [b.modelId, { connected: b.connected, pct: b.pct }]));
       win?.webContents.send(CH.BLUETOOTH_EVENT, bluetoothState);
       if (flyout && !flyout.isDestroyed()) flyout.webContents.send(CH.BLUETOOTH_EVENT, bluetoothState);
@@ -375,7 +379,7 @@ function registerIpc(): void {
   ipcMain.handle(CH.LIBRARY_ADD, (_e, item: { name: string; dataUrl: string; thumb: string; frames: number }) => library.add(item));
   ipcMain.handle(CH.LIBRARY_GET, (_e, id: string) => library.get(id));
   ipcMain.handle(CH.LIBRARY_DELETE, (_e, id: string) => library.remove(id));
-  ipcMain.handle(CH.BATTERY_STATS, (_e, id: string) => battery.stats(id));
+  ipcMain.handle(CH.BATTERY_STATS, (_e, id: string, pack?: string) => battery.stats(id, manager.getStatuses().find((s) => s.modelId === id), pack));
   ipcMain.handle(CH.BATTERY_CLEAR, (_e, id: string) => battery.clear(id));
   manager.on('log', (e) => win?.webContents.send(CH.LOG_EVENT, e));
   const windowOnScreen = (): boolean => !!win && win.isVisible() && !win.isMinimized();

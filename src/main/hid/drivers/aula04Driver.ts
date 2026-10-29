@@ -17,6 +17,7 @@ export class Aula04Driver implements Driver {
   readonly key: string;
   readonly link: Link;
   private battery: number | null = null;
+  private batteryAt: number | null = null;
   private liveBusy = 0;
   private liveBusyLogged = 0;
   private screenBusy = false;
@@ -161,8 +162,12 @@ export class Aula04Driver implements Driver {
   }
 
   async status(): Promise<DeviceStatus> {
-    if (this.link === '2.4g') this.battery = await this.readBattery();
-    return { key: this.key, modelId: this.model.id, link: this.link, productName: this.productName, battery: this.battery, charging: false };
+    // asleep it doesn't answer, keep the last reading. no level on USB (charging)
+    if (this.link === '2.4g') {
+      const b = await this.readBattery();
+      if (b !== null) { this.battery = b; this.batteryAt = Date.now(); }
+    }
+    return { key: this.key, modelId: this.model.id, link: this.link, productName: this.productName, battery: this.battery, batteryAt: this.batteryAt, charging: this.link === 'usb' };
   }
 
   async call(method: string, args: unknown[]): Promise<unknown> {

@@ -45,7 +45,7 @@ const api: AulaApi = {
   updateDownload: () => ipcRenderer.invoke(CH.UPDATE_DOWNLOAD),
   updateInstall: () => ipcRenderer.send(CH.UPDATE_INSTALL),
   updateState: () => ipcRenderer.invoke(CH.UPDATE_STATE),
-  batteryStats: (id) => ipcRenderer.invoke(CH.BATTERY_STATS, id),
+  batteryStats: (id, pack) => ipcRenderer.invoke(CH.BATTERY_STATS, id, pack),
   batteryClear: (id) => ipcRenderer.invoke(CH.BATTERY_CLEAR, id),
   onUpdate: (cb) => {
     const h = (_e: unknown, s: UpdateState): void => cb(s);

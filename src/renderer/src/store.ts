@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { DeviceSettingsFile, DeviceStatus, KeyAnimation, LogEntry, Macro, MusicEffect, Profile } from '@shared/types';
+import type { BatteryPacks, DeviceSettingsFile, DeviceStatus, KeyAnimation, LogEntry, Macro, MusicEffect, Profile } from '@shared/types';
 import type { AppPrefs, BluetoothState } from '@shared/ipc';
 import { DEFAULT_PREFS } from '@shared/ipc';
 import { MODELS, modelById } from '@shared/models';
@@ -32,6 +32,7 @@ interface State {
   setDisplayBlackout(modelId: string, on: boolean): void;
   setMusic(modelId: string, music: MusicEffect): void;
   setKeyAnimation(modelId: string, a: KeyAnimation): void;
+  setBatteryPacks(modelId: string, p: BatteryPacks): void;
   displayName(modelId: string): string;
   init(): Promise<void>;
   select(modelId: string): void;
@@ -136,6 +137,10 @@ export const useStore = create<State>((set, get) => ({
   },
   setKeyAnimation(modelId, keyAnimation) {
     set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], keyAnimation } } }));
+    scheduleSave(modelId, get);
+  },
+  setBatteryPacks(modelId, batteries) {
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], batteries } } }));
     scheduleSave(modelId, get);
   },
   displayName: (modelId) => get().settings[modelId]?.nickname || (modelById(modelId)?.name ?? modelId),

@@ -8,7 +8,7 @@ export const zh: UiDict = {
   batteryChartTitle: '电量随时间变化', 
   softwareControl: '软件控制', vendorBlock: '禁用 AULA 官方软件', vendorBlockHint: '完全阻止官方 AULA 驱动程序启动：程序保留安装但被停用（需一次管理员授权）。关闭此选项即可重新使用。', vendorDetected: '检测到的 AULA 软件', vendorNone: '没有正在运行或随 Windows 启动的 AULA 官方软件。', vendorRunning: '运行中', vendorAutostart: '随 Windows 启动', vendorKillNow: '立即关闭', vendorKilled: '已关闭 {n} 个程序', vendorConflict: '{apps} 正在运行。两个程序都在与同一设备通信，设置可能冲突。',
   kbReadFailed: '无法从键盘读取当前设置。请检查连接后重试。',
-  batteryStatsOpt: '电池统计（估算）', batteryStatsHint: '根据应用运行期间记录的电量，显示估算的循环次数、每日耗电和电池健康度。设备本身不提供这些数据，因此数值仅为近似值，且只涵盖应用打开的时间。', batteryCard: '电池', batteryNow: '电量', batteryCycles: '等效循环次数', batteryDrain: '每日耗电', batteryRemaining: '预计剩余', batteryHealth: '预计健康度', batteryLastFull: '上次充满', batteryTracking: '统计时长', batteryNeedData: '数据尚不足', batteryDisclaimer: '数值基于应用自身记录估算，并非设备上报的测量值。', day: '天', days: '天', hours: '小时',
+  batteryStatsOpt: '电池统计（估算）', batteryStatsHint: '根据应用记录的电量，估算耗电、剩余时间、充电时间和电池健康。', batteryCard: '电池', batteryNow: '电量', batteryCycles: '等效循环次数', batteryDrain: '每日耗电', batteryRemaining: '预计剩余', batteryHealth: '预计健康度', batteryLastFull: '上次充满', batteryTracking: '统计时长', batteryNeedData: '数据尚不足', batteryDisclaimer: '数值基于应用自身记录估算，并非设备上报的测量值。', day: '天', days: '天', hours: '小时',
   resetSettings: '重置设置', resetSettingsHint: '删除所有设置、设备配置文件和历史记录，然后重启应用。设备需要重新设置。', resetSettingsConfirm: '确定吗？所有设置和配置文件将被删除，应用将重启。',
   resetKeyboard: '重置键盘', resetKeyboardHint: '将键盘上的按键映射、灯光和宏恢复为默认值。本电脑上保存的配置文件会保留。', resetKeyboardConfirm: '将键盘重置为默认设置？', factoryReset: '恢复出厂设置', factoryResetHint: '清除键盘中存储的全部数据，并恢复到出厂状态。', factoryResetConfirm: '恢复出厂设置？此操作无法撤销。', resetDone: '已完成',
   app: 'AULA Toolkit',
@@ -64,6 +64,7 @@ export const zh: UiDict = {
   displayBlackout: '屏幕关闭时关闭灯光', displayBlackoutHint: '显示器关闭时，按键灯和侧边灯条熄灭。',
   uploading: '正在上传到屏幕', uploadDone: '已上传', library: '素材库', libraryHint: '用于屏幕和按键的图片与 GIF。', libraryAdd: '添加图片或 GIF', libraryEmpty: '还没有内容。添加一张图片或动态 GIF。', libraryRemove: '从素材库移除', needsCable: '此功能需要用 USB 线连接键盘。当前通过无线接收器连接。',
   musicEffect: '播放音乐时', musicEffectHint: '播放音乐或视频时，让键盘灯光随之变化。', musicRhythm: '音乐律动', musicRhythmHint: '按键上随声音跳动的光柱。', musicKeyEffect: '键盘灯效', musicFallback: '无线连接时的灯效', rhythmColors: '颜色', amplitude: '幅度', background: '背景', backgroundBrightness: '背景亮度', schemeTraffic: '绿 / 黄 / 红', schemeRainbow: '彩虹', schemeRainbowRev: '反向彩虹', schemeGradient: '渐变', schemeCycle: '光谱循环', schemeAmbient: '环境光', audioUnavailable: '无法获取系统声音，音乐律动无法随声音变化。', keyAnim: '按键动画', keyAnimHint: '在按键上播放素材库中的图片或 GIF。', keyAnimActive: '按键动画播放中。',
+  batteryInUse: '使用中每 1%', batteryChargeTime: '充满时间', batteryCharging: '充电中', batteryAgo: '{t}前', batteryCollecting: '正在收集数据', batteryNotSeen: '尚未记录', batteryWatched: '已记录 {d}', batteryPacks: '电池', batteryPack: '电池 {n}', batteryInUse2: '使用中', batteryAdd: '添加电池', batteryPacksHint: '更换电池时选择当前装入的电池；每块电池的数据分开记录。', batteryNoFastCharge: '请勿使用快充充电',
 };
 
 export const names: Record<string, string> = {

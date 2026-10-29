@@ -95,6 +95,8 @@ export interface DeviceModel {
   barModes?: { mode: number; name: string }[];
   /** Regex for the Bluetooth device name. */
   bluetoothName?: string;
+  /** Swappable batteries in the box. */
+  batteries?: number;
   lightRange?: { brightness: number; speed: number };
   settings?: SettingDef[];
   screen?: { width: number; height: number; headLength: number; maxFrames: number; chunk: number };
@@ -189,7 +191,10 @@ export interface DeviceSettingsFile {
   displayBlackout?: boolean;
   music?: MusicEffect;
   keyAnimation?: KeyAnimation;
+  batteries?: BatteryPacks;
 }
+
+export interface BatteryPacks { packs: { id: string; name: string }[]; installed: string }
 
 export interface MusicEffect {
   enabled: boolean;
@@ -228,6 +233,8 @@ export interface DeviceStatus {
   link: Link;
   productName: string;
   battery: number | null;
+  /** when `battery` was read */
+  batteryAt?: number | null;
   charging: boolean;
   firmware?: string;
   /** Live values read back from the device, when the protocol supports reads. */

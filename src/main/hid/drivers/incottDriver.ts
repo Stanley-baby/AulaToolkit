@@ -27,6 +27,7 @@ export class IncottDriver implements Driver {
   }
 
   get productName(): string { return this.port.info.product ?? this.model.name; }
+  get paths(): string[] { return [this.port.path]; }
 
   static async attach(model: DeviceModel, devices: Device[], ctx: DriverContext): Promise<IncottDriver | null> {
     const roleOf = (d: Device) => model.usb.find((u) => u.vendorId === d.vendorId && u.productId === d.productId)?.role;
@@ -79,7 +80,7 @@ export class IncottDriver implements Driver {
     const asleep = live && Object.values(live).every((v) => v === null || v === undefined);
     return {
       key: this.key, modelId: this.model.id, link: this.link, productName: this.productName,
-      battery: this.battery, charging: this.link === 'usb' ? true : this.charging,
+      battery: this.battery, batteryAt: this.lastInputAt || null, charging: this.link === 'usb' ? true : this.charging,
       live: { ...(live ?? {}), sensor: this.identity?.sensor, receiver8k: this.identity?.receiver8k, modelCode: this.identity?.modelCode },
       note: asleep ? 'asleep' : undefined,
     };

@@ -3,6 +3,8 @@ import type { MouseProfile } from '@shared/types';
 import { LOD_OPTIONS, PERFORMANCE_MODES, RECEIVER_LED_MODES, SLEEP_OPTIONS } from '@shared/protocols/incott';
 import { activeProfile, useStore, useT, useTn } from '../../store';
 import { Card, Segmented, Select, Slider, Toggle } from '../ui';
+import { Plus, X } from 'lucide-react';
+import { nextPack, packsOf } from '../../batteryPacks';
 
 export const PerformancePanel = ({ modelId }: { modelId: string }) => {
   const t = useT();
@@ -57,6 +59,36 @@ export const PerformancePanel = ({ modelId }: { modelId: string }) => {
         </div>
         <Slider label={t('fireInterval')} min={1} max={255} value={m.fireKey.intervalMs} onChange={(v) => set((mp) => { mp.fireKey.intervalMs = v; })} format={(v) => `${v} ms`} />
       </Card>
+      {model.batteries && <BatteryPacksCard modelId={modelId} />}
     </div>
+  );
+};
+
+const BatteryPacksCard = ({ modelId }: { modelId: string }) => {
+  const t = useT();
+  const file = useStore((s) => s.settings[modelId]);
+  const save = useStore((s) => s.setBatteryPacks);
+  const p = packsOf(modelById(modelId), file);
+  if (!p) return null;
+  const rename = (id: string, name: string): void => save(modelId, { ...p, packs: p.packs.map((x) => (x.id === id ? { ...x, name } : x)) });
+  return (
+    <Card title={t('batteryPacks')} right={<button className="btn btn-sm" onClick={() => save(modelId, { ...p, packs: [...p.packs, nextPack(p)] })}><Plus size={14} />{t('batteryAdd')}</button>}>
+      <p className="text-sm text-muted mb-3">{t('batteryPacksHint')}</p>
+      <div className="flex flex-col gap-2">
+        {p.packs.map((x) => {
+          const inUse = x.id === p.installed;
+          return (
+            <div key={x.id} className="flex items-center gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--color-bg-2)', border: `1px solid ${inUse ? 'var(--color-accent)' : 'var(--color-line)'}` }}>
+              <input type="radio" checked={inUse} onChange={() => save(modelId, { ...p, installed: x.id })} aria-label={t('batteryInUse2')} />
+              <span className="text-sm text-muted shrink-0">{t('batteryPack').replace('{n}', '')}</span>
+              <input className="input flex-1 min-w-0" value={x.name} maxLength={24} onChange={(e) => rename(x.id, e.target.value)} onBlur={(e) => { if (!e.target.value.trim()) rename(x.id, x.id.toUpperCase()); }} />
+              {inUse
+                ? <span className="chip shrink-0">{t('batteryInUse2')}</span>
+                : p.packs.length > 1 && <button className="btn btn-sm shrink-0" title={t('delete')} onClick={() => save(modelId, { ...p, packs: p.packs.filter((y) => y.id !== x.id) })}><X size={14} /></button>}
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 };
