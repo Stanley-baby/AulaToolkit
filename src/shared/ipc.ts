@@ -99,6 +99,8 @@ export interface AppPrefs {
   osdAllDisplays: boolean;
   osdPosition: OsdPosition;
   osdDuration: 'short' | 'normal' | 'long';
+  /** Ctrl+Alt+Shift+A restarts the app. */
+  restartHotkey?: boolean;
 }
 
 export type OsdPosition = 'top-left' | 'top-center' | 'top-right' | 'center' | 'bottom-left' | 'bottom-center' | 'bottom-right';
@@ -118,7 +120,7 @@ export interface UpdateState {
   checkedAt?: number;
 }
 
-export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, batteryCare: true, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal' };
+export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, batteryCare: true, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal', restartHotkey: true };
 
 export interface AulaApi {
   getDevices(): Promise<DeviceStatus[]>;
@@ -215,7 +217,7 @@ export interface LiveLight { modelId: string; colors: Record<number, [number, nu
 /** What the OSD shows: a device, a headline value and optionally a stage strip. */
 export interface OsdPayload {
   device: string;
-  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect' | 'battery' | 'upload';
+  kind: 'dpi' | 'polling' | 'profile' | 'light' | 'color' | 'brightness' | 'effect' | 'battery' | 'upload' | 'restart';
   value: string;
   /** Translation key shown instead of `value` (the OSD window translates it). */
   valueKey?: string;

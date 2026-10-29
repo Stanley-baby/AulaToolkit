@@ -60,6 +60,7 @@ export const AppSettings = () => {
         </div>
         <Toggle label={t('minimizeToTray')} hint={t('minimizeToTrayHint')} on={prefs.minimizeToTrayOnMinimize} onChange={(v) => void setPrefs({ minimizeToTrayOnMinimize: v })} />
         <Toggle label={t('minimizeTray')} hint={t('minimizeTrayHint')} on={prefs.minimizeToTray} onChange={(v) => void setPrefs({ minimizeToTray: v })} />
+        <Toggle label={t('restartKeys')} hint={t('restartKeysHint')} on={prefs.restartHotkey !== false} onChange={(v) => void setPrefs({ restartHotkey: v })} />
         <Toggle label={t('batteryAlerts')} hint={t('batteryAlertsHint')} on={prefs.batteryAlerts} onChange={(v) => void setPrefs({ batteryAlerts: v })} />
         <Toggle label={t('batteryStatsOpt')} hint={t('batteryStatsHint')} on={prefs.batteryStats} onChange={(v) => void setPrefs({ batteryStats: v, ...(v ? { batteryCare: true } : {}) })} />
         {prefs.batteryStats && <Toggle label={t('batteryCare')} hint={t('batteryCareHint')} on={prefs.batteryCare !== false} onChange={(v) => void setPrefs({ batteryCare: v })} />}

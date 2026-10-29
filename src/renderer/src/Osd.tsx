@@ -1,7 +1,7 @@
 // The on-screen display: device name, the new value and, for DPI and brightness, a strip of stage dots
 // (a colour sample for colour changes). Rendered by a click-through, non-focusable window under the #osd hash.
 import { useEffect, useRef, useState } from 'react';
-import { Gauge, Keyboard, Layers, Lightbulb, MousePointer2, Palette, Sparkles, Sun, Zap, BatteryCharging, UploadCloud } from 'lucide-react';
+import { Gauge, Keyboard, Layers, Lightbulb, MousePointer2, Palette, Sparkles, Sun, Zap, BatteryCharging, UploadCloud, RotateCcw } from 'lucide-react';
 import type { OsdPayload } from '@shared/ipc';
 import { DICT, NAMES, type Lang } from './i18n';
 import { applyTheme } from './theme';
@@ -25,8 +25,8 @@ export const Osd = () => {
 
   if (!p) return null;
   const t = (k: string): string => (DICT[lang] as Record<string, string>)[k] ?? (DICT.en as Record<string, string>)[k] ?? k;
-  const caption = { dpi: t('dpi'), polling: t('polling'), profile: t('profile'), light: t('effect'), effect: t('effect'), color: t('color'), brightness: t('brightness'), battery: t('battery'), upload: t('screenTitle') }[p.kind];
-  const Icon = { dpi: Gauge, polling: Zap, profile: Layers, light: Lightbulb, effect: Sparkles, color: Palette, brightness: Sun, battery: BatteryCharging, upload: UploadCloud }[p.kind];
+  const caption = { dpi: t('dpi'), polling: t('polling'), profile: t('profile'), light: t('effect'), effect: t('effect'), color: t('color'), brightness: t('brightness'), battery: t('battery'), upload: t('screenTitle'), restart: t('restartKeys') }[p.kind];
+  const Icon = { dpi: Gauge, polling: Zap, profile: Layers, light: Lightbulb, effect: Sparkles, color: Palette, brightness: Sun, battery: BatteryCharging, upload: UploadCloud, restart: RotateCcw }[p.kind];
   const DeviceIcon = p.kind === 'dpi' || p.kind === 'polling' ? MousePointer2 : p.kind === 'profile' ? Layers : p.kind === 'battery' ? BatteryCharging : Keyboard;
   const value = p.valueKey ? t(p.valueKey) : p.valueName ? NAMES[lang]?.[p.valueName] ?? p.valueName : p.value;
 

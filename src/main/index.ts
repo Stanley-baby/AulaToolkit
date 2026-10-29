@@ -1,5 +1,5 @@
 import './elevatedHelper'; // must stay first
-import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeImage, Notification, screen, session, shell, systemPreferences, Tray } from 'electron';
+import { app, BrowserWindow, desktopCapturer, dialog, globalShortcut, ipcMain, Menu, nativeImage, Notification, screen, session, shell, systemPreferences, Tray } from 'electron';
 import { MODELS } from '@shared/models';
 import { en } from '@shared/locales/en';
 import { tr } from '@shared/locales/tr';
@@ -128,6 +128,26 @@ function checkBatteryCare(): void {
     showOsd({ device: name, kind: 'battery', value: shown, note: body });
   }
 }
+
+// Ctrl+Alt+Shift+A restarts the app, for when something hangs.
+const RESTART_KEYS = 'Control+Alt+Shift+A';
+function restartApp(): void {
+  showOsd({ device: 'AULA Toolkit', kind: 'restart', value: tx('restarting') });
+  setTimeout(() => {
+    const args = process.argv.slice(1).filter((a) => a !== '--hidden' && a !== '--delayed');
+    if (!win?.isVisible()) args.push('--hidden');
+    app.relaunch({ args });
+    quitting = true;
+    app.quit();
+  }, 800);
+}
+function applyRestartHotkey(p: AppPrefs): void {
+  const on = p.restartHotkey !== false;
+  if (on && !globalShortcut.isRegistered(RESTART_KEYS)) {
+    if (!globalShortcut.register(RESTART_KEYS, restartApp)) manager.addLog('!', `couldn't register ${RESTART_KEYS} (used by another app?)`);
+  } else if (!on && globalShortcut.isRegistered(RESTART_KEYS)) globalShortcut.unregister(RESTART_KEYS);
+}
+
 let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let flyout: BrowserWindow | null = null;
@@ -279,6 +299,7 @@ function registerIpc(): void {
     battery.setEnabled(true); // always record; the preference only controls whether the card is shown
     tray?.setContextMenu(trayMenu());
     applyAutostart(p);
+    applyRestartHotkey(p);
   });
   ipcMain.on(CH.APP_MINIMIZE, () => win?.minimize());
   ipcMain.on(CH.APP_MAXIMIZE, () => (win?.isMaximized() ? win.unmaximize() : win?.maximize()));
@@ -492,6 +513,7 @@ if (!gotLock) {
     prefs = loadPrefs();
     applyOsdPrefs(prefs);
     applyAutostart(prefs);
+    applyRestartHotkey(prefs);
     battery.setEnabled(true);
     app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window));
     // system audio for the music rhythm (loopback, no picker)
@@ -527,6 +549,6 @@ if (!gotLock) {
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
   });
 
-  app.on('before-quit', () => { quitting = true; stopDisplayPowerWatch?.(); stopMediaWatch(); void manager.stop(); });
+  app.on('before-quit', () => { quitting = true; globalShortcut.unregisterAll(); stopDisplayPowerWatch?.(); stopMediaWatch(); void manager.stop(); });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }
