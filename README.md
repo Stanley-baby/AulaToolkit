@@ -27,6 +27,7 @@
 
 #### Other language versions of this README file:
 * [Türkçe README](README_tr-TR.md)
+* [Русский README](README_ru-RU.md)
 
 ---
 

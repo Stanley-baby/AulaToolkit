@@ -27,6 +27,7 @@
 
 #### Bu README dosyasının diğer dillerdeki sürümleri:
 * [English README](README.md)
+* [Русский README](README_ru-RU.md)
 
 ---
 
