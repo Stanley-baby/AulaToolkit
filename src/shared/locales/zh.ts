@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const zh: UiDict = {
+  macMusicHint: '在 macOS 上，持续的系统声音会触发灯效。请在“隐私与安全性”中允许录制系统音频。',
+  windowsSoftwareOnly: '此面板管理 Windows 的 AULA 程序和注册表项，macOS 不使用这些组件。',
+  macPermissions: 'macOS 权限',
+  macPermissionsHint: 'HID 访问需要“输入监控”权限；音乐灯效需要“屏幕与系统音频录制”权限。更改权限后请重新启动应用。',
+
   osdToggle: '屏幕显示', osdToggleHint: '使用鼠标按键切换 DPI 或运行命令时，短暂显示提示。', cliTitle: '命令行', cliHint: '在终端或脚本中使用 aula 命令控制设备。运行 "aula help" 查看全部命令。', cliCopy: '复制路径',
   colRed: '红色', colOrange: '橙色', colYellow: '黄色', colGreen: '绿色', colCyan: '青色', colBlue: '蓝色', colPurple: '紫色', colPink: '粉色', colWhite: '白色', colMulti: '多彩',
   notifTitle: '通知', notifHint: '屏幕显示的位置、时长和行为。', osdOnTop: '始终置顶', osdOnTopHint: '在全屏游戏和应用上方也会显示。', osdAllDisplays: '在所有显示器上显示', osdAllDisplaysHint: '在每个已连接的显示器上显示提示。', osdPosition: '位置', posTopLeft: '左上', posTopCenter: '上方居中', posTopRight: '右上', posCenter: '居中', posBottomLeft: '左下', posBottomCenter: '下方居中', posBottomRight: '右下', osdDuration: '时长', durShort: '短', durNormal: '正常', durLong: '长', osdPreview: '预览', backupTitle: '备份设置', backupHint: '备份或恢复应用设置。', backupCreate: '备份', backupCreateHint: '将应用设置和所有设备配置文件保存到文件。', backupRestore: '恢复', backupRestoreHint: '从备份文件载入设置；应用将重启。', backupRestoreConfirm: '当前设置和配置文件将被备份内容替换，应用将重启。继续吗？', backupSaved: '备份已保存', backupInvalid: '此文件不是 AULA Toolkit 备份。',

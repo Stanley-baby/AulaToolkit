@@ -123,6 +123,7 @@ export interface UpdateState {
 export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, batteryCare: true, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal', restartHotkey: true };
 
 export interface AulaApi {
+  platform: string;
   getDevices(): Promise<DeviceStatus[]>;
   onDevices(cb: (d: DeviceStatus[]) => void): () => void;
   call<T = unknown>(deviceKey: string, method: string, ...args: unknown[]): Promise<T>;

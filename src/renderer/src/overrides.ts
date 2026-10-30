@@ -3,7 +3,7 @@
 // (apply.ts, bridges.ts)
 import { modelById } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
-import { acquireAudio, releaseAudio } from './audio';
+import { acquireAudio, releaseAudio, watchAudioPlayback } from './audio';
 import { animationSource, rhythmSource, startLive, stopLive } from './liveEngine';
 import { activeProfile, useStore } from './store';
 
@@ -101,17 +101,24 @@ export function registerOverrides(): void {
     syncAll();
   });
 
-  window.aula.onMediaPlayback((state) => {
+  const onMediaPlayback = (state: 'playing' | 'stopped'): void => {
     clearTimeout(stopTimer);
     if (state === 'playing') {
       if (!mediaPlaying) { mediaPlaying = true; syncAll(); }
     } else if (mediaPlaying) {
       stopTimer = setTimeout(() => { mediaPlaying = false; syncAll(); }, MUSIC_STOP_DELAY_MS);
     }
-  });
+  };
+  window.aula.onMediaPlayback(onMediaPlayback);
+  let stopAudioWatch: (() => void) | null = null;
+  const setWatch = (on: boolean): void => {
+    if (window.aula.platform !== 'darwin') { window.aula.setMediaWatch(on); return; }
+    stopAudioWatch?.(); stopAudioWatch = null;
+    if (on) stopAudioWatch = watchAudioPlayback(onMediaPlayback, () => useStore.getState().toast(useStore.getState().t('audioUnavailable'), 'error'));
+  };
 
   let watching = musicWanted();
-  if (watching) window.aula.setMediaWatch(true);
+  if (watching) setWatch(true);
   syncAll();
 
   useStore.subscribe((s, prev) => {
@@ -119,7 +126,7 @@ export function registerOverrides(): void {
     const want = musicWanted();
     if (want !== watching) {
       watching = want;
-      window.aula.setMediaWatch(want);
+      setWatch(want);
       if (!want) { clearTimeout(stopTimer); mediaPlaying = false; }
     }
     for (const id of Object.keys(s.settings)) {

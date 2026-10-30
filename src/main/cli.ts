@@ -6,6 +6,7 @@
 // which owns the profiles, so the UI, the saved files and the device always stay in sync.
 import net from 'node:net';
 import os from 'node:os';
+import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { MODELS } from '@shared/models';
 import type { DeviceStatus } from '@shared/types';
@@ -145,6 +146,16 @@ export function startCliServer(ctx: CliContext, log: (msg: string) => void): voi
     });
     sock.on('error', () => undefined);
   });
-  server.on('error', (e) => log(`CLI server unavailable: ${e.message}`));
+  server.on('error', (e: NodeJS.ErrnoException) => {
+    if (process.platform !== 'win32' && e.code === 'EADDRINUSE') {
+      const probe = net.connect(pipeName());
+      probe.on('connect', () => { probe.destroy(); log('CLI socket is already owned by a running app.'); });
+      probe.on('error', (error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ECONNREFUSED') { log(`CLI server unavailable: ${error.message}`); return; }
+        rmSync(pipeName(), { force: true });
+        server.listen(pipeName());
+      });
+    } else log(`CLI server unavailable: ${e.message}`);
+  });
   server.listen(pipeName(), () => log(`CLI listening on ${pipeName()}`));
 }

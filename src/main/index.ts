@@ -153,13 +153,13 @@ let tray: Tray | null = null;
 let flyout: BrowserWindow | null = null;
 let flyoutHideTimer: NodeJS.Timeout | null = null;
 let quitting = false;
-const startHidden = process.argv.includes('--hidden');
+const startHidden = process.argv.includes('--hidden') || (process.platform === 'darwin' && app.getLoginItemSettings().wasOpenedAtLogin);
 const startDelayed = process.argv.includes('--delayed');
 
 function applyAutostart(p: AppPrefs): void {
   if (!app.isPackaged) return; // a dev run must not register electron.exe to start with Windows
   const on = typeof p.autostart === 'string' ? p.autostart !== 'off' : !!p.autostart;
-  app.setLoginItemSettings({ openAtLogin: on, args: on ? ['--hidden', ...(p.autostart === 'delayed' ? ['--delayed'] : [])] : [] });
+  app.setLoginItemSettings(process.platform === 'darwin' ? { openAtLogin: on } : { openAtLogin: on, args: on ? ['--hidden', ...(p.autostart === 'delayed' ? ['--delayed'] : [])] : [] });
 }
 let prefs: AppPrefs;
 let stopDisplayPowerWatch: (() => void) | null = null;
@@ -169,8 +169,8 @@ const iconPath = (): string => join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
   win = new BrowserWindow({
-    width: 1360,
-    height: 780,
+    width: Math.min(1360, screen.getPrimaryDisplay().workAreaSize.width),
+    height: Math.min(780, screen.getPrimaryDisplay().workAreaSize.height),
     resizable: false,
     maximizable: false,
     fullscreenable: false,
@@ -189,6 +189,8 @@ function createWindow(): void {
   });
 
   win.on('ready-to-show', () => { if (!startHidden) win?.show(); });
+  if (process.platform === 'darwin') win.setWindowButtonVisibility(false);
+  win.on('closed', () => { win = null; });
   (win as unknown as { on(ev: 'minimize', cb: (e: { preventDefault(): void }) => void): void }).on('minimize', (e) => {
     if (prefs.minimizeToTrayOnMinimize) { e.preventDefault(); win?.hide(); }
   });
@@ -351,7 +353,7 @@ function registerIpc(): void {
     await shell.openPath(dir);
   });
   ipcMain.handle(CH.APP_ACCENT, () => { try { const c = systemPreferences.getAccentColor(); return c ? `#${c.slice(0, 6)}` : null; } catch { return null; } });
-  ipcMain.handle(CH.APP_BUILD_INFO, () => ({ version: app.getVersion(), build: BUILD_STAMP, electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node, cliPath: app.isPackaged ? join(process.resourcesPath, 'bin', 'aula.cmd') : join(app.getAppPath(), 'resources', 'cli', 'aula.js') }));
+  ipcMain.handle(CH.APP_BUILD_INFO, () => ({ version: app.getVersion(), build: BUILD_STAMP, electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node, cliPath: app.isPackaged ? join(process.resourcesPath, 'bin', process.platform === 'darwin' ? 'aula' : 'aula.cmd') : join(app.getAppPath(), 'resources', 'cli', 'aula.js') }));
   ipcMain.handle(CH.UPDATE_CHECK, () => updater.check());
   ipcMain.handle(CH.UPDATE_DOWNLOAD, () => updater.download());
   ipcMain.on(CH.UPDATE_INSTALL, () => { quitting = true; updater.install(); });
@@ -510,6 +512,9 @@ if (!gotLock) {
 
   app.whenReady().then(() => {
     electronApp.setAppUserModelId('dev.aulatoolkit.app');
+    if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([
+      { role: 'appMenu' }, { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
+    ]));
     prefs = loadPrefs();
     applyOsdPrefs(prefs);
     applyAutostart(prefs);
@@ -544,9 +549,9 @@ if (!gotLock) {
       }, (m) => manager.addLog('i', m)).then(() => { quitting = true; app.quit(); });
     }
     // Delayed autostart: let other login programs settle before touching the HID devices.
-    const delay = startDelayed ? 30_000 : 0;
+    const delay = startDelayed || (startHidden && prefs.autostart === 'delayed') ? 30_000 : 0;
     setTimeout(() => { manager.start(); updater.setupUpdater(() => win, () => prefs); }, delay);
-    app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+    app.on('activate', () => { if (!win || win.isDestroyed()) createWindow(); else { win.show(); win.focus(); } });
   });
 
   app.on('before-quit', () => { quitting = true; globalShortcut.unregisterAll(); stopDisplayPowerWatch?.(); stopMediaWatch(); void manager.stop(); });

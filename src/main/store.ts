@@ -22,7 +22,7 @@ export const loadDeviceSettings = (modelId: string): DeviceSettingsFile => read(
 export const saveDeviceSettings = (modelId: string, data: DeviceSettingsFile): void => write(`${modelId}.json`, data);
 
 export const loadPrefs = (): AppPrefs => {
-  const p: AppPrefs = { ...DEFAULT_PREFS, ...read<Partial<AppPrefs>>('prefs.json', {}) };
+  const p: AppPrefs = { ...DEFAULT_PREFS, ...(process.platform === 'darwin' ? { autostart: 'off' as const, language: app.getLocale().startsWith('zh') ? 'zh' as const : 'en' as const } : {}), ...read<Partial<AppPrefs>>('prefs.json', {}) };
   // Migrate values saved by earlier builds.
   const auto = p.autostart as unknown;
   if (typeof auto === 'boolean') p.autostart = auto ? 'on' : 'off';

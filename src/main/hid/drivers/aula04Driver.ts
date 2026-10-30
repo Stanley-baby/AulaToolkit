@@ -449,7 +449,8 @@ export class Aula04Driver implements Driver {
 function score(d: Device, iface?: number): number {
   let s = 10;
   if ((d.usagePage ?? 0) >= 0xff00) s -= 5;
-  if (iface !== undefined && pathIface(d) === iface) s -= 3;
+  // The model's control interface must win over a generic vendor collection.
+  if (iface !== undefined && pathIface(d) === iface) s -= 20;
   return s;
 }
 

@@ -14,6 +14,8 @@ const STEPS: (DevNavigate & { name: string })[] = [
   { name: 'keyboard-overview', page: 'device', model: 's75pro', tab: 'overview' },
   { name: 'keyboard-lighting', page: 'device', model: 's75pro', tab: 'lighting' },
   { name: 'keyboard-keys', page: 'device', model: 's75pro', tab: 'keys' },
+  { name: 'keyboard-config', page: 'device', model: 's75pro', tab: 'settings' },
+  { name: 'keyboard-macros', page: 'device', model: 's75pro', tab: 'macros' },
   { name: 'keyboard-screen', page: 'device', model: 's75pro', tab: 'screen' },
   { name: 'mouse-overview', page: 'device', model: 'sc900', tab: 'overview' },
   { name: 'mouse-dpi', page: 'device', model: 'sc900', tab: 'dpi' },
@@ -49,6 +51,7 @@ export async function runScreenshots(dir: string, win: BrowserWindow, extras: Sc
   for (const step of STEPS) {
     win.webContents.send(CH.DEV_NAVIGATE, step);
     await sleep(1800);
+    await win.webContents.executeJavaScript('document.getAnimations().forEach(a => { if (Number.isFinite(a.effect?.getComputedTiming().endTime)) a.finish(); })');
     save(step.name, await win.webContents.capturePage());
   }
   save('osd', await extras.osd());

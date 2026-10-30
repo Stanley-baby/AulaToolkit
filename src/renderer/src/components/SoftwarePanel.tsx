@@ -30,6 +30,8 @@ export const SoftwarePanel = () => {
     await load();
   };
 
+  if (window.aula.platform === 'darwin') return <Card title={t('softwareControl')}><p className="text-sm text-muted">{t('windowsSoftwareOnly')}</p></Card>;
+
   return (
     <div className="flex flex-col gap-5 fade-in">
       <Card title={t('vendorBlock')}>

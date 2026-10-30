@@ -18,6 +18,10 @@
   [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/u9FbaJGtCe)
 </div>
 
+## macOS port
+
+This fork adds macOS support while retaining Windows functionality. See [macOS build, permissions and feature notes](docs/macos.md). Development happens on `feat/macos-support`.
+
 ## 🚨 Project Status Notice
 
 > [!IMPORTANT]

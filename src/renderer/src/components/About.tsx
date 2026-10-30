@@ -7,9 +7,9 @@ import { Wordmark } from './Wordmark';
 
 // Empty strings hide the rows.
 export const LINKS = {
-  github: 'https://github.com/Livvaa/aula-toolkit',
-  releases: 'https://github.com/Livvaa/aula-toolkit/releases',
-  issues: 'https://github.com/Livvaa/aula-toolkit/issues',
+  github: 'https://github.com/Stanley-baby/AulaToolkit',
+  releases: 'https://github.com/Stanley-baby/AulaToolkit/releases',
+  issues: 'https://github.com/Stanley-baby/AulaToolkit/issues',
   discord: 'https://discord.gg/u9FbaJGtCe',
   aula: 'https://www.aulastar.com/driver/',
 };

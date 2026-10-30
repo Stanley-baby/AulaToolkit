@@ -12,9 +12,14 @@ export function runPsWatcher<S extends string>(script: string, states: readonly 
   if (process.platform !== 'win32') return () => undefined;
   const path = scriptPath(script);
   if (!existsSync(path)) { log(`${script} missing`); return () => undefined; }
+  return runStateWatcher('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path], states, onState, log);
+}
+
+export function runStateWatcher<S extends string>(command: string, args: string[], states: readonly S[], onState: (state: S) => void, log: (message: string) => void): () => void {
+  const script = command;
   let child: ChildProcess | null = null;
   try {
-    child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    child = spawn(command, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     let pending = '';
     child.stdout?.on('data', (chunk: Buffer) => {
       pending += chunk.toString('utf8');

@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const vi: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Hiển thị trên màn hình', osdToggleHint: 'Hiện chỉ báo ngắn khi bạn đổi DPI bằng nút chuột hoặc chạy lệnh.', cliTitle: 'Dòng lệnh', cliHint: 'Điều khiển thiết bị từ terminal hoặc script bằng lệnh aula. Chạy "aula help" để xem tất cả lệnh.', cliCopy: 'Sao chép đường dẫn',
   colRed: 'Đỏ', colOrange: 'Cam', colYellow: 'Vàng', colGreen: 'Xanh lá', colCyan: 'Xanh lơ', colBlue: 'Xanh dương', colPurple: 'Tím', colPink: 'Hồng', colWhite: 'Trắng', colMulti: 'Nhiều màu',
   notifTitle: 'Thông báo', notifHint: 'Vị trí, thời lượng và cách hiển thị chỉ báo trên màn hình.', osdOnTop: 'Luôn ở trên cùng', osdOnTopHint: 'Hiện cả trên trò chơi và ứng dụng toàn màn hình.', osdAllDisplays: 'Trên mọi màn hình', osdAllDisplaysHint: 'Hiện chỉ báo trên mọi màn hình đã kết nối.', osdPosition: 'Vị trí', posTopLeft: 'Trên bên trái', posTopCenter: 'Trên giữa', posTopRight: 'Trên bên phải', posCenter: 'Giữa', posBottomLeft: 'Dưới bên trái', posBottomCenter: 'Dưới giữa', posBottomRight: 'Dưới bên phải', osdDuration: 'Thời lượng', durShort: 'Ngắn', durNormal: 'Bình thường', durLong: 'Dài', osdPreview: 'Xem trước', backupTitle: 'Sao lưu', backupHint: 'Sao lưu hoặc khôi phục cài đặt ứng dụng.', backupCreate: 'Sao lưu', backupCreateHint: 'Lưu cài đặt ứng dụng và mọi hồ sơ thiết bị vào một tệp.', backupRestore: 'Khôi phục', backupRestoreHint: 'Tải cài đặt từ tệp sao lưu; ứng dụng sẽ khởi động lại.', backupRestoreConfirm: 'Cài đặt và hồ sơ hiện tại sẽ được thay bằng bản sao lưu và ứng dụng sẽ khởi động lại. Tiếp tục?', backupSaved: 'Đã lưu bản sao lưu', backupInvalid: 'Tệp này không phải bản sao lưu AULA Toolkit.',

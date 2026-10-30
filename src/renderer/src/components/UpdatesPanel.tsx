@@ -34,6 +34,7 @@ export const UpdatesPanel = () => {
         : <button className="btn btn-sm" disabled={busy} onClick={() => void window.aula.updateCheck()}>{busy ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}{t('updCheck')}</button>
       }>
         <div className="text-sm">{statusText()}</div>
+        {st?.error && <p role="alert" className="text-xs text-muted mt-2 select-text">{st.error}</p>}
         <div className="text-xs text-muted mt-1">{t('version')} {st?.current ?? ''}</div>
         {st?.status === 'downloading' && <div className="h-1.5 rounded-full mt-3 overflow-hidden" style={{ background: 'var(--color-line)' }}><div className="h-full transition-all" style={{ width: `${st.progress ?? 0}%`, background: 'linear-gradient(90deg,var(--color-accent),var(--color-accent-2))' }} /></div>}
       </Card>

@@ -36,6 +36,7 @@ export const AppSettings = () => {
         <Segmented value={tab} onChange={setTab} options={[{ value: 'general', label: t('general') }, { value: 'software', label: t('softwareControl') }, { value: 'updates', label: t('updates') }, { value: 'about', label: t('about') }]} />
       </div>
       {tab === 'about' ? <About /> : tab === 'updates' ? <UpdatesPanel /> : tab === 'software' ? <SoftwarePanel /> : <>
+      {window.aula.platform === 'darwin' && <Card title={t('macPermissions')}><p className="text-sm text-muted">{t('macPermissionsHint')}</p><button className="btn mt-3" onClick={() => window.aula.openExternal('https://support.apple.com/guide/mac-help/control-access-to-input-monitoring-on-mac-mchl4cedafb6/mac')}>{t('macPermissions')}</button></Card>}
       <Card title={t('general')}>
         <div className="py-2 flex items-center justify-between">
           <span className="text-sm">{t('language')}</span>

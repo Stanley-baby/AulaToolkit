@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const pt: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Indicador na tela', osdToggleHint: 'Mostra um indicador rápido quando você muda o DPI pelo botão do mouse ou executa um comando.', cliTitle: 'Linha de comando', cliHint: 'Controle seus dispositivos pelo terminal ou por scripts com o comando aula. Execute "aula help" para ver todos os comandos.', cliCopy: 'Copiar caminho',
   colRed: 'Vermelho', colOrange: 'Laranja', colYellow: 'Amarelo', colGreen: 'Verde', colCyan: 'Ciano', colBlue: 'Azul', colPurple: 'Roxo', colPink: 'Rosa', colWhite: 'Branco', colMulti: 'Multicolorido',
   notifTitle: 'Notificações', notifHint: 'Posição, duração e comportamento do indicador na tela.', osdOnTop: 'Sempre no topo', osdOnTopHint: 'Também aparece sobre jogos e aplicativos em tela cheia.', osdAllDisplays: 'Em todas as telas', osdAllDisplaysHint: 'Mostra o indicador em todas as telas conectadas.', osdPosition: 'Posição', posTopLeft: 'Superior esquerdo', posTopCenter: 'Superior central', posTopRight: 'Superior direito', posCenter: 'Centro', posBottomLeft: 'Inferior esquerdo', posBottomCenter: 'Inferior central', posBottomRight: 'Inferior direito', osdDuration: 'Duração', durShort: 'Curta', durNormal: 'Normal', durLong: 'Longa', osdPreview: 'Visualizar', backupTitle: 'Backup', backupHint: 'Faça backup ou restaure as configurações do aplicativo.', backupCreate: 'Fazer backup', backupCreateHint: 'Salva as configurações do aplicativo e todos os perfis de dispositivos em um arquivo.', backupRestore: 'Restaurar', backupRestoreHint: 'Carrega as configurações de um arquivo de backup; o aplicativo reinicia.', backupRestoreConfirm: 'Suas configurações e perfis atuais serão substituídos pelo backup e o aplicativo será reiniciado. Continuar?', backupSaved: 'Backup salvo', backupInvalid: 'Este arquivo não é um backup do AULA Toolkit.',

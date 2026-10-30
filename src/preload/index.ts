@@ -4,6 +4,7 @@ import type { DeviceStatus, LogEntry } from '@shared/types';
 import type { BluetoothState, CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
 
 const api: AulaApi = {
+  platform: process.platform,
   getDevices: () => ipcRenderer.invoke(CH.DEVICES),
   onDevices: (cb) => {
     const h = (_e: unknown, d: DeviceStatus[]): void => cb(d);

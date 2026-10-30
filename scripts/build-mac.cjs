@@ -1,0 +1,12 @@
+'use strict';
+const { spawnSync } = require('node:child_process');
+const { join } = require('node:path');
+const { mkdirSync } = require('node:fs');
+if (process.platform !== 'darwin') throw new Error('Build the macOS native helper on macOS.');
+const root = join(__dirname, '..');
+const out = join(root, 'resources', 'mac', 'display-watch');
+mkdirSync(join(root, 'resources', 'mac'), { recursive: true });
+const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64';
+const result = spawnSync('xcrun', ['swiftc', '-O', '-target', `${arch}-apple-macos14.2`, join(root, 'resources', 'mac', 'DisplayWatch.swift'), '-o', out], { stdio: 'inherit' });
+if (result.error) throw result.error;
+process.exit(result.status ?? 1);

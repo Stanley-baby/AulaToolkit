@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const de: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Bildschirmanzeige', osdToggleHint: 'Zeigt kurz einen Hinweis, wenn du die DPI über die Maustaste änderst oder einen Befehl ausführst.', cliTitle: 'Befehlszeile', cliHint: 'Steuere deine Geräte aus einem Terminal oder Skript mit dem Befehl aula. Alle Befehle: "aula help".', cliCopy: 'Pfad kopieren',
   colRed: 'Rot', colOrange: 'Orange', colYellow: 'Gelb', colGreen: 'Grün', colCyan: 'Cyan', colBlue: 'Blau', colPurple: 'Lila', colPink: 'Pink', colWhite: 'Weiß', colMulti: 'Mehrfarbig',
   notifTitle: 'Benachrichtigungen', notifHint: 'Position, Dauer und Verhalten der Bildschirmanzeige.', osdOnTop: 'Immer im Vordergrund', osdOnTopHint: 'Wird auch über Vollbildspielen und -apps angezeigt.', osdAllDisplays: 'Auf allen Bildschirmen', osdAllDisplaysHint: 'Zeigt den Hinweis auf jedem angeschlossenen Bildschirm.', osdPosition: 'Position', posTopLeft: 'Oben links', posTopCenter: 'Oben Mitte', posTopRight: 'Oben rechts', posCenter: 'Mitte', posBottomLeft: 'Unten links', posBottomCenter: 'Unten Mitte', posBottomRight: 'Unten rechts', osdDuration: 'Dauer', durShort: 'Kurz', durNormal: 'Normal', durLong: 'Lang', osdPreview: 'Vorschau', backupTitle: 'Sicherung', backupHint: 'App-Einstellungen sichern oder wiederherstellen.', backupCreate: 'Sichern', backupCreateHint: 'Speichert die App-Einstellungen und alle Geräteprofile in einer Datei.', backupRestore: 'Wiederherstellen', backupRestoreHint: 'Lädt die Einstellungen aus einer Sicherungsdatei; die App startet neu.', backupRestoreConfirm: 'Deine aktuellen Einstellungen und Profile werden durch die Sicherung ersetzt und die App startet neu. Fortfahren?', backupSaved: 'Sicherung gespeichert', backupInvalid: 'Diese Datei ist keine AULA Toolkit-Sicherung.',

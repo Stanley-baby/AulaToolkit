@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const uk: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Екранний індикатор', osdToggleHint: 'Показує короткий індикатор, коли ви змінюєте DPI кнопкою миші або виконуєте команду.', cliTitle: 'Командний рядок', cliHint: 'Керуйте пристроями з термінала чи скриптів командою aula. Усі команди: "aula help".', cliCopy: 'Копіювати шлях',
   colRed: 'Червоний', colOrange: 'Помаранчевий', colYellow: 'Жовтий', colGreen: 'Зелений', colCyan: 'Блакитний', colBlue: 'Синій', colPurple: 'Фіолетовий', colPink: 'Рожевий', colWhite: 'Білий', colMulti: 'Різнокольоровий',
   notifTitle: 'Сповіщення', notifHint: 'Розташування, тривалість і поведінка екранного індикатора.', osdOnTop: 'Поверх усіх вікон', osdOnTopHint: 'Показується й поверх повноекранних ігор і застосунків.', osdAllDisplays: 'На всіх екранах', osdAllDisplaysHint: 'Показує індикатор на кожному під’єднаному екрані.', osdPosition: 'Розташування', posTopLeft: 'Ліворуч угорі', posTopCenter: 'Угорі по центру', posTopRight: 'Праворуч угорі', posCenter: 'По центру', posBottomLeft: 'Ліворуч унизу', posBottomCenter: 'Унизу по центру', posBottomRight: 'Праворуч унизу', osdDuration: 'Тривалість', durShort: 'Коротка', durNormal: 'Звичайна', durLong: 'Довга', osdPreview: 'Попередній перегляд', backupTitle: 'Резервна копія', backupHint: 'Збереження та відновлення налаштувань застосунку.', backupCreate: 'Створити копію', backupCreateHint: 'Зберігає налаштування застосунку та всі профілі пристроїв у файл.', backupRestore: 'Відновити', backupRestoreHint: 'Завантажує налаштування з резервної копії; застосунок перезапуститься.', backupRestoreConfirm: 'Поточні налаштування та профілі буде замінено резервною копією, застосунок перезапуститься. Продовжити?', backupSaved: 'Копію збережено', backupInvalid: 'Цей файл не є резервною копією AULA Toolkit.',

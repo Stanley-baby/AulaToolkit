@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const tr: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Ekran göstergesi', osdToggleHint: 'Faredeki DPI tuşuyla değişiklik yaptığında veya bir komut çalıştırdığında kısa bir gösterge çıkar.', cliTitle: 'Komut satırı', cliHint: 'Cihazlarını terminalden veya betiklerden aula komutuyla yönet. Tüm komutlar için "aula help" çalıştır.', cliCopy: 'Yolu kopyala',
   colRed: 'Kırmızı', colOrange: 'Turuncu', colYellow: 'Sarı', colGreen: 'Yeşil', colCyan: 'Camgöbeği', colBlue: 'Mavi', colPurple: 'Mor', colPink: 'Pembe', colWhite: 'Beyaz', colMulti: 'Çok renkli',
   notifTitle: 'Bildirimler', notifHint: 'Ekran bildiriminin konumu, süresi ve davranışı.', osdOnTop: 'Bildirim her zaman en üstte', osdOnTopHint: 'Tam ekran oyunların ve uygulamaların üzerinde de gösterilir.', osdAllDisplays: 'Tüm ekranlarda bildirim', osdAllDisplaysHint: 'Göstergeyi bağlı tüm ekranlarda gösterir.', osdPosition: 'Konum', posTopLeft: 'Sol üst', posTopCenter: 'Üst orta', posTopRight: 'Sağ üst', posCenter: 'Orta', posBottomLeft: 'Sol alt', posBottomCenter: 'Alt orta', posBottomRight: 'Sağ alt', osdDuration: 'Süre', durShort: 'Kısa', durNormal: 'Normal', durLong: 'Uzun', osdPreview: 'Önizle', backupTitle: 'Yedekleme ayarları', backupHint: 'Uygulama ayarlarını yedekle veya geri yükle.', backupCreate: 'Yedekle', backupCreateHint: 'Uygulama ayarlarını ve tüm cihaz profillerini bir dosyaya kaydeder.', backupRestore: 'Geri yükle', backupRestoreHint: 'Ayarları bir yedek dosyasından yükler; uygulama yeniden başlar.', backupRestoreConfirm: 'Mevcut ayarlar ve profiller yedektekilerle değiştirilecek, uygulama yeniden başlatılacak. Devam edilsin mi?', backupSaved: 'Yedek kaydedildi', backupInvalid: 'Bu dosya bir AULA Toolkit yedeği değil.',

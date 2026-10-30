@@ -13,8 +13,11 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
-    "dist": "electron-vite build && electron-builder --win",
-    "screenshots": "electron-vite build && node scripts/screenshots.cjs"
+    "dist": "npm run build && electron-builder --win",
+    "screenshots": "electron-vite build && node scripts/screenshots.cjs",
+    "build:mac-native": "node scripts/build-mac.cjs",
+    "dist:mac": "npm run build:mac-native && npm run build && electron-builder --mac --publish never",
+    "prebuild": "node node_modules/electron/install.js"
   },
   "dependencies": {
     "electron-updater": "^6.8.9",
@@ -27,7 +30,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
-    "electron": "^37.2.0",
+    "electron": "45.1.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.0",
     "lucide-react": "^0.525.0",

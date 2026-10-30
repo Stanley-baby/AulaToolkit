@@ -27,6 +27,7 @@ export function configureOsd(next: OsdOptions): void {
 /** Above full-screen apps when requested, otherwise an ordinary always-on-top window. */
 function applyLevel(win: BrowserWindow): void {
   win.setAlwaysOnTop(true, opts.onTop ? 'screen-saver' : 'floating');
+  if (process.platform === 'darwin') win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: opts.onTop });
 }
 
 function slotFor(displayId: number): Slot {

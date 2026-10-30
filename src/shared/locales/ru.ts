@@ -2,6 +2,11 @@
 import type { UiDict } from './en';
 
 export const ru: UiDict = {
+  macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
+  windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
+  macPermissions: 'macOS permissions',
+  macPermissionsHint: 'Allow Input Monitoring for HID access, and Screen & System Audio Recording for music effects. Restart the app after changing permissions.',
+
   osdToggle: 'Экранный индикатор', osdToggleHint: 'Показывает краткий индикатор, когда вы меняете DPI кнопкой мыши или выполняете команду.', cliTitle: 'Командная строка', cliHint: 'Управляйте устройствами из терминала или скриптов командой aula. Список команд: "aula help".', cliCopy: 'Копировать путь',
   colRed: 'Красный', colOrange: 'Оранжевый', colYellow: 'Жёлтый', colGreen: 'Зелёный', colCyan: 'Голубой', colBlue: 'Синий', colPurple: 'Фиолетовый', colPink: 'Розовый', colWhite: 'Белый', colMulti: 'Разноцветный',
   notifTitle: 'Уведомления', notifHint: 'Положение, длительность и поведение экранного индикатора.', osdOnTop: 'Поверх всех окон', osdOnTopHint: 'Показывается и поверх полноэкранных игр и приложений.', osdAllDisplays: 'На всех экранах', osdAllDisplaysHint: 'Показывает индикатор на каждом подключённом экране.', osdPosition: 'Положение', posTopLeft: 'Слева вверху', posTopCenter: 'Вверху по центру', posTopRight: 'Справа вверху', posCenter: 'По центру', posBottomLeft: 'Слева внизу', posBottomCenter: 'Внизу по центру', posBottomRight: 'Справа внизу', osdDuration: 'Длительность', durShort: 'Короткая', durNormal: 'Обычная', durLong: 'Долгая', osdPreview: 'Предпросмотр', backupTitle: 'Резервная копия', backupHint: 'Сохранение и восстановление настроек приложения.', backupCreate: 'Создать копию', backupCreateHint: 'Сохраняет настройки приложения и все профили устройств в файл.', backupRestore: 'Восстановить', backupRestoreHint: 'Загружает настройки из резервной копии; приложение перезапустится.', backupRestoreConfirm: 'Текущие настройки и профили будут заменены резервной копией, приложение перезапустится. Продолжить?', backupSaved: 'Копия сохранена', backupInvalid: 'Этот файл не является резервной копией AULA Toolkit.',

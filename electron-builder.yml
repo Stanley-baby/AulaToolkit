@@ -1,9 +1,10 @@
 appId: dev.aulatoolkit.app
 productName: AULA Toolkit
+electronDist: node_modules/electron/dist
 publish:
   provider: github
-  owner: Livvaa
-  repo: aula-toolkit
+  owner: Stanley-baby
+  repo: AulaToolkit
   releaseType: release
 directories:
   output: release
@@ -12,6 +13,10 @@ files:
   - package.json
   - resources/icon.png
 extraResources:
+  - from: resources/mac
+    to: mac
+    filter:
+      - display-watch
   - from: resources/display-watch.ps1
     to: display-watch.ps1
   - from: resources/media-watch.ps1
@@ -38,3 +43,19 @@ nsis:
   include: resources/installer.nsh
 portable:
   artifactName: AULA-Toolkit-${version}-portable.${ext}
+
+mac:
+  identity: "-"
+  icon: resources/icon.png
+  target:
+    - dmg
+    - zip
+  category: public.app-category.utilities
+  minimumSystemVersion: "14.2"
+  hardenedRuntime: true
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+  artifactName: AULA-Toolkit-${version}-mac-${arch}.${ext}
+  extendInfo:
+    NSAudioCaptureUsageDescription: System audio is analyzed locally to animate keyboard lighting.
+    NSScreenCaptureUsageDescription: Screen and system audio access enables music-reactive keyboard lighting.

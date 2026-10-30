@@ -235,7 +235,7 @@ const MusicCard = ({ modelId }: { modelId: string }) => {
   );
   return (
     <Card title={t('musicEffect')}>
-      <Toggle label={t('musicEffect')} hint={t('musicEffectHint')} on={cur.enabled} onChange={(v) => set({ enabled: v })} />
+      <Toggle label={t('musicEffect')} hint={t(window.aula.platform === 'darwin' ? 'macMusicHint' : 'musicEffectHint')} on={cur.enabled} onChange={(v) => set({ enabled: v })} />
       {cur.enabled && live && (
         <div className="py-2">
           <Segmented value={kind} onChange={(v) => set({ kind: v })} options={[{ value: 'rhythm', label: t('musicRhythm') }, { value: 'effect', label: t('musicKeyEffect') }]} />

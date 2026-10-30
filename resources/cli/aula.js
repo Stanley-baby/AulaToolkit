@@ -42,7 +42,7 @@ function probe() {
 /** Starts the installed app hidden in the tray. Only possible when we run inside AULA Toolkit.exe. */
 function launchApp() {
   const exe = process.execPath;
-  if (!/aula toolkit\.exe$/i.test(exe)) return false;
+  if (!/aula toolkit\.exe$/i.test(exe) && !(process.platform === 'darwin' && /\.app\/Contents\/MacOS\/AULA Toolkit$/.test(exe))) return false;
   const env = { ...process.env };
   delete env.ELECTRON_RUN_AS_NODE;
   spawn(exe, ['--hidden'], { detached: true, stdio: 'ignore', env }).unref();
