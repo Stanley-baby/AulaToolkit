@@ -71,6 +71,13 @@ Mac entitlements and privacy descriptions are included. To sign a distribution,
 override `mac.identity` with your Developer ID identity and use
 electron-builder's `CSC_LINK` / `CSC_KEY_PASSWORD` and supported Apple notarization credentials. Do not add credentials to the repository.
 
+## S75 Pro single-colour static mode
+
+On the tested Mac/S75 Pro revision, firmware effect 1 still animates. For USB,
+the single-colour Static option therefore writes the same colour to all keys
+using the verified per-key protocol. Windows, wireless, dynamic effects and the
+colourful variant retain their original paths; those are not covered by this fix.
+
 ## Verification boundaries
 
 Automated protocol tests validate packet formats and preserve all device features.
