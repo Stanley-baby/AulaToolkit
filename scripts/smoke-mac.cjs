@@ -8,7 +8,7 @@ const net = require('node:net');
 const { spawn, spawnSync } = require('node:child_process');
 const { once } = require('node:events');
 const root = path.resolve(__dirname, '..');
-const base = ['mac-arm64', 'mac'].map((p) => path.join(root, 'release', p, 'AULA Toolkit.app')).find(fs.existsSync);
+const base = process.env.AULA_SMOKE_APP || ['mac-arm64', 'mac'].map((p) => path.join(root, 'release', p, 'AULA Toolkit.app')).find(fs.existsSync);
 assert(base, 'Build the macOS app first.');
 const app = path.join(base, 'Contents/MacOS/AULA Toolkit');
 const cli = path.join(base, 'Contents/Resources/bin/aula');

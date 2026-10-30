@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ native: vi.fn(() => () => undefined), powershell: vi.fn(() => () => undefined) }));
 vi.mock('electron', () => ({ app: { isPackaged: false, getAppPath: () => '/application' } }));
@@ -11,7 +12,7 @@ describe('display notifications use the correct host implementation', () => {
     Object.defineProperty(process, 'platform', { value: 'darwin' });
     const state = vi.fn(), log = vi.fn();
     watchDisplayPower(state, log);
-    expect(mocks.native).toHaveBeenCalledWith('/application/resources/mac/display-watch', [], ['on', 'off'], state, log);
+    expect(mocks.native).toHaveBeenCalledWith(join('/application', 'resources', 'mac', 'display-watch'), [], ['on', 'off'], state, log);
     expect(mocks.powershell).not.toHaveBeenCalled();
   });
   it('preserves the existing Windows watcher', () => {
