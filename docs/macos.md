@@ -98,3 +98,13 @@ are padding; the main-light payload still uses offsets 62/63.
 The corrected table includes Yellow, Green, Ice Blue, Pink and White;
 Blue is 0x25, Neon is 0x28 and Off is 0x29.
 These are shipped-code observations; physical acceptance is tracked separately.
+
+## Current physical acceptance notes
+
+On the tested S75 Pro, the vendor-style side-light commands have not passed
+visual acceptance: the bar keeps cycling colours despite successful transfers.
+Hardware Fn controls work. The packet/table correction above documents the
+vendor program, not proof of successful control on this keyboard revision.
+The screen uploader now rejects missing/empty chunk acknowledgements and sends
+END even on transfer failure; it never reports completion after a timeout.
+Successful transfer still needs separate confirmation of the physical display.
