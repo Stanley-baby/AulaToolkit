@@ -40,7 +40,8 @@ export function lightPayload(l: Partial<LightingState> & { mode: number }): Uint
 export function barPayload(mode: number): Uint8Array {
   const p = new Uint8Array(64);
   p[0] = mode & 0xff;
-  tag(p, 62);
+  // Vendor FUN_00433fd0 uses a 16-byte side-light payload, padded to the feature-report size.
+  tag(p, 14);
   return p;
 }
 

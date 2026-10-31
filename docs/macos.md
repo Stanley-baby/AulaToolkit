@@ -86,3 +86,15 @@ renderer, CLI, native HID module and display helper with simulated devices.
 Real-device read-only validation does not overwrite unknown onboard macros,
 keymaps or screen content. Every supported mouse/receiver model needs its own
 hardware acceptance; successful S75 Pro enumeration is not proof for other models.
+
+## S75 Pro side-light protocol correction
+
+The vendor S75Pro Driver Beta 1.0.0.1 executable (SHA256
+`e92e83b8466fa35bf370f8bc1092f2a851ec303c41893e62d96073ba4d620e3e`)
+places `AA 55` at payload offsets 14/15 in `FUN_00433fd0` (instruction
+`0x434047`), before the transport prepends report ID 0. The remaining bytes
+are padding; the main-light payload still uses offsets 62/63.
+`FUN_00433e20` maps ten language IDs 661..670 to item data 0x20..0x29.
+The corrected table includes Yellow, Green, Ice Blue, Pink and White;
+Blue is 0x25, Neon is 0x28 and Off is 0x29.
+These are shipped-code observations; physical acceptance is tracked separately.

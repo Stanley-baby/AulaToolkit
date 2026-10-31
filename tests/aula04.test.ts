@@ -1,10 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import * as P from '@shared/protocols/aula04';
+import { S75PRO } from '@shared/models/s75pro';
 import { S75PRO_KEYS } from '@shared/models/s75pro.layout';
 
 const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join(' ');
 
 describe('aula04 USB framing', () => {
+  it('places the side-light marker at bytes 14/15, as in vendor FUN_00433fd0', () => {
+    const p = P.barPayload(0x23);
+    expect(p.length).toBe(64);
+    expect(p[0]).toBe(0x23);
+    expect([...p.subarray(14, 16)]).toEqual([0xaa, 0x55]);
+    expect([...p.subarray(16)]).toEqual(Array(48).fill(0));
+  });
+
+  it('keeps all ten vendor side-light modes in language-ID order', () => {
+    expect(S75PRO.barModes?.map(m => m.mode)).toEqual(Array.from({length:10}, (_,i) => 0x20+i));
+    expect(S75PRO.barModes?.find(m => m.name === 'Blue')?.mode).toBe(0x25);
+    expect(S75PRO.barModes?.find(m => m.name === 'Off')?.mode).toBe(0x29);
+  });
+
   it('builds a control command with the packet count', () => {
     const c = P.command(P.OP.KEYMAP, 0, 9);
     expect(hex(c.subarray(0, 10))).toBe('04 11 00 00 00 00 00 00 09 00');
