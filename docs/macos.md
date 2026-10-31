@@ -119,7 +119,8 @@ ordinary keyboard collection, it remains accessible while the screen is locked.
 Windows and other models retain their previous collection preference.
 The fixed helper and vendor interface also passed real display sleep/wake
 automation: 80 main LEDs read back black while the display was off and red after
-wake, without HID errors. Side-light blackout remains unverified.
+wake, without HID errors. On the tested keyboard, the side bar stays lit during
+Mac display sleep; its software blackout has not passed physical acceptance.
 
 ## Macro event timing and playback count
 
@@ -129,4 +130,22 @@ preserved. Only Repeat N mode carries a repeat count; other modes use zero,
 matching the official action encoder. The shared USB/wireless encoder has
 regression coverage. On the tested Mac/S75 Pro receiver, both a one-key macro
 and `abc123` now play once and release correctly after the previous repeating-key
-failure. USB physical macro acceptance is still pending.
+failure. The corrected `abc123` one-shot macro also passed USB physical
+acceptance. Test macros were cleared and the default base keymap was restored.
+
+## Sleep settings and TFT state after reconnect
+
+On the tested S75 Pro over 2.4 GHz, the 1-minute setting turned off the main
+lights, side lights and screen at a manually recorded 61 seconds; a space tap
+woke them. With Never selected, all three remained on during a 90-second idle
+comparison with the app closed. This verifies that observation window, not
+unlimited runtime.
+
+Time synchronization restores the time/date/battery view over both USB and
+2.4 GHz. With the app closed, the stored test animation reappears after wireless
+sleep/wake and after USB reconnect. Time synchronization must not be described
+as permanently replacing an uploaded animation. With the app running, USB
+reattach triggers the existing automatic time sync; both its TIME reply and the
+restored clock view passed acceptance. Wireless wake while the app remains
+attached has not been tested. No periodic clock writes or speculative firmware
+persistence commands were added.
