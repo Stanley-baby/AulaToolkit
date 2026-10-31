@@ -33,7 +33,9 @@ Electron 45 is used for native macOS system-audio loopback. Windows remains supp
   the base lighting after three seconds of silence. Notifications can also activate it.
   Rhythm, colour schemes, sensitivity, backgrounds and wireless fallback effects are retained.
 - Display blackout uses native `NSWorkspace` screen sleep/wake notifications, not
-  a PowerShell process or a polling approximation.
+  a PowerShell process or a polling approximation. The helper initializes AppKit and
+  runs its application event loop; a bare Foundation run loop missed notifications
+  on the tested Mac.
 - The Software Control panel manages Windows EXEs and registry entries. It is
   explicitly marked Windows-only on macOS; no macOS process is disabled by that panel.
 - Closing the main window can hide it to the menu bar. Clicking the Dock icon restores
@@ -108,3 +110,13 @@ vendor program, not proof of successful control on this keyboard revision.
 The screen uploader now rejects missing/empty chunk acknowledgements and sends
 END even on transfer failure; it never reports completion after a timeout.
 Successful transfer still needs separate confirmation of the physical display.
+
+The tested S75 Pro displays both static images and two-frame screen animations,
+and music lighting starts with system audio and restores the base red lighting
+after silence. These have passed user visual confirmation. On macOS, S75 USB
+control prefers the vendor feature collection (usage page 0xFF13): unlike the
+ordinary keyboard collection, it remains accessible while the screen is locked.
+Windows and other models retain their previous collection preference.
+The fixed helper and vendor interface also passed real display sleep/wake
+automation: 80 main LEDs read back black while the display was off and red after
+wake, without HID errors. Side-light blackout remains unverified.

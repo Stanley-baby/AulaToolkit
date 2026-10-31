@@ -48,7 +48,8 @@ export class Aula04Driver implements Driver {
     // USB: the collection that owns the 64-byte feature report (report id 0).
     const usb = devices.filter((d) => match(d, 'usb'));
     if (usb.length) {
-      const pref = usb.slice().sort((a, b) => score(a, match(a, 'usb')!.iface) - score(b, match(b, 'usb')!.iface));
+      const macS75 = process.platform === 'darwin' && model.id === 's75pro';
+      const pref = usb.slice().sort((a, b) => score(a, match(a, 'usb')!.iface, macS75) - score(b, match(b, 'usb')!.iface, macS75));
       for (const d of pref) {
         if (await hasFeatureReport(d, 0, 65)) { ports.main = await HidPort.open(d); break; }
       }
@@ -454,11 +455,13 @@ export class Aula04Driver implements Driver {
   }
 }
 
-function score(d: Device, iface?: number): number {
+function score(d: Device, iface?: number, macS75 = false): number {
   let s = 10;
   if ((d.usagePage ?? 0) >= 0xff00) s -= 5;
-  // The model's control interface must win over a generic vendor collection.
+  // Keep the model control interface unless macOS needs the S75 vendor feature collection.
   if (iface !== undefined && pathIface(d) === iface) s -= 20;
+  // The keyboard collection loses feature access while the Mac screen is locked.
+  if (macS75 && d.usagePage === 0xff13) s -= 30;
   return s;
 }
 

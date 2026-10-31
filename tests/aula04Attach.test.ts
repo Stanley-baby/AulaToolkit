@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mock = vi.hoisted(() => ({ open: vi.fn(), feature: vi.fn() }));
 vi.mock('../src/main/hid/transport', () => ({
   HidPort: { open: mock.open }, hasFeatureReport: mock.feature,
@@ -12,7 +12,10 @@ const devices = [
   { vendorId: 0x0c45, productId: 0x800a, release: 1, path: 'alternate', interface: 3, usagePage: 0xff13 },
   { vendorId: 0x0c45, productId: 0x800a, release: 1, path: 'control', interface: 0, usagePage: 1 },
 ];
+const platform = process.platform;
+afterEach(() => Object.defineProperty(process, 'platform', { value: platform }));
 beforeEach(() => {
+  Object.defineProperty(process, 'platform', { value: 'win32' });
   vi.clearAllMocks();
   mock.open.mockImplementation(async (info) => ({ info, path: info.path, close: async () => undefined }));
   mock.feature.mockResolvedValue(true);
@@ -27,6 +30,19 @@ describe('S75 Pro HID collection selection', () => {
     mock.feature.mockImplementation(async (info) => info.path === 'alternate');
     const driver = await Aula04Driver.attach({ ...S75PRO, features: { ...S75PRO.features, perkey: false } }, devices, { log: vi.fn(), onStatus: vi.fn() });
     expect(driver?.paths).toEqual(['alternate']);
+    await driver?.close();
+  });
+  it('uses the S75 vendor feature collection on macOS so locked-screen access is retained', async () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const driver = await Aula04Driver.attach({ ...S75PRO, features: { ...S75PRO.features, perkey: false } }, devices, { log: vi.fn(), onStatus: vi.fn() });
+    expect(driver?.paths).toEqual(['alternate']);
+    await driver?.close();
+  });
+  it('falls back to the declared interface on macOS if the vendor feature collection fails', async () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    mock.feature.mockImplementation(async (info) => info.path === 'control');
+    const driver = await Aula04Driver.attach({ ...S75PRO, features: { ...S75PRO.features, perkey: false } }, devices, { log: vi.fn(), onStatus: vi.fn() });
+    expect(driver?.paths).toEqual(['control']);
     await driver?.close();
   });
 });
