@@ -120,3 +120,13 @@ Windows and other models retain their previous collection preference.
 The fixed helper and vendor interface also passed real display sleep/wake
 automation: 80 main LEDs read back black while the display was off and red after
 wake, without HID errors. Side-light blackout remains unverified.
+
+## Macro event timing and playback count
+
+The AULA04 encoder inserts the vendor minimum 10 ms gap between adjacent
+key/mouse events without an explicit delay. Existing explicit delays are
+preserved. Only Repeat N mode carries a repeat count; other modes use zero,
+matching the official action encoder. The shared USB/wireless encoder has
+regression coverage. On the tested Mac/S75 Pro receiver, both a one-key macro
+and `abc123` now play once and release correctly after the previous repeating-key
+failure. USB physical macro acceptance is still pending.

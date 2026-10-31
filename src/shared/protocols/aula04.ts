@@ -79,7 +79,7 @@ export function encodeKeyAction(a: KeyAction | undefined): [number, number, numb
       return m ? [0x01, m[0], m[1], 0] : null;
     }
     case 'media': return [0x03, a.usage & 0xff, (a.usage >> 8) & 0xff, 0];
-    case 'macro': return [0x06, a.index & 0xff, a.mode & 0xff, (a.loops ?? 1) & 0xff];
+    case 'macro': return [0x06, a.index & 0xff, a.mode & 0xff, a.mode === 1 ? (a.loops ?? 1) & 0xff : 0];
     default: return null;
   }
 }
@@ -141,7 +141,10 @@ function macroBody(macros: Macro[]): { buf: Uint8Array; len: number } {
   const buf = new Uint8Array(MACRO_MAX);
   let off = MACRO_TABLE;
   macros.slice(0, 100).forEach((m, i) => {
-    const steps = m.steps ?? [];
+    // Vendor macro records keep at least 10 ms between key/mouse edges.
+    const steps = (m.steps ?? []).flatMap<MacroStep>((step, j, raw) =>
+      step.kind !== 'delay' && raw[j + 1] && raw[j + 1].kind !== 'delay'
+        ? [step, { kind: 'delay', ms: 10 }] : [step]);
     if (!steps.length) { buf.set([0xff, 0xff, 0xff, 0xff], i * 4); return; }
     if (off + 8 + steps.length * 4 > MACRO_MAX - 64) throw new Error('Macro memory full');
     buf[i * 4] = off & 0xff; buf[i * 4 + 1] = off >> 8;
