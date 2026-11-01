@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const fr: UiDict = {
+  sideBarSwitchHint: 'Sous macOS en 2,4 GHz, seul marche/arrêt est vérifié. Les couleurs défilent lorsque la lumière est allumée ; le choix de couleur est indisponible.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

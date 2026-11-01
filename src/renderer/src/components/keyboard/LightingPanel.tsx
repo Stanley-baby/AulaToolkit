@@ -111,6 +111,7 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
   const simulated = useEffectPreview(kb?.lighting, model.layout ?? [], kb?.perKey);
   // Over USB the S75 Pro reports what its LEDs show right now; prefer that to the simulation.
   const device = useStore((s) => s.deviceFor(modelId));
+  const barSwitch = window.aula.platform === 'darwin' && modelId === 's75pro' && device?.link === '2.4g';
   const deviceLight = useStore((s) => s.liveLight[modelId]);
   const liveColors = useLiveColors(device?.link === 'usb' ? deviceLight : undefined);
   const anim = useStore((s) => s.settings[modelId]?.keyAnimation);
@@ -196,11 +197,16 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
         </Card>
         {model.features.bar && model.barModes && (
           <Card title={t('sideBar')}>
-            <Select
+            {barSwitch ? <Toggle
+              label={t('sideBar')}
+              hint={t('sideBarSwitchHint')}
+              on={kb.barMode !== 0x29}
+              onChange={(on) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = on ? 0x20 : 0x29; }, 'bar')}
+            /> : <Select
               value={kb.barMode ?? model.barModes[0].mode}
               options={model.barModes.map((b) => ({ value: b.mode, label: tn(b.name) }))}
               onChange={(v) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = v; }, 'bar')}
-            />
+            />}
           </Card>
         )}
         <MusicCard modelId={modelId} />

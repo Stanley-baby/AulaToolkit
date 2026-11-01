@@ -1,5 +1,6 @@
 // English (source language). Every other locale is typed against this one.
 export const en = {
+  sideBarSwitchHint: 'Only On/Off is verified over 2.4 GHz on macOS. On uses multicolour cycling; colour selection is not available.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

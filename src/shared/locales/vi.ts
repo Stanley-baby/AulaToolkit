@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const vi: UiDict = {
+  sideBarSwitchHint: 'Trên macOS qua 2.4 GHz, chỉ bật/tắt đã được xác minh. Khi bật, màu thay đổi luân phiên; chưa hỗ trợ chọn màu.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

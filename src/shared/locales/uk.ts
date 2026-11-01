@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const uk: UiDict = {
+  sideBarSwitchHint: 'У macOS через 2,4 ГГц перевірено лише ввімкнення/вимкнення. Після ввімкнення кольори циклічно змінюються; вибір кольору недоступний.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

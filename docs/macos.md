@@ -119,7 +119,7 @@ ordinary keyboard collection, it remains accessible while the screen is locked.
 Windows and other models retain their previous collection preference.
 The fixed helper and vendor interface also passed real display sleep/wake
 automation: 80 main LEDs read back black while the display was off and red after
-wake, without HID errors. On the tested keyboard, the side bar stays lit during
+wake, without HID errors. On the tested USB connection, the side bar stays lit during
 Mac display sleep; its software blackout has not passed physical acceptance.
 
 ## Macro event timing and playback count
@@ -140,6 +140,21 @@ lights, side lights and screen at a manually recorded 61 seconds; a space tap
 woke them. With Never selected, all three remained on during a 90-second idle
 comparison with the app closed. This verifies that observation window, not
 unlimited runtime.
+
+### Verified receiver side-light switch
+
+On the tested S75 Pro receiver, mode `0x24` turns the side lights off and
+`0x21` turns them on with multicolour cycling, not static red. Mode `0x22`
+did not produce the expected blue. These results do not establish the USB
+mapping or arbitrary colour control.
+
+On macOS over 2.4 GHz, the side-light panel therefore offers an On/Off switch
+instead of unverified colour names. Profiles retain the existing semantic
+Off value `0x29`; the driver sends `0x24` for Off and `0x21` for any enabled
+profile mode. This also covers display-off and wake restoration without
+rewriting saved profiles. Windows, Linux, other devices and USB framing are
+unchanged. The integrated Mac display-sleep/wake flow still needs physical
+acceptance; the two raw receiver commands have passed user observation.
 
 Time synchronization restores the time/date/battery view over both USB and
 2.4 GHz. With the app closed, the stored test animation reappears after wireless
