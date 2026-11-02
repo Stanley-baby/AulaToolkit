@@ -16,11 +16,12 @@ import { S75PRO } from '../src/shared/models/s75pro';
 const host = process.platform;
 afterEach(() => { Object.defineProperty(process, 'platform', { value: host }); vi.clearAllMocks(); });
 
-describe('verified Mac S75 receiver side-light switch', () => {
+describe('verified Mac S75 side-light effects', () => {
   it.each([
     ['darwin', 's75pro', 0x29, 0x24],
-    ['darwin', 's75pro', 0x20, 0x21],
+    ['darwin', 's75pro', 0x20, 0x20],
     ['darwin', 's75pro', 0x21, 0x21],
+    ['darwin', 's75pro', 0x22, 0x21],
     ['darwin', 's75pro', 0x25, 0x21],
     ['darwin', 's75pro', 0x24, 0x21],
     ['win32', 's75pro', 0x29, 0x29],

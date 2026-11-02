@@ -275,8 +275,8 @@ export class Aula04Driver implements Driver {
 
   setBarLight(mode: number): Promise<void> {
     return this.port.exclusive(async () => {
-      // shortcut: only USB flow/cycle/Off and receiver On/Off are verified; expand after hardware acceptance.
-      const wireMode = process.platform === 'darwin' && this.model.id === 's75pro' ? (mode === 0x29 ? 0x24 : this.link === 'usb' && mode === 0x20 ? 0x20 : 0x21) : mode;
+      // shortcut: only flow/cycle/Off are verified on this Mac S75; expand after hardware acceptance.
+      const wireMode = process.platform === 'darwin' && this.model.id === 's75pro' ? (mode === 0x29 ? 0x24 : mode === 0x20 ? 0x20 : 0x21) : mode;
       if (this.link === '2.4g') {
         const d = new Uint8Array(28); d[0] = wireMode; d[14] = 0xaa; d[15] = 0x55;
         await this.radio(P.dongleFrame(P.DONGLE_CMD.LIGHT, 0x01, 0, d));

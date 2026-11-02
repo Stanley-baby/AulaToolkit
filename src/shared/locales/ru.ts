@@ -4,8 +4,7 @@ import type { UiDict } from './en';
 export const ru: UiDict = {
   sideBarFlow: "Многоцветный поток",
   sideBarCycle: "Одноцветная смена",
-  sideBarEffectsHint: "Проверено по USB на этом S75 Pro с macOS. Цвет меняется со временем; фиксированный цвет и управление скоростью не проверены.",
-  sideBarSwitchHint: 'В macOS через 2,4 ГГц проверено только включение/выключение. При включении цвета циклически меняются; выбор цвета недоступен.',
+  sideBarEffectsHint: "Проверено по USB и 2,4 ГГц на этом S75 Pro с macOS. Цвет меняется со временем; фиксированный цвет и управление скоростью не проверены.",
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

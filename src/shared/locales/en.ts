@@ -2,8 +2,7 @@
 export const en = {
   sideBarFlow: "Multicolour flow",
   sideBarCycle: "Single-colour cycling",
-  sideBarEffectsHint: "Verified over USB on this Mac S75 Pro. Cycling changes colour over time; fixed colour and speed controls are not verified.",
-  sideBarSwitchHint: 'Only On/Off is verified over 2.4 GHz on macOS. On uses multicolour cycling; colour selection is not available.',
+  sideBarEffectsHint: "Verified over USB and 2.4 GHz on this Mac S75 Pro. Cycling changes colour over time; fixed colour and speed controls are not verified.",
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

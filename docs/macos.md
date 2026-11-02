@@ -143,22 +143,22 @@ woke them. With Never selected, all three remained on during a 90-second idle
 comparison with the app closed. This verifies that observation window, not
 unlimited runtime.
 
-### Verified USB and receiver side-light switch
+### Verified USB and receiver side-light effects
 
 On the tested S75 Pro over both USB and the receiver, mode `0x24` turns the side lights off and
 `0x21` turns them on with multicolour cycling, not static red. Mode `0x22`
 did not produce the expected blue on the receiver. These results do not establish
 arbitrary colour control.
 
-On macOS, USB offers the physically verified effects `0x20` (multicolour flow),
-`0x21` (one-colour-at-a-time cycling) and Off. The receiver still offers only
-On/Off; the USB flow result is not generalized to radio. Cycling is not a fixed
+On macOS, both USB and the receiver offer the physically verified effects `0x20` (multicolour flow),
+`0x21` (one-colour-at-a-time cycling) and Off. Separate receiver mode20/21 tests confirmed the same visible effects.
+Cycling is not a fixed
 colour, and an independent speed field has not been established.
 
-Profiles retain the semantic Off value `0x29`, mapped to wire `0x24`. USB preserves
+Profiles retain the semantic Off value `0x29`, mapped to wire `0x24`. Both links preserve
 `0x20` for flow and sends `0x21` for cycling or other legacy enabled values.
-The receiver sends `0x21` for all enabled values as before. Existing USB profiles
-with `0x20` now select flow rather than the previous normalized cycling effect.
+Existing receiver profiles with `0x20` now select flow rather than the previous
+normalized cycling effect, as USB profiles already do.
 Display-off/wake restores the saved effect through the same driver; no periodic
 side-light writes are added. Windows, Linux, other devices and framing are unchanged.
 Both USB and receiver integrated display-off/on flows passed user observation;

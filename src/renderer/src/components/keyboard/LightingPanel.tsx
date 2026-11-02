@@ -112,8 +112,7 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
   // Over USB the S75 Pro reports what its LEDs show right now; prefer that to the simulation.
   const device = useStore((s) => s.deviceFor(modelId));
   const macBar = window.aula.platform === 'darwin' && modelId === 's75pro';
-  const barSwitch = macBar && device?.link === '2.4g';
-  const barEffects = macBar && device?.link === 'usb';
+  const barEffects = macBar && (device?.link === 'usb' || device?.link === '2.4g');
   const deviceLight = useStore((s) => s.liveLight[modelId]);
   const liveColors = useLiveColors(device?.link === 'usb' ? deviceLight : undefined);
   const anim = useStore((s) => s.settings[modelId]?.keyAnimation);
@@ -206,12 +205,7 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
                 onChange={(v) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = v; }, 'bar')}
               />
               <p className="text-xs text-muted mt-3">{t('sideBarEffectsHint')}</p>
-            </> : barSwitch ? <Toggle
-              label={t('sideBar')}
-              hint={t('sideBarSwitchHint')}
-              on={kb.barMode !== 0x29}
-              onChange={(on) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = on ? 0x20 : 0x29; }, 'bar')}
-            /> : <Select
+            </> : <Select
               value={kb.barMode ?? model.barModes[0].mode}
               options={model.barModes.map((b) => ({ value: b.mode, label: tn(b.name) }))}
               onChange={(v) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = v; }, 'bar')}
