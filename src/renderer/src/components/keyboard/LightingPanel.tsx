@@ -111,7 +111,9 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
   const simulated = useEffectPreview(kb?.lighting, model.layout ?? [], kb?.perKey);
   // Over USB the S75 Pro reports what its LEDs show right now; prefer that to the simulation.
   const device = useStore((s) => s.deviceFor(modelId));
-  const barSwitch = window.aula.platform === 'darwin' && modelId === 's75pro' && (device?.link === 'usb' || device?.link === '2.4g');
+  const macBar = window.aula.platform === 'darwin' && modelId === 's75pro';
+  const barSwitch = macBar && device?.link === '2.4g';
+  const barEffects = macBar && device?.link === 'usb';
   const deviceLight = useStore((s) => s.liveLight[modelId]);
   const liveColors = useLiveColors(device?.link === 'usb' ? deviceLight : undefined);
   const anim = useStore((s) => s.settings[modelId]?.keyAnimation);
@@ -197,7 +199,14 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
         </Card>
         {model.features.bar && model.barModes && (
           <Card title={t('sideBar')}>
-            {barSwitch ? <Toggle
+            {barEffects ? <>
+              <Select
+                value={kb.barMode === 0x29 ? 0x29 : kb.barMode === 0x20 ? 0x20 : 0x21}
+                options={[{ value: 0x20, label: t('sideBarFlow') }, { value: 0x21, label: t('sideBarCycle') }, { value: 0x29, label: tn('Off') }]}
+                onChange={(v) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = v; }, 'bar')}
+              />
+              <p className="text-xs text-muted mt-3">{t('sideBarEffectsHint')}</p>
+            </> : barSwitch ? <Toggle
               label={t('sideBar')}
               hint={t('sideBarSwitchHint')}
               on={kb.barMode !== 0x29}

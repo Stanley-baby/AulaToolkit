@@ -150,14 +150,19 @@ On the tested S75 Pro over both USB and the receiver, mode `0x24` turns the side
 did not produce the expected blue on the receiver. These results do not establish
 arbitrary colour control.
 
-On macOS over USB or 2.4 GHz, the side-light panel therefore offers an On/Off switch
-instead of unverified colour names. Profiles retain the existing semantic
-Off value `0x29`; the driver sends `0x24` for Off and `0x21` for any enabled
-profile mode. This also covers display-off and wake restoration without
-rewriting saved profiles. Windows, Linux, other devices and packet framing are
-unchanged. The receiver's integrated Mac display-sleep/wake flow passed two user
-observations; an earlier run missed an automatic On reply and remains unresolved.
-USB integrated display-sleep/wake has not been re-tested with this mapping.
+On macOS, USB offers the physically verified effects `0x20` (multicolour flow),
+`0x21` (one-colour-at-a-time cycling) and Off. The receiver still offers only
+On/Off; the USB flow result is not generalized to radio. Cycling is not a fixed
+colour, and an independent speed field has not been established.
+
+Profiles retain the semantic Off value `0x29`, mapped to wire `0x24`. USB preserves
+`0x20` for flow and sends `0x21` for cycling or other legacy enabled values.
+The receiver sends `0x21` for all enabled values as before. Existing USB profiles
+with `0x20` now select flow rather than the previous normalized cycling effect.
+Display-off/wake restores the saved effect through the same driver; no periodic
+side-light writes are added. Windows, Linux, other devices and framing are unchanged.
+Both USB and receiver integrated display-off/on flows passed user observation;
+an earlier receiver run missed an automatic On reply and remains unresolved.
 
 Time synchronization restores the time/date/battery view over both USB and
 2.4 GHz. Earlier app-closed wireless sleep/wake tests returned to the stored test

@@ -2,7 +2,10 @@
 import type { UiDict } from './en';
 
 export const tr: UiDict = {
-  sideBarSwitchHint: 'macOS üzerinde USB ve 2.4 GHz için yalnızca açma/kapatma doğrulandı. Açıkken çok renkli döngü kullanılır; renk seçimi yoktur.',
+  sideBarFlow: "Çok renkli akış",
+  sideBarCycle: "Tek renk döngüsü",
+  sideBarEffectsHint: "Bu macOS S75 Pro üzerinde USB ile doğrulandı. Renk zamanla değişir; sabit renk ve hız kontrolü doğrulanmadı.",
+  sideBarSwitchHint: 'macOS üzerinde 2.4 GHz için yalnızca açma/kapatma doğrulandı. Açıkken çok renkli döngü kullanılır; renk seçimi yoktur.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

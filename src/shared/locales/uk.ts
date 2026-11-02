@@ -2,7 +2,10 @@
 import type { UiDict } from './en';
 
 export const uk: UiDict = {
-  sideBarSwitchHint: 'У macOS через USB та 2,4 ГГц перевірено лише ввімкнення/вимкнення. Після ввімкнення кольори циклічно змінюються; вибір кольору недоступний.',
+  sideBarFlow: "Багатоколірний потік",
+  sideBarCycle: "Одноколірна зміна",
+  sideBarEffectsHint: "Перевірено через USB на цьому S75 Pro з macOS. Колір змінюється з часом; сталий колір і керування швидкістю не перевірено.",
+  sideBarSwitchHint: 'У macOS через 2,4 ГГц перевірено лише ввімкнення/вимкнення. Після ввімкнення кольори циклічно змінюються; вибір кольору недоступний.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

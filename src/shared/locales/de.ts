@@ -2,7 +2,10 @@
 import type { UiDict } from './en';
 
 export const de: UiDict = {
-  sideBarSwitchHint: 'Unter macOS über USB und 2,4 GHz ist nur Ein/Aus bestätigt. Eingeschaltet wechseln die Farben; eine Farbauswahl ist nicht verfügbar.',
+  sideBarFlow: "Mehrfarbiger Fluss",
+  sideBarCycle: "Einfarbiger Farbwechsel",
+  sideBarEffectsHint: "Über USB auf diesem Mac S75 Pro bestätigt. Die Farbe wechselt mit der Zeit; feste Farben und Geschwindigkeitssteuerung sind nicht bestätigt.",
+  sideBarSwitchHint: 'Unter macOS über 2,4 GHz ist nur Ein/Aus bestätigt. Eingeschaltet wechseln die Farben; eine Farbauswahl ist nicht verfügbar.',
   macMusicHint: 'On macOS, sustained system sound activates this effect. Allow system audio recording in Privacy & Security.',
   windowsSoftwareOnly: 'This panel manages Windows-only AULA executables and registry entries. It does not apply to macOS.',
   macPermissions: 'macOS permissions',

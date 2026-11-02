@@ -2,7 +2,10 @@
 import type { UiDict } from './en';
 
 export const zh: UiDict = {
-  sideBarSwitchHint: 'macOS 的有线和 2.4G 连接目前仅验证了开关。开启后为多色轮换，暂不提供颜色选择。',
+  sideBarFlow: "多色流动",
+  sideBarCycle: "单色轮换",
+  sideBarEffectsHint: "已在这台 S75 Pro 的 macOS 有线连接中验证。单色轮换会随时间换色，并非固定颜色；独立颜色和速度控制尚未验证。",
+  sideBarSwitchHint: 'macOS 的 2.4G 连接目前仅验证了开关。开启后为多色轮换，暂不提供颜色选择。',
   macMusicHint: '在 macOS 上，持续的系统声音会触发灯效。请在“隐私与安全性”中允许录制系统音频。',
   windowsSoftwareOnly: '此面板管理 Windows 的 AULA 程序和注册表项，macOS 不使用这些组件。',
   macPermissions: 'macOS 权限',
