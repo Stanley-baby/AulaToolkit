@@ -262,7 +262,7 @@ export class Aula04Driver implements Driver {
   // ---- public API (reached through IPC `call`) ----
   setLighting(l: LightingState): Promise<void> {
     // shortcut: this Mac S75 revision animates mode 1; use verified per-key static until its firmware mapping is known.
-    if (process.platform === 'darwin' && this.model.id === 's75pro' && this.link === 'usb' && l.mode === 1 && !l.colorful) {
+    if (process.platform === 'darwin' && this.model.id === 's75pro' && l.mode === 1 && !l.colorful) {
       return this.setUserLight(Object.fromEntries(this.keys.map((k) => [k.code, l.color])), l.brightness);
     }
     this.effects?.setMode(l.mode);

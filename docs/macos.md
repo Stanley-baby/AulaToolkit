@@ -75,10 +75,12 @@ electron-builder's `CSC_LINK` / `CSC_KEY_PASSWORD` and supported Apple notarizat
 
 ## S75 Pro single-colour static mode
 
-On the tested Mac/S75 Pro revision, firmware effect 1 still animates. For USB,
-the single-colour Static option therefore writes the same colour to all keys
-using the verified per-key protocol. Windows, wireless, dynamic effects and the
-colourful variant retain their original paths; those are not covered by this fix.
+On the tested Mac/S75 Pro revision, firmware effect 1 still animates on USB and
+2.4 GHz. The single-colour Static option therefore writes the same colour to all
+keys using the existing per-key protocol on both links. The receiver's all-key
+blue and red per-key static tests passed physical confirmation; the radio route
+also has regression coverage. Windows, other models, dynamic effects and the
+colourful variant retain their original paths.
 
 ## Verification boundaries
 
