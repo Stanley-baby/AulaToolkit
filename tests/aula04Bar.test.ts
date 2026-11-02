@@ -45,15 +45,27 @@ describe('verified Mac S75 receiver side-light switch', () => {
     await d.close();
   });
 
-  it.each(['darwin', 'win32'])('%s keeps USB side-light payload unchanged', async (platform) => {
+  it.each([
+    ['darwin', 's75pro', 0x29, 0x24],
+    ['darwin', 's75pro', 0x20, 0x21],
+    ['darwin', 's75pro', 0x21, 0x21],
+    ['darwin', 's75pro', 0x25, 0x21],
+    ['darwin', 's75pro', 0x24, 0x21],
+    ['win32', 's75pro', 0x29, 0x29],
+    ['win32', 's75pro', 0x25, 0x25],
+    ['linux', 's75pro', 0x29, 0x29],
+    ['darwin', 'other', 0x29, 0x29],
+  ] as const)('%s %s USB profile=%i sends=%i', async (platform, id, requested, actual) => {
     Object.defineProperty(process, 'platform', { value: platform });
-    const d = (await Aula04Driver.attach({ ...S75PRO, features: { ...S75PRO.features, perkey: false } }, [
+    const d = (await Aula04Driver.attach({ ...S75PRO, id, features: { ...S75PRO.features, perkey: false } }, [
       { vendorId: 0x0c45, productId: 0x800a, release: 1, path: 'usb', interface: 0 },
     ], { log: vi.fn(), onStatus: vi.fn() }))!;
-    await d.setBarLight(0x29);
-    const payload = mocks.send.mock.calls.map(c => c[1]).find(p => p[0] === 0x29);
-    expect(payload?.[0]).toBe(0x29);
+    await d.setBarLight(requested);
+    expect(mocks.send).toHaveBeenCalledTimes(5);
+    const payload = mocks.send.mock.calls[2][1];
+    expect(payload[0]).toBe(actual);
     expect([...payload.slice(14, 16)]).toEqual([0xaa, 0x55]);
+    expect([...payload.slice(1, 14), ...payload.slice(16)]).toEqual(Array(61).fill(0));
     expect(mocks.write).not.toHaveBeenCalled();
     await d.close();
   });

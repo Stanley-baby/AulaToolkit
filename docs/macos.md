@@ -105,10 +105,10 @@ These are shipped-code observations; physical acceptance is tracked separately.
 
 ## Current physical acceptance notes
 
-On the tested S75 Pro, the vendor-style side-light commands have not passed
-visual acceptance: the bar keeps cycling colours despite successful transfers.
-Hardware Fn controls work. The packet/table correction above documents the
-vendor program, not proof of successful control on this keyboard revision.
+On the tested S75 Pro, the original vendor-labelled side-light values did not
+pass visual acceptance. The corrected Mac On/Off mapping below has since passed
+physical tests on USB and the receiver. Hardware Fn controls also work. The
+vendor colour table above is not proof of arbitrary software colour control.
 The screen uploader now rejects missing/empty chunk acknowledgements and sends
 END even on transfer failure; it never reports completion after a timeout.
 Successful transfer still needs separate confirmation of the physical display.
@@ -143,24 +143,29 @@ woke them. With Never selected, all three remained on during a 90-second idle
 comparison with the app closed. This verifies that observation window, not
 unlimited runtime.
 
-### Verified receiver side-light switch
+### Verified USB and receiver side-light switch
 
-On the tested S75 Pro receiver, mode `0x24` turns the side lights off and
+On the tested S75 Pro over both USB and the receiver, mode `0x24` turns the side lights off and
 `0x21` turns them on with multicolour cycling, not static red. Mode `0x22`
-did not produce the expected blue. These results do not establish the USB
-mapping or arbitrary colour control.
+did not produce the expected blue on the receiver. These results do not establish
+arbitrary colour control.
 
-On macOS over 2.4 GHz, the side-light panel therefore offers an On/Off switch
+On macOS over USB or 2.4 GHz, the side-light panel therefore offers an On/Off switch
 instead of unverified colour names. Profiles retain the existing semantic
 Off value `0x29`; the driver sends `0x24` for Off and `0x21` for any enabled
 profile mode. This also covers display-off and wake restoration without
-rewriting saved profiles. Windows, Linux, other devices and USB framing are
-unchanged. The integrated Mac display-sleep/wake flow still needs physical
-acceptance; the two raw receiver commands have passed user observation.
+rewriting saved profiles. Windows, Linux, other devices and packet framing are
+unchanged. The receiver's integrated Mac display-sleep/wake flow passed two user
+observations; an earlier run missed an automatic On reply and remains unresolved.
+USB integrated display-sleep/wake has not been re-tested with this mapping.
 
 Time synchronization restores the time/date/battery view over both USB and
-2.4 GHz. With the app closed, the stored test animation reappears after wireless
-sleep/wake and after USB reconnect. Time synchronization must not be described
+2.4 GHz. Earlier app-closed wireless sleep/wake tests returned to the stored test
+animation, while later controlled cycles kept the clock in both volume and screen
+navigation modes. USB reconnect with the app closed also returned to the animation.
+In screen navigation mode, the knob can select the animation or settings from
+the clock view. Holding Fn and briefly pressing the knob once restored volume
+control on this unit; a long press was not required. Time synchronization must not be described
 as permanently replacing an uploaded animation. With the app running, USB
 reattach triggers the existing automatic time sync; both its TIME reply and the
 restored clock view passed acceptance. Wireless wake while the app remains
