@@ -146,17 +146,21 @@ unlimited runtime.
 ### Verified USB and receiver side-light effects
 
 On the tested S75 Pro over both USB and the receiver, mode `0x24` turns the side lights off and
-`0x21` turns them on with multicolour cycling, not static red. Mode `0x22`
-did not produce the expected blue on the receiver. These results do not establish
-arbitrary colour control.
+`0x21` selects one-colour-at-a-time cycling. Later controlled `0x21` to `0x22`
+comparisons established static lighting on both links, not the vendor-labelled blue.
+On the receiver, Fn + /? changed static red to white without changing the main
+lighting; reapplying `0x22` and a `0x21` to `0x22` roundtrip both retained white.
+USB `0x22` independently produced white static lighting. These observations do not
+establish arbitrary software colour selection or power-cycle colour persistence.
 
 On macOS, both USB and the receiver offer the physically verified effects `0x20` (multicolour flow),
-`0x21` (one-colour-at-a-time cycling) and Off. Separate receiver mode20/21 tests confirmed the same visible effects.
+`0x21` (one-colour-at-a-time cycling), `0x22` (static using the keyboard colour setting) and Off. Separate receiver mode20/21 tests confirmed the same visible effects.
 Cycling is not a fixed
 colour, and an independent speed field has not been established.
 
 Profiles retain the semantic Off value `0x29`, mapped to wire `0x24`. Both links preserve
-`0x20` for flow and sends `0x21` for cycling or other legacy enabled values.
+`0x20` for flow and `0x22` for static, and send `0x21` for cycling or other legacy enabled values.
+Existing `0x22` profiles now select static rather than normalized cycling.
 Existing receiver profiles with `0x20` now select flow rather than the previous
 normalized cycling effect, as USB profiles already do.
 Display-off/wake restores the saved effect through the same driver; no periodic

@@ -200,8 +200,8 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
           <Card title={t('sideBar')}>
             {barEffects ? <>
               <Select
-                value={kb.barMode === 0x29 ? 0x29 : kb.barMode === 0x20 ? 0x20 : 0x21}
-                options={[{ value: 0x20, label: t('sideBarFlow') }, { value: 0x21, label: t('sideBarCycle') }, { value: 0x29, label: tn('Off') }]}
+                value={kb.barMode === 0x29 ? 0x29 : kb.barMode === 0x20 ? 0x20 : kb.barMode === 0x22 ? 0x22 : 0x21}
+                options={[{ value: 0x20, label: t('sideBarFlow') }, { value: 0x21, label: t('sideBarCycle') }, { value: 0x22, label: t('sideBarStatic') }, { value: 0x29, label: tn('Off') }]}
                 onChange={(v) => update(modelId, (p) => { if (p.keyboard) p.keyboard.barMode = v; }, 'bar')}
               />
               <p className="text-xs text-muted mt-3">{t('sideBarEffectsHint')}</p>
