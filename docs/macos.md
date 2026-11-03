@@ -164,6 +164,14 @@ side-light writes are added. Windows, Linux, other devices and framing are uncha
 Both USB and receiver integrated display-off/on flows passed user observation;
 an earlier receiver run missed an automatic On reply and remains unresolved.
 
+Receiver side-light setters now reject a missing matched reply instead of silently
+resolving. The UI reports an unconfirmed keyboard command, not a sleeping mouse.
+Display blackout and restoration still attempt the main lighting if the side
+command fails; the side error remains visible. The existing 300 ms matching
+window, report normalization and transport write-error retry are unchanged; no
+timeout retry or new polling is added. This fixes failure reporting and isolation,
+not the still-unexplained historical loss of a reply.
+
 Time synchronization restores the time/date/battery view over both USB and
 2.4 GHz. Earlier app-closed wireless sleep/wake tests returned to the stored test
 animation, while later controlled cycles kept the clock in both volume and screen

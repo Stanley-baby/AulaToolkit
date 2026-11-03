@@ -47,17 +47,18 @@ async function show(modelId: string, look: Look, force = false): Promise<void> {
   if (look !== 'base') shown.set(modelId, look);
   const file = s.settings[modelId];
   try {
+    // Side errors are already toasted by call(); they must not block main lighting.
     if (look === 'dark') {
       // S75 Pro: brightness 0 turns the strip back on and mode 0 is ignored, so the bar goes first and
       // then an all-black per-key layout at brightness 1.
       const barOff = model.barModes?.find((b) => b.name === 'Off')?.mode;
-      if (model.features.bar && barOff !== undefined) await s.call(modelId, 'setBarLight', barOff);
+      if (model.features.bar && barOff !== undefined) await s.call(modelId, 'setBarLight', barOff).catch(() => undefined);
       if (model.features.perkey) await s.call(modelId, 'setUserLight', {}, 1);
       else await s.call(modelId, 'setLighting', { ...k.lighting, brightness: 0 });
       return;
     }
     // bar first, see above
-    if (was === 'dark' && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode);
+    if (was === 'dark' && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode).catch(() => undefined);
     if (look === 'rhythm' && file?.music) {
       if (!(await acquireAudio())) s.toast(s.t('audioUnavailable'), 'error');
       startLive(modelId, rhythmSource(modelId, file.music));

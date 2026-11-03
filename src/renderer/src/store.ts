@@ -276,6 +276,7 @@ export const useStore = create<State>((set, get) => ({
 }));
 
 function friendlyError(t: (k: TKey) => string, msg: string): string {
+  if (msg.includes('SIDE_LIGHT_NO_REPLY')) return t('sideBarNoReply');
   if (/not connected|closed|HID/i.test(msg)) return t('errDisconnected');
   if (/asleep|no reply/i.test(msg)) return t('asleep');
   if (/USB/i.test(msg)) return t('errUsbOnly');

@@ -279,7 +279,8 @@ export class Aula04Driver implements Driver {
       const wireMode = process.platform === 'darwin' && this.model.id === 's75pro' ? (mode === 0x29 ? 0x24 : mode === 0x20 ? 0x20 : 0x21) : mode;
       if (this.link === '2.4g') {
         const d = new Uint8Array(28); d[0] = wireMode; d[14] = 0xaa; d[15] = 0x55;
-        await this.radio(P.dongleFrame(P.DONGLE_CMD.LIGHT, 0x01, 0, d));
+        const reply = await this.radio(P.dongleFrame(P.DONGLE_CMD.LIGHT, 0x01, 0, d));
+        if (!reply) throw new Error('SIDE_LIGHT_NO_REPLY');
         return;
       }
       await this.usbWrite(P.OP.LIGHT, P.barPayload(wireMode));

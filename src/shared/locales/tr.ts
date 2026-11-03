@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const tr: UiDict = {
+  sideBarNoReply: "Klavye yan ışık komutunu onaylamadı. Uyanık olduğunu ve alıcının bağlı olduğunu kontrol edip yeniden deneyin.",
   sideBarFlow: "Çok renkli akış",
   sideBarCycle: "Tek renk döngüsü",
   sideBarEffectsHint: "Bu macOS S75 Pro üzerinde USB ve 2.4 GHz ile doğrulandı. Renk zamanla değişir; sabit renk ve hız kontrolü doğrulanmadı.",

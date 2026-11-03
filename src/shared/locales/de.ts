@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const de: UiDict = {
+  sideBarNoReply: "Die Tastatur hat den Seitenlichtbefehl nicht bestätigt. Prüfe, ob sie wach und der Empfänger verbunden ist, und versuche es erneut.",
   sideBarFlow: "Mehrfarbiger Fluss",
   sideBarCycle: "Einfarbiger Farbwechsel",
   sideBarEffectsHint: "Über USB und 2,4 GHz auf diesem Mac S75 Pro bestätigt. Die Farbe wechselt mit der Zeit; feste Farben und Geschwindigkeitssteuerung sind nicht bestätigt.",

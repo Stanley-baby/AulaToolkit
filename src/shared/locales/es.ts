@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const es: UiDict = {
+  sideBarNoReply: "El teclado no confirmó la orden de las luces laterales. Comprueba que esté activo y el receptor conectado, y vuelve a intentarlo.",
   sideBarFlow: "Flujo multicolor",
   sideBarCycle: "Ciclo de un color",
   sideBarEffectsHint: "Verificado por USB y 2,4 GHz en este S75 Pro con macOS. El color cambia con el tiempo; no se han verificado el color fijo ni el control de velocidad.",

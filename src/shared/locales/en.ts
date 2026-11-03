@@ -1,5 +1,6 @@
 // English (source language). Every other locale is typed against this one.
 export const en = {
+  sideBarNoReply: "The keyboard did not confirm the side-light command. Check that it is awake and the receiver is connected, then try again.",
   sideBarFlow: "Multicolour flow",
   sideBarCycle: "Single-colour cycling",
   sideBarEffectsHint: "Verified over USB and 2.4 GHz on this Mac S75 Pro. Cycling changes colour over time; fixed colour and speed controls are not verified.",

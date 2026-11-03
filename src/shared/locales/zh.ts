@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const zh: UiDict = {
+  sideBarNoReply: "侧灯指令未收到键盘确认，请检查键盘已唤醒且接收器已连接后重试。",
   sideBarFlow: "多色流动",
   sideBarCycle: "单色轮换",
   sideBarEffectsHint: "已在这台 S75 Pro 的 macOS 有线和 2.4G 连接中验证。单色轮换会随时间换色，并非固定颜色；独立颜色和速度控制尚未验证。",

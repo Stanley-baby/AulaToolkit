@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const vi: UiDict = {
+  sideBarNoReply: "Bàn phím chưa xác nhận lệnh đèn bên. Kiểm tra bàn phím đã thức và đầu thu đã kết nối rồi thử lại.",
   sideBarFlow: "Dòng nhiều màu",
   sideBarCycle: "Luân phiên một màu",
   sideBarEffectsHint: "Đã xác minh qua USB và 2.4 GHz trên S75 Pro này với macOS. Màu thay đổi theo thời gian; chưa xác minh màu cố định và điều khiển tốc độ.",

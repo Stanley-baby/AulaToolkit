@@ -2,6 +2,7 @@
 import type { UiDict } from './en';
 
 export const fr: UiDict = {
+  sideBarNoReply: "Le clavier n’a pas confirmé la commande des lumières latérales. Vérifiez qu’il est réveillé et que le récepteur est connecté, puis réessayez.",
   sideBarFlow: "Flux multicolore",
   sideBarCycle: "Cycle monochrome",
   sideBarEffectsHint: "Vérifié en USB et en 2,4 GHz sur ce S75 Pro sous macOS. La couleur change avec le temps ; la couleur fixe et la vitesse ne sont pas vérifiées.",
