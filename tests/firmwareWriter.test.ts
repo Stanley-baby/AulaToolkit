@@ -1,10 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import { expect, it } from 'vitest';
 
-const require = createRequire(import.meta.url);
-const writer = require('../resources/firmware/stock-flash.cjs');
+const filename = resolve('resources/firmware/stock-flash.cjs');
+const require = createRequire(filename);
+const context = {
+  module: { exports: {} as ReturnType<typeof require> }, Buffer, __dirname: dirname(filename),
+  // This checks packets, not elapsed device pacing; Windows rounds short timers up.
+  require: (id: string) => id === 'node:timers/promises' ? { setTimeout: async () => undefined } : require(id),
+};
+runInNewContext(readFileSync(filename, 'utf8'), context, { filename });
+const writer = context.module.exports;
 const image = readFileSync(resolve('resources/firmware/S75Pro-F106.bin'));
 const target = { vendorId: 0x0c45, productId: 0x800a, product: 'AULA-S75Pro', usagePage: 0xff13, usage: 1, path: 'test' };
 
