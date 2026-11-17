@@ -4,6 +4,7 @@ import { modelById } from '@shared/models';
 import { imageFor } from '../assets';
 import { useStore, useT, useTn } from '../store';
 import { Card } from './ui';
+import { FirmwarePanel } from './FirmwarePanel';
 
 /** Per-device preferences that are not part of a profile: colourway, removal from the device list. */
 export const DeviceSettingsPanel = ({ modelId }: { modelId: string }) => {
@@ -50,6 +51,7 @@ export const DeviceSettingsPanel = ({ modelId }: { modelId: string }) => {
         <input className="input w-full" placeholder={model.name} value={nickname} maxLength={24} onChange={(e) => setNickname(modelId, e.target.value)} />
         <div className="text-xs text-muted mt-2">{t('nicknameHint')}</div>
       </Card>
+      {modelId === 's75pro' && window.aula.platform === 'darwin' && <FirmwarePanel />}
       {model.kind === 'keyboard' && (
         <Card title={t('resetKeyboard')}>
           <p className="text-sm text-muted mb-3">{t('resetKeyboardHint')}</p>

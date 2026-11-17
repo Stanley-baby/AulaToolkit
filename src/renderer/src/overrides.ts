@@ -1,14 +1,14 @@
 // lighting that temporarily replaces the profile's (the profile itself isn't touched).
-// priority: monitor off > music > gif on the keys. profile writes + knob tracking wait meanwhile
+// priority: monitor off > music > gif on the keys > per-key breathing. profile writes + knob tracking wait meanwhile
 // (apply.ts, bridges.ts)
 import { modelById } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { acquireAudio, releaseAudio, watchAudioPlayback } from './audio';
-import { animationSource, rhythmSource, startLive, stopLive } from './liveEngine';
+import { animationSource, breathingSource, rhythmSource, startLive, stopLive } from './liveEngine';
 import { activeProfile, useStore } from './store';
 
-type Look = 'dark' | 'rhythm' | 'effect' | 'animation' | 'base';
-const LIVE: Look[] = ['rhythm', 'animation'];
+type Look = 'dark' | 'rhythm' | 'effect' | 'animation' | 'breathing' | 'base';
+const LIVE: Look[] = ['rhythm', 'animation', 'breathing'];
 
 const MUSIC_STOP_DELAY_MS = 3000; // players pause briefly between tracks
 
@@ -32,6 +32,8 @@ function wanted(modelId: string): Look {
   const usb = s.deviceFor(modelId)?.link === 'usb' && model.protocol === 'aula04';
   if (mediaPlaying && file.music?.enabled) return (file.music.kind ?? 'rhythm') === 'rhythm' && usb ? 'rhythm' : 'effect';
   if (file.keyAnimation?.enabled && file.keyAnimation.libraryId && usb) return 'animation';
+  const k = activeProfile(s, modelId)?.keyboard;
+  if (usb && model.features.perkey && k?.lighting.mode === USER_LIGHT_MODE && k.perKeyBreathing) return 'breathing';
   return 'base';
 }
 
@@ -43,10 +45,12 @@ async function show(modelId: string, look: Look, force = false): Promise<void> {
   if (!model || !k) { await leaveLive(modelId, was); shown.delete(modelId); return; }
   if (was === look && !force) return;
   if (!s.deviceFor(modelId)) return; // not connected, done on reconnect
-  await leaveLive(modelId, was);
-  if (look !== 'base') shown.set(modelId, look);
   const file = s.settings[modelId];
   try {
+    // Keep the current stream visible while replacement frames are prepared.
+    const source = look === 'animation' && file?.keyAnimation ? await animationSource(modelId, file.keyAnimation) : null;
+    await leaveLive(modelId, was);
+    if (look !== 'base') shown.set(modelId, look);
     // Side errors are already toasted by call(); they must not block main lighting.
     if (look === 'dark') {
       // S75 Pro: brightness 0 turns the strip back on and mode 0 is ignored, so the bar goes first and
@@ -61,20 +65,29 @@ async function show(modelId: string, look: Look, force = false): Promise<void> {
     if (was === 'dark' && model.features.bar && k.barMode !== undefined) await s.call(modelId, 'setBarLight', k.barMode).catch(() => undefined);
     if (look === 'rhythm' && file?.music) {
       if (!(await acquireAudio())) s.toast(s.t('audioUnavailable'), 'error');
-      startLive(modelId, rhythmSource(modelId, file.music));
+      startLive(modelId, rhythmSource(modelId, file.music), 'rhythm');
       return;
     }
     if (look === 'animation' && file?.keyAnimation) {
-      const source = await animationSource(modelId, file.keyAnimation);
-      if (source) { startLive(modelId, source); return; }
+      if (source) { startLive(modelId, source, 'animation'); return; }
       shown.delete(modelId); // deleted from the library
       look = 'base';
+    }
+    if (look === 'breathing') {
+      startLive(modelId, breathingSource(modelId), 'breathing');
+      return;
     }
     if (look === 'effect' && file?.music) await s.call(modelId, 'setLighting', { ...k.lighting, mode: file.music.mode, speed: file.music.speed });
     else if (k.lighting.mode === USER_LIGHT_MODE) await s.call(modelId, 'setUserLight', k.perKey, k.lighting.brightness);
     else await s.call(modelId, 'setLighting', k.lighting);
     if (look === 'base') shown.delete(modelId);
   } catch {
+    if (look === 'animation') {
+      await leaveLive(modelId, was);
+      shown.delete(modelId);
+      s.toast(s.t('errGeneric'), 'error');
+      await s.call(modelId, 'setLighting', k.lighting).catch(() => undefined);
+    }
     // call() already showed a toast, the next change or reconnect tries again
   }
 }
@@ -132,7 +145,7 @@ export function registerOverrides(): void {
     }
     for (const id of Object.keys(s.settings)) {
       const a = s.settings[id], b = prev.settings[id];
-      if (a === b || (a?.music === b?.music && a?.keyAnimation === b?.keyAnimation && a?.displayBlackout === b?.displayBlackout)) continue;
+      if (a === b || (a?.music === b?.music && a?.keyAnimation === b?.keyAnimation && a?.displayBlackout === b?.displayBlackout && a?.profiles === b?.profiles && a?.activeProfile === b?.activeProfile)) continue;
       const look = wanted(id);
       const edited = (look === 'rhythm' || look === 'effect') ? a?.music !== b?.music : look === 'animation' ? a?.keyAnimation !== b?.keyAnimation : false;
       serial(() => show(id, look, edited));

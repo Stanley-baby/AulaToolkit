@@ -1,0 +1,36 @@
+{
+  "kind": "persistent-quick-wake-switch-F105",
+  "sha256": "ed95aa99b162b8f3746288c02bc04e403b21c86e1792f9c8cb662b1c6c2e8ab3",
+  "bytes": 262144,
+  "checksum": 26572,
+  "release": 61701,
+  "hooks": {
+    "hook_init": {
+      "address": 106496,
+      "bytes": 24
+    },
+    "hook_main_light": {
+      "address": 106528,
+      "bytes": 120
+    },
+    "hook_side_light": {
+      "address": 106656,
+      "bytes": 24
+    },
+    "hook_screen": {
+      "address": 106688,
+      "bytes": 120
+    },
+    "hook_idle": {
+      "address": 106816,
+      "bytes": 332
+    }
+  },
+  "reloadAddress": 107520,
+  "reloadBytes": 120,
+  "selector": {
+    "0..3": "stock deep presets",
+    "4..123": "deep minutes=selector-3",
+    "128..247": "quick wake minutes=selector-127"
+  }
+}

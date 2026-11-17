@@ -21,8 +21,9 @@ export const hex = (b: ArrayLike<number>, max = 64): string =>
 
 export type Logger = (dir: '→' | '←' | '⇢' | '⇠' | '!' | 'i', text: string) => void;
 
-export function listDevices(): Device[] {
-  try { return HID.devices(); } catch { return []; }
+export async function listDevices(): Promise<Device[]> {
+  // macOS enumerates on the worker pool so hot-plug scans do not stall native window resizing.
+  try { return process.platform === 'darwin' ? await HID.devicesAsync() : HID.devices(); } catch { return []; }
 }
 
 export const pathIface = (d: Device): number | null => {
@@ -68,6 +69,8 @@ export class HidPort {
   /** True while an operation is running or queued on this port. */
   get busy(): boolean { return this.pending > 0; }
   private pending = 0;
+
+  async drain(): Promise<void> { await this.tail; }
 
   flushInput(): void { this.queue = []; }
 

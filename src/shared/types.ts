@@ -146,6 +146,8 @@ export interface LightingState {
 export interface KeyboardProfile {
   lighting: LightingState;
   perKey: Record<number, [number, number, number]>;
+  /** App-driven USB breathing over the saved per-key colors; absent means off. */
+  perKeyBreathing?: boolean;
   keymap: Record<number, KeyAction>;
   fnKeymap: Record<number, KeyAction>;
   settings: Record<string, number>;
@@ -218,6 +220,10 @@ export interface KeyAnimation {
   libraryId: string;
   name: string;
   mode: 'cover' | 'fit';
+  /** Clockwise degrees; older profiles without this field use 0. */
+  rotation?: 0 | 90 | 180 | 270;
+  /** Missing field keeps area averaging; false samples each key's centre. */
+  averageColor?: boolean;
   /** 1 = original speed */
   speed: number;
   /** 10..100 %. */
@@ -237,6 +243,11 @@ export interface DeviceStatus {
   batteryAt?: number | null;
   charging: boolean;
   firmware?: string;
+  /** This connected controller accepts the S75 Pro custom sleep selector range. */
+  customSleep?: boolean;
+  fastWakeControl?: boolean;
+  /** F106 accepts deep, quick, and two-stage intelligent sleep. */
+  smartSleepControl?: boolean;
   /** Live values read back from the device, when the protocol supports reads. */
   live?: Partial<MouseProfile> & { sensor?: string; receiver8k?: boolean; modelCode?: number };
   /** Some collections never answer (e.g. the mouse is asleep). */

@@ -1,4 +1,5 @@
 import { useId, useRef } from 'react';
+import referenceLight from '../../assets/devices/s75pro-reference-light.png';
 import type { KeyDef } from '@shared/types';
 
 interface Props {
@@ -10,12 +11,13 @@ interface Props {
   /** Background glow colour for the whole board. */
   glow?: string;
   dimUnpainted?: boolean;
+  barMode?: number;
   /** Render the lights over a top-down photo instead of the vector board. */
-  photo?: { src: string; width: number; height: number };
+  photo?: { src: string; width: number; height: number; x?: number; y?: number; translucent?: boolean; outline?: string };
 }
 
 /** Vector keyboard rendered from the vendor layout; coordinates are in the 800x300 image space. */
-export const KeyboardView = ({ keys, colors = {}, selected, labels = {}, onKey, glow, dimUnpainted, photo }: Props) => {
+export const KeyboardView = ({ keys, colors = {}, selected, labels = {}, onKey, glow, dimUnpainted, photo, barMode = 0x20 }: Props) => {
   const dragging = useRef(false);
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   if (photo) {
@@ -28,30 +30,72 @@ export const KeyboardView = ({ keys, colors = {}, selected, labels = {}, onKey, 
     return (
       <svg viewBox={vb} className="w-full select-none" onMouseLeave={() => (dragging.current = false)} onMouseUp={() => (dragging.current = false)}>
         <defs>
-          <filter id="kblur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.5" /></filter>
-          {/* Keycaps are opaque: the glow is only visible in the gaps between caps. */}
+          {photo.outline && <clipPath id={`kcase-${uid}`} data-case-outline="true">
+            <path d={photo.outline} transform={`translate(${photo.x ?? 0} ${photo.y ?? 0}) scale(${photo.width} ${photo.height})`} />
+          </clipPath>}
+          <filter id="kblur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation={photo.translucent ? 0.7 : 2.5} /></filter>
           <mask id="kgaps">
-            <rect x="0" y="0" width={photo.width} height={photo.height} fill="#fff" />
+            <rect x={photo.x ?? 0} y={photo.y ?? 0} width={photo.width} height={photo.height} fill="#fff" />
             {keys.map((k) => <rect key={k.code} x={k.x + 1} y={k.y + 1} width={k.w - 2} height={k.h - 2} rx="3" fill="#000" />)}
           </mask>
         </defs>
-        <image href={photo.src} width={photo.width} height={photo.height} />
+        <g clipPath={photo.outline ? `url(#kcase-${uid})` : undefined}>
+        <image href={photo.src} x={photo.x ?? 0} y={photo.y ?? 0} width={photo.width} height={photo.height} preserveAspectRatio="none" />
+        {photo.translucent ? <>
+          <defs>
+            <filter id={`kneutral-${uid}`}><feColorMatrix type="saturate" values="0" /></filter>
+            <clipPath id={`kneutral-caps-${uid}`}>{keys.map(k=><rect key={k.code} x={k.x-4} y={k.y-4} width={k.w+8} height={k.h+8} rx="3" />)}</clipPath>
+            <clipPath id={`klight-caps-${uid}`}>{keys.map(k=><rect key={k.code} x={k.x-1} y={k.y-1} width={k.w+2} height={k.h+2} rx="3" />)}</clipPath>
+            <mask id={`kref-${uid}`} style={{ maskType: 'alpha' }}>
+              <image href={referenceLight} x="70" y="3.5" width="658" height="279" />
+            </mask>
+            <clipPath id={`kslot-${uid}`}><rect x="657.2" y="74.8" width="3.1" height="55.2" rx="1.1" /></clipPath>
+            <path id={`ksides-${uid}`} d="M80.3 75 V263 Q80.3 276.4 96 276.4 H125.7 M717.8 75 V263 Q717.8 276.4 702 276.4 H673.5" />
+            <mask id={`kside-mask-${uid}`} style={{ maskType: 'alpha' }}>
+              <use href={`#ksides-${uid}`} fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round" />
+            </mask>
+            <linearGradient id={`kspectrum-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              {['#ff3040','#ffdc30','#30ff80','#30dcff','#6050ff','#ff30c0','#ff3040','#ffdc30','#30ff80','#30dcff','#6050ff','#ff30c0','#ff3040'].map((c,i)=><stop key={i} offset={i/12} stopColor={c} />)}
+            </linearGradient>
+          </defs>
+          <image href={photo.src} x={photo.x ?? 0} y={photo.y ?? 0} width={photo.width} height={photo.height} preserveAspectRatio="none" filter={`url(#kneutral-${uid})`} clipPath={`url(#kneutral-caps-${uid})`} />
+          {/* The alpha texture is sampled from the supplied red/off reference, not synthetic glow. */}
+          <g data-reference-light="true" clipPath={`url(#klight-caps-${uid})`} mask={`url(#kref-${uid})`} style={{ mixBlendMode: 'screen' }}>
+            {keys.map(k => colors[k.code] && <rect key={k.code} data-reference-key={k.code} x={k.x-3} y={k.y-3} width={k.w+6} height={k.h+6} fill={`rgb(${colors[k.code].join(',')})`} />)}
+          </g>
+          <g clipPath={`url(#kslot-${uid})`}>
+            <rect x="657.2" y="74.8" width="3.1" height="55.2" fill="#111" />
+            <rect className="s75-slot-flow" x="657.2" y="74.8" width="3.1" height="110.4" fill={`url(#kspectrum-${uid})`} />
+          </g>
+          {/* Cover the photo's fixed side LEDs before rendering the saved body-light mode. */}
+          <use data-side-blackout="true" href={`#ksides-${uid}`} fill="none" stroke="#171717" strokeWidth="4.2" strokeLinecap="round" />
+          {barMode !== 0x29 && <g data-side-mode={barMode} mask={`url(#kside-mask-${uid})`}>
+            {barMode === 0x20 ?
+              <rect className="s75-side-flow" x="76" y="75" width="646" height="402.8" fill={`url(#kspectrum-${uid})`} /> :
+              barMode === 0x22 ?
+                <rect data-side-static="true" x="76" y="75" width="646" height="201.4" fill="#e6e6e6" /> :
+                <rect className="s75-side-cycle" x="76" y="75" width="646" height="201.4" fill="#ff3030" />}
+          </g>}
+        </> : <>
         {/* Light spilling between the caps: one LED under each switch, towards the bottom of the cap. */}
-        <g mask="url(#kgaps)">
-          {keys.map((k) => {
-            const c = colors[k.code];
-            if (!c) return null;
-            const v = Math.max(c[0], c[1], c[2]) / 255;
-            return <ellipse key={k.code} cx={k.x + k.w / 2} cy={k.y + k.h * 0.82} rx={k.w * 0.46 + 1} ry={k.h * 0.34 + 1} style={{ fill: `rgb(${c[0]},${c[1]},${c[2]})`, opacity: 0.3 + v * 0.45, mixBlendMode: 'screen' }} filter="url(#kblur)" />;
-          })}
+        <g mask="url(#kgaps)" style={{ mixBlendMode: 'screen' }}>
+          {/* One blur pass for the whole frame instead of one offscreen surface per key. */}
+          <g filter="url(#kblur)">
+            {keys.map((k) => {
+              const c = colors[k.code];
+              if (!c) return null;
+              const v = Math.max(c[0], c[1], c[2]) / 255;
+              return <ellipse key={k.code} cx={k.x + k.w / 2} cy={k.y + k.h * 0.82} rx={k.w * 0.46 + 1} ry={k.h * 0.34 + 1} style={{ fill: `rgb(${c[0]},${c[1]},${c[2]})`, opacity: 0.3 + v * 0.45 }} />;
+            })}
+          </g>
         </g>
         {/* The same light faintly tinting the lower edge of each cap, as on the real (white) keycaps. */}
-        <g>
+        <g style={{ mixBlendMode: 'multiply' }}>
           {keys.map((k) => {
             const c = colors[k.code];
             if (!c) return null;
             const v = Math.max(c[0], c[1], c[2]) / 255;
-            return <rect key={k.code} x={k.x + 1} y={k.y + 1} width={k.w - 2} height={k.h - 2} rx="3" fill={`url(#kcap-${uid}-${k.code})`} style={{ opacity: v < 0.04 ? 0 : 0.12 + v * 0.2, mixBlendMode: 'multiply' }} />;
+            return <rect key={k.code} x={k.x + 1} y={k.y + 1} width={k.w - 2} height={k.h - 2} rx="3" fill={`url(#kcap-${uid}-${k.code})`} style={{ opacity: v < 0.04 ? 0 : 0.12 + v * 0.2 }} />;
           })}
         </g>
         <defs>
@@ -66,11 +110,13 @@ export const KeyboardView = ({ keys, colors = {}, selected, labels = {}, onKey, 
             );
           })}
         </defs>
+        </>}
         {keys.map((k) => (
           <rect key={k.code} className="key" data-selected={selected?.has(k.code) ? 'true' : 'false'} x={k.x} y={k.y} width={k.w} height={k.h} rx="4" fill="transparent" stroke={selected?.has(k.code) ? 'var(--color-accent)' : 'transparent'} strokeWidth="2"
             onMouseDown={(e) => { e.preventDefault(); dragging.current = true; onKey?.(k.code, false); }}
             onMouseEnter={() => { if (dragging.current) onKey?.(k.code, true); }} />
         ))}
+        </g>
       </svg>
     );
   }

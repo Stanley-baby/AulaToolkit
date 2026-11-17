@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ write: vi.fn(), send: vi.fn(), next: vi.fn(), last: new Uint8Array(32) }));
 vi.mock('../src/main/hid/transport', () => ({
   HidPort: { open: async (info: { path: string }) => ({
-    info, path: info.path, close: async () => undefined,
+    info, path: info.path, close: async () => undefined, drain: async () => undefined,
     exclusive: async (fn: () => Promise<unknown>) => fn(),
     write: async (id: number, frame: Uint8Array) => { mocks.last.set(frame); mocks.write(id, frame); },
     flushInput: () => undefined, nextInput: mocks.next,

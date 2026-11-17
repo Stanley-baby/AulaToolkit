@@ -42,6 +42,19 @@ export async function decodeImage(dataUrl: string): Promise<DecodedFrame[]> {
 export interface CropPos { x: number; y: number }
 export const CENTRE: CropPos = { x: 0.5, y: 0.5 };
 
+/** Rotate the source before fitting it to the wide keyboard, not the TFT screen. */
+export function drawKeyAnimation(ctx: OffscreenCanvasRenderingContext2D, bmp: ImageBitmap, w: number, h: number, mode: FitMode, rotation: 0 | 90 | 180 | 270 = 0): void {
+  const sideways = rotation === 90 || rotation === 270;
+  const width = sideways ? h : w, height = sideways ? w : h;
+  ctx.save();
+  try {
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(rotation * Math.PI / 180);
+    ctx.translate(-width / 2, -height / 2);
+    drawInto(ctx, bmp, width, height, mode);
+  } finally { ctx.restore(); }
+}
+
 export function drawInto(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, bmp: ImageBitmap | undefined, w: number, h: number, mode: FitMode, pos: CropPos = CENTRE): void {
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
   if (!bmp) return;

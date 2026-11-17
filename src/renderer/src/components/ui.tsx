@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, ChevronRight, X } from 'lucide-react';
 
-export const Toggle = ({ on, onChange, label, hint }: { on: boolean; onChange: (v: boolean) => void; label?: string; hint?: string }) => (
+export const Toggle = ({ on, onChange, label, hint, disabled = false }: { on: boolean; onChange: (v: boolean) => void; label?: string; hint?: string; disabled?: boolean }) => (
   <label className="flex items-center justify-between gap-4 py-2 cursor-pointer">
     {label && (
       <span className="flex flex-col">
@@ -10,7 +10,7 @@ export const Toggle = ({ on, onChange, label, hint }: { on: boolean; onChange: (
         {hint && <span className="text-xs text-muted">{hint}</span>}
       </span>
     )}
-    <button type="button" className="switch" data-on={on} onClick={() => onChange(!on)} aria-pressed={on} />
+    <button type="button" className="switch" data-on={on} onClick={() => onChange(!on)} aria-pressed={on} aria-label={label} disabled={disabled} />
   </label>
 );
 

@@ -1,11 +1,13 @@
+import { useId } from 'react';
 import { BatteryCharging, BatteryMedium, Bluetooth, Cable, Radio, RefreshCw, Moon } from 'lucide-react';
 import { modelById } from '@shared/models';
-import { imageFor } from '../assets';
+import { imageFor, S75_SMOKED_PHOTO } from '../assets';
 import { useStore, useT, useTn } from '../store';
 import { Card } from './ui';
 import { BatteryCard } from './BatteryCard';
 
 export const Overview = ({ modelId }: { modelId: string }) => {
+  const photoClip = `overview-case-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const t = useT();
   const tn = useTn();
   const model = modelById(modelId)!;
@@ -43,7 +45,11 @@ export const Overview = ({ modelId }: { modelId: string }) => {
             </div>
           </div>
           <div className="w-[300px] shrink-0 relative flex items-center justify-center p-3">
-            <img src={imageFor(image)} alt={model.name} className="relative w-full object-contain drop-shadow-2xl" draggable={false} />
+            <img src={imageFor(image)} alt={model.name} className={`relative w-full object-contain drop-shadow-2xl ${modelId === 's75pro' ? 's75-overview-light' : ''}`} draggable={false} />
+            {modelId === 's75pro' && <svg viewBox="0 0 1913 822" role="img" aria-label={model.name} className="s75-overview-dark relative w-full drop-shadow-2xl">
+              <defs><clipPath id={photoClip} clipPathUnits="objectBoundingBox" data-case-outline="true"><path d={S75_SMOKED_PHOTO.outline} /></clipPath></defs>
+              <image href={S75_SMOKED_PHOTO.src} width="1913" height="822" clipPath={`url(#${photoClip})`} />
+            </svg>}
           </div>
         </div>
       </section>

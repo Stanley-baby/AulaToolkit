@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="238" viewBox="0 0 1200 238" role="img" aria-labelledby="title desc">
+  <title id="title">AULA Toolkit · macOS</title>
+  <desc id="desc">在 Mac 上管理 S75 Pro 的灯光、按键、小屏幕和休眠。非官方 AulaToolkit 分支。</desc>
+  <rect width="1200" height="238" rx="18" fill="#121416"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif">
+    <text x="52" y="55" fill="#ff774c" font-size="25" font-weight="600" letter-spacing="2">S75 PRO / macOS</text>
+    <text x="48" y="135" fill="#f6f5f2" font-size="76" font-weight="700" letter-spacing="-2">AULA Toolkit</text>
+    <text x="52" y="194" fill="#bec1c6" font-size="29">灯光、按键、小屏幕，以及更灵活的休眠。</text>
+  </g>
+  <g transform="translate(998 62)" fill="none" stroke="#70757d" stroke-width="2">
+    <rect width="62" height="62" rx="9"/><rect x="72" width="62" height="62" rx="9"/>
+    <rect y="74" width="134" height="42" rx="8" stroke="#ff774c"/>
+    <path d="M12 54h38M84 54h38" stroke="#ff774c" stroke-width="4"/>
+    <g fill="#f6f5f2" stroke="none" font-family="-apple-system, Segoe UI, sans-serif" font-size="23" text-anchor="middle"><text x="31" y="36">Fn</text><text x="103" y="36">⌘</text></g>
+  </g>
+</svg>

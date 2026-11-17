@@ -15,7 +15,8 @@ const cli = path.join(base, 'Contents/Resources/bin/aula');
 const output = path.join(root, 'release/smoke');
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'aula-mac-smoke-'));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const env = { ...process.env, AULA_USER_DATA: profile, AULA_SIM: 's75pro,sc900,f75', AULA_SIM_ONLY: '1', AULA_SCREENSHOTS: output };
+// The Mac CLI socket follows TMPDIR, so isolated tests must not reach an installed app.
+const env = { ...process.env, TMPDIR: profile, AULA_USER_DATA: profile, AULA_SIM: 's75pro,sc900,f75', AULA_SIM_ONLY: '1', AULA_SCREENSHOTS: output };
 delete env.ELECTRON_RUN_AS_NODE;
 fs.mkdirSync(path.join(profile, 'settings'), { recursive: true });
 fs.writeFileSync(path.join(profile, 'settings/prefs.json'), JSON.stringify({ language: 'en', onboarded: true, knownDevices: ['s75pro', 'sc900', 'f75'], autostart: 'off', updateInterval: 'never', autoDownload: false }));
@@ -31,7 +32,7 @@ async function main() {
   child.stdout.on('data', (b) => { log += b; }); child.stderr.on('data', (b) => { log += b; });
   const exited = once(child, 'exit');
   let ws;
-  const timeout = setTimeout(() => child.kill('SIGTERM'), 90000);
+  const timeout = setTimeout(() => child.kill('SIGKILL'), 90000);
   try {
     let page;
     for (let i = 0; i < 100 && !page; i++) {
@@ -100,7 +101,7 @@ async function main() {
   } finally {
     fs.writeFileSync(path.join(output, 'runtime.log'), log);
     clearTimeout(timeout); ws?.close();
-    if (child.exitCode === null && child.signalCode === null) { child.kill('SIGTERM'); await exited; }
+    if (child.exitCode === null && child.signalCode === null) { child.kill('SIGKILL'); await exited; }
     fs.rmSync(profile, { recursive: true, force: true });
   }
 }

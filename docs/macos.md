@@ -1,51 +1,83 @@
-# macOS support
+# AULA Toolkit on macOS
 
-The macOS port keeps the existing device drivers, all keyboard and mouse editors,
-profiles, macros, screen/GIF library, backups, diagnostics, battery history,
-notifications, OSD, tray view and CLI. It does not replace them with a sleep-only utility.
+This fork keeps AulaToolkit's keyboard and mouse editors and adds a native Mac application experience, with physical acceptance focused on the **AULA S75 Pro**. It is unofficial and is not affiliated with AULA.
 
-## Requirements and building
+[Download 0.3.0](https://github.com/Stanley-baby/AulaToolkit/releases/tag/v0.3.0) · [Chinese homepage](../README.md) · [F106 firmware](../firmware/s75pro/README.md)
 
-- macOS 14.2 or newer (system audio capture requires this version).
-- Node.js 22.15+ or 24, npm, and Xcode Command Line Tools.
-- A data-capable USB cable or a supported 2.4 GHz receiver for device configuration.
+## Install
+
+Requirements: **macOS 14.2 or newer**, a data-capable USB cable or supported 2.4 GHz receiver. Choose the `arm64` DMG for Apple Silicon or `x64` for Intel, then drag AULA Toolkit.app to Applications. Ordinary configuration does not require F106; extended hardware sleep does.
+
+### Opening the app
+
+The distributed Mac builds are ad-hoc signed and **not notarized**. If macOS blocks the application, attempt to open it, then use **System Settings → Privacy & Security → Open Anyway** for that application. Review the release and file checksums before approving it. Apple explains this flow in its [official guide](https://support.apple.com/en-us/102445).
+
+Keep one installed copy. Moving to a new build or changing its code signature can require macOS permissions to be granted again; add the actual installed application, not a build-directory backup.
+
+## What works over each connection
+
+| Feature | USB | 2.4 GHz | Bluetooth |
+| --- | :---: | :---: | :---: |
+| Main/side lighting, keymaps and macros | Yes | Yes | Configure through USB/receiver first |
+| Live LED readback, GIF on keys, per-key breathing | Yes | No | No |
+| TFT image/GIF upload | Yes | No | No |
+| F106 sleep configuration | Yes | Yes | Configure through USB/receiver first |
+| Stored F106 sleep behavior | Charging behavior differs | Yes | Yes |
+| Firmware update/recovery | Yes | No | No |
+
+S75 Pro physical tests include typing, macros, side effects, TFT uploads, sleep and wake. Other inherited models (including F75 and SC900 Pro) retain their drivers and editors, but have not all been physically accepted on Mac.
+
+## Permissions
+
+- **Input Monitoring** may be required if macOS refuses HID access. Restart the application after changing permission. The USB vendor feature collection is preferred for S75 Pro control so the interface remains available while the display is locked.
+- **Screen & System Audio Recording / System Audio Recording** is requested for system-audio lighting. Capture is local and active while the corresponding music feature runs. The microphone is not used.
+- macOS music detection follows sustained audible output and restores base lighting after silence. A notification sound can activate it; this is different from Windows media-session status.
+- The Windows EXE/registry Software Control page is marked Windows-only on Mac.
+
+The window uses native Mac controls, supports resizing, returns from the Dock, and can close to the menu bar. **Command-Q** fully exits. First-run login launch defaults to off.
+
+## F106 hardware sleep
+
+The device page includes a firmware panel with reviewed F106 and previous F105 images, progress, configuration backup and recovery state. Updating is manual and requires wired mode. See the [firmware instructions and exact SHA-256 values](../firmware/s75pro/README.md) before flashing.
+
+F106 provides custom **1–120 minute** timeouts and three strategies:
+
+- **Deep sleep:** original radio shutdown/wake behavior.
+- **Quick wake:** lights and TFT go dark while radio communication and key scanning remain active.
+- **Two-stage sleep:** for example, dark at 3 minutes and deep sleep after 5 total idle minutes. Physical input restarts the timer.
+
+Configure through USB or the receiver, then switch to Bluetooth if desired. These settings work with the App closed. The tested Bluetooth and receiver quick stage accepted complete `abc123` input without noticeable reconnection wait; the deep stage retained the original delay. Exact latency and current draw have not been measured.
+
+USB/charging idle behavior differs from unplugged wireless use. Mac display blackout can turn off main and body-side LEDs while the App runs; the TFT still follows hardware idle timing. Do not equate monitor sleep with immediate full keyboard deep sleep.
+
+## Lighting and screen notes
+
+- The physically calibrated Mac effect mapping preserves logical App IDs. Recognized V1.03/F104–F106 identities use their standard wire IDs; an unrecognized older revision uses the verified alternate mapping.
+- Side effects **flow**, **one-color-at-a-time cycle**, **static using the hardware-selected color**, and **off** passed wired/receiver observation. Arbitrary software RGB selection for body-side LEDs is not implemented.
+- USB live readback drives the on-screen lighting preview. Effect pattern guesses are disabled on Mac rather than replacing the user's selected mode.
+- Per-key breathing, key GIFs and music bars require USB. Stopping a breathing session or quitting restores its static per-key colors.
+- TFT images/GIFs are uploaded over USB. Missing chunk acknowledgements are errors. There is no complete screen-content readback; an upload confirmation needs physical screen observation.
+- Time sync selects the clock/date/battery view. An uploaded animation remains stored and can be selected with the knob's screen controls. On the tested keyboard, holding Fn and briefly pressing the knob switches its volume/screen navigation mode.
+
+## Known issues in 0.3.0
+
+- Single-key fade at `#ff4747` can turn red near the tail. Rounding and scan-dither experiments did not solve it and are **not included** in F106.
+- Dynamic fade intensity can trigger an inferred brightness OSD. A proposed App-only fix remains unpublished. Notifications can be disabled temporarily in Settings.
+- Sleep current, endurance and all hardware revisions have not been measured. Do not interpret a dark screen as a measured power state.
+
+## Build and verify
 
 ```sh
 npm ci
 npm run typecheck
 npm test
 npm run dist:mac
+node scripts/smoke-mac.cjs
 ```
 
-The build compiles the Swift display watcher for the current host architecture,
-then creates a DMG and ZIP in `release/`. CI builds Apple Silicon and Intel separately.
-Electron 45 is used for native macOS system-audio loopback. Windows remains supported.
+The build compiles the Swift display watcher for the host architecture and writes DMG/ZIP files to `release/`. CI builds Apple Silicon and Intel separately and checks Windows compatibility. The packaged smoke test runs real Electron, preload, renderer, native HID, CLI and persistence against **simulated devices in isolated storage**, without writing to the user's keyboard.
 
-## Permissions and platform differences
-
-- Grant **Input Monitoring** to AULA Toolkit if macOS refuses HID access. Restart
-  the app after changing this permission. Ordinary keyboard input needs no driver.
-- Enable a music effect in Lighting, then grant **Screen & System Audio Recording**
-  / **System Audio Recording** when macOS asks. Capture is local and is only active
-  while a music effect is enabled. Microphone audio is not requested.
-- macOS has no public equivalent of Windows' global media-session status reader.
-  The port activates music effects after sustained audible system output and restores
-  the base lighting after three seconds of silence. Notifications can also activate it.
-  Rhythm, colour schemes, sensitivity, backgrounds and wireless fallback effects are retained.
-- Display blackout uses native `NSWorkspace` screen sleep/wake notifications, not
-  a PowerShell process or a polling approximation. The helper initializes AppKit and
-  runs its application event loop; a bare Foundation run loop missed notifications
-  on the tested Mac.
-- The Software Control panel manages Windows EXEs and registry entries. It is
-  explicitly marked Windows-only on macOS; no macOS process is disabled by that panel.
-- Closing the main window can hide it to the menu bar. Clicking the Dock icon restores
-  it, and Command-Q exits. First-run macOS login launch defaults to off; the app's
-  existing login-launch setting uses the native macOS Login Items API.
-- Bluetooth can display pairing status and battery when macOS supplies it. It does
-  not expose the keyboard configuration interface. Settings are changed over USB/2.4 GHz.
-- S75 Pro settings, macros and screen images do not have a complete device readback.
-  Preserve your original profiles before replacing settings; the app never applies a
-  whole default profile just because the device connected.
+The F106 patch can be reproduced independently with `python3 firmware/s75pro/build.py`; this checks exact bytes and never flashes a device.
 
 ## Command line
 
@@ -56,135 +88,10 @@ The bundled executable needs no separate Node.js installation:
 "/Applications/AULA Toolkit.app/Contents/Resources/bin/aula" light list
 ```
 
-It starts the app if needed and uses the existing CLI commands. Add a user-owned
-symlink to this executable if you want the short `aula` command.
+The CLI starts or talks to the installed App. Settings → General → Command line shows its actual path. Profiles, backups, diagnostics and battery history remain available. Battery-derived endurance and health are estimates, not direct battery-health measurements.
 
-## Updates, signing and publication
+## Updates and signing
 
-The update feed points to this fork, `Stanley-baby/AulaToolkit`, rather than the
-upstream Windows-only releases. Update errors are visible in Settings. A compatible
-Mac release and its `latest-mac.yml` must be published before update checks can find it.
-Publishing releases is separate from building a branch artifact.
+The update feed points to this fork, `Stanley-baby/AulaToolkit`. App version **0.3.0** and keyboard firmware **F106** are separate versions; installing the App does not automatically flash the keyboard.
 
-Local and default CI builds are unsigned/ad-hoc development builds. Signed,
-notarized distribution and automatic installation of future updates require the
-maintainer's Apple Developer signing identity and notarization credentials. The
-Mac entitlements and privacy descriptions are included. To sign a distribution,
-override `mac.identity` with your Developer ID identity and use
-electron-builder's `CSC_LINK` / `CSC_KEY_PASSWORD` and supported Apple notarization credentials. Do not add credentials to the repository.
-
-## S75 Pro single-colour static mode
-
-On the tested Mac/S75 Pro revision, firmware effect 1 still animates on USB and
-2.4 GHz. The single-colour Static option therefore writes the same colour to all
-keys using the existing per-key protocol on both links. The receiver's all-key
-blue and red per-key static tests passed physical confirmation; the radio route
-also has regression coverage. Windows, other models, dynamic effects and the
-colourful variant retain their original paths.
-
-## Verification boundaries
-
-Automated protocol tests validate packet formats and preserve all device features.
-The packaged-app smoke test exercises the real Electron main process, preload,
-renderer, CLI, native HID module and display helper with simulated devices.
-Real-device read-only validation does not overwrite unknown onboard macros,
-keymaps or screen content. Every supported mouse/receiver model needs its own
-hardware acceptance; successful S75 Pro enumeration is not proof for other models.
-
-## S75 Pro side-light protocol correction
-
-The vendor S75Pro Driver Beta 1.0.0.1 executable (SHA256
-`e92e83b8466fa35bf370f8bc1092f2a851ec303c41893e62d96073ba4d620e3e`)
-places `AA 55` at payload offsets 14/15 in `FUN_00433fd0` (instruction
-`0x434047`), before the transport prepends report ID 0. The remaining bytes
-are padding; the main-light payload still uses offsets 62/63.
-`FUN_00433e20` maps ten language IDs 661..670 to item data 0x20..0x29.
-The corrected table includes Yellow, Green, Ice Blue, Pink and White;
-Blue is 0x25, Neon is 0x28 and Off is 0x29.
-These are shipped-code observations; physical acceptance is tracked separately.
-
-## Current physical acceptance notes
-
-On the tested S75 Pro, the original vendor-labelled side-light values did not
-pass visual acceptance. The corrected Mac On/Off mapping below has since passed
-physical tests on USB and the receiver. Hardware Fn controls also work. The
-vendor colour table above is not proof of arbitrary software colour control.
-The screen uploader now rejects missing/empty chunk acknowledgements and sends
-END even on transfer failure; it never reports completion after a timeout.
-Successful transfer still needs separate confirmation of the physical display.
-
-The tested S75 Pro displays both static images and two-frame screen animations,
-and music lighting starts with system audio and restores the base red lighting
-after silence. These have passed user visual confirmation. On macOS, S75 USB
-control prefers the vendor feature collection (usage page 0xFF13): unlike the
-ordinary keyboard collection, it remains accessible while the screen is locked.
-Windows and other models retain their previous collection preference.
-The fixed helper and vendor interface also passed real display sleep/wake
-automation: 80 main LEDs read back black while the display was off and red after
-wake, without HID errors. On the tested USB connection, the side bar stays lit during
-Mac display sleep; its software blackout has not passed physical acceptance.
-
-## Macro event timing and playback count
-
-The AULA04 encoder inserts the vendor minimum 10 ms gap between adjacent
-key/mouse events without an explicit delay. Existing explicit delays are
-preserved. Only Repeat N mode carries a repeat count; other modes use zero,
-matching the official action encoder. The shared USB/wireless encoder has
-regression coverage. On the tested Mac/S75 Pro receiver, both a one-key macro
-and `abc123` now play once and release correctly after the previous repeating-key
-failure. The corrected `abc123` one-shot macro also passed USB physical
-acceptance. Test macros were cleared and the default base keymap was restored.
-
-## Sleep settings and TFT state after reconnect
-
-On the tested S75 Pro over 2.4 GHz, the 1-minute setting turned off the main
-lights, side lights and screen at a manually recorded 61 seconds; a space tap
-woke them. With Never selected, all three remained on during a 90-second idle
-comparison with the app closed. This verifies that observation window, not
-unlimited runtime.
-
-### Verified USB and receiver side-light effects
-
-On the tested S75 Pro over both USB and the receiver, mode `0x24` turns the side lights off and
-`0x21` selects one-colour-at-a-time cycling. Later controlled `0x21` to `0x22`
-comparisons established static lighting on both links, not the vendor-labelled blue.
-On the receiver, Fn + /? changed static red to white without changing the main
-lighting; reapplying `0x22` and a `0x21` to `0x22` roundtrip both retained white.
-USB `0x22` independently produced white static lighting. These observations do not
-establish arbitrary software colour selection or power-cycle colour persistence.
-
-On macOS, both USB and the receiver offer the physically verified effects `0x20` (multicolour flow),
-`0x21` (one-colour-at-a-time cycling), `0x22` (static using the keyboard colour setting) and Off. Separate receiver mode20/21 tests confirmed the same visible effects.
-Cycling is not a fixed
-colour, and an independent speed field has not been established.
-
-Profiles retain the semantic Off value `0x29`, mapped to wire `0x24`. Both links preserve
-`0x20` for flow and `0x22` for static, and send `0x21` for cycling or other legacy enabled values.
-Existing `0x22` profiles now select static rather than normalized cycling.
-Existing receiver profiles with `0x20` now select flow rather than the previous
-normalized cycling effect, as USB profiles already do.
-Display-off/wake restores the saved effect through the same driver; no periodic
-side-light writes are added. Windows, Linux, other devices and framing are unchanged.
-Both USB and receiver integrated display-off/on flows passed user observation;
-an earlier receiver run missed an automatic On reply and remains unresolved.
-
-Receiver side-light setters now reject a missing matched reply instead of silently
-resolving. The UI reports an unconfirmed keyboard command, not a sleeping mouse.
-Display blackout and restoration still attempt the main lighting if the side
-command fails; the side error remains visible. The existing 300 ms matching
-window, report normalization and transport write-error retry are unchanged; no
-timeout retry or new polling is added. This fixes failure reporting and isolation,
-not the still-unexplained historical loss of a reply.
-
-Time synchronization restores the time/date/battery view over both USB and
-2.4 GHz. Earlier app-closed wireless sleep/wake tests returned to the stored test
-animation, while later controlled cycles kept the clock in both volume and screen
-navigation modes. USB reconnect with the app closed also returned to the animation.
-In screen navigation mode, the knob can select the animation or settings from
-the clock view. Holding Fn and briefly pressing the knob once restored volume
-control on this unit; a long press was not required. Time synchronization must not be described
-as permanently replacing an uploaded animation. With the app running, USB
-reattach triggers the existing automatic time sync; both its TIME reply and the
-restored clock view passed acceptance. Wireless wake while the app remains
-attached has not been tested. No periodic clock writes or speculative firmware
-persistence commands were added.
+Ad-hoc builds do not provide the same signed automatic-install path as Developer ID distribution. Treat the published DMG/ZIP as manual updates; keep update errors visible. Developer ID signing and notarization require the maintainer's Apple credentials, which are not stored in this repository.

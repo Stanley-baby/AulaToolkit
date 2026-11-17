@@ -1,10 +1,11 @@
 // Animated preview of the keyboard lighting effects, modelled on the Sonix firmware the S75 Pro runs
 // (the same 19 effects the vendor driver lists). Reactive effects respond to real key presses while the
-// app has focus and to synthetic presses when idle, as the vendor preview does.
+// app has focus; optional demonstrations are bounded and labelled by the panel.
 import { useEffect, useRef, useState } from 'react';
 import type { KeyDef, LightingState } from '@shared/types';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { hidFromDomCode } from '@shared/keycodes';
+import { PreviewDemo, REACTIVE_MODES } from './previewDemo';
 
 type RGB = [number, number, number];
 
@@ -25,17 +26,17 @@ interface Press { x: number; y: number; t: number; key: number }
 interface Bounds { minX: number; minY: number; w: number; h: number }
 
 let presses: Press[] = [];
-let lastReal = 0;
 
-/** Called by the panel for real keystrokes; the simulator also injects idle presses. */
-export function notifyPress(key: KeyDef, b: Bounds, now: number, real = true): void {
+/** Records a received keystroke or an explicitly labelled demonstration press. */
+export function notifyPress(key: KeyDef, b: Bounds, now: number): void {
   presses.push({ x: (key.x + key.w / 2 - b.minX) / b.w, y: (key.y + key.h / 2 - b.minY) / b.h, t: now, key: key.code });
-  if (real) lastReal = now;
   if (presses.length > 24) presses.shift();
 }
 
-export function keyColor(l: LightingState, k: KeyDef, b: Bounds, t: number, idx: number): RGB | null {
-  const period = PERIOD[Math.max(0, Math.min(5, l.speed ?? 3))];
+export function keyColor(l: LightingState, k: KeyDef, b: Bounds, t: number, idx: number, s75?: { scanLength: number; pulseAxis?: { x: number; y: number; slope: number } }): RGB | null {
+  // shortcut: speed1 measured at 1.58s; retain other speed ratios until each is video-calibrated.
+  const pulseScale = s75?.pulseAxis && l.mode === 17 ? 1.58 / 4 : 1;
+  const period = PERIOD[Math.max(0, Math.min(5, l.speed ?? 3))] * pulseScale;
   const ph = (t / period) % 1;                    // 0..1 phase of the current cycle
   const bright = Math.max(0, Math.min(1, (l.brightness ?? 5) / 5));
   const base: RGB = l.color;
@@ -46,6 +47,29 @@ export function keyColor(l: LightingState, k: KeyDef, b: Bounds, t: number, idx:
   const vertical = l.direction === 2 || l.direction === 3;
   const pos = vertical ? y : x;
   const colorAt = (phase: number): RGB => (l.colorful ? hsv(phase) : base);
+  // Mac S75 observations: a dark band over a lit board, not a moving bright band.
+  if (s75 && (l.mode === 10 || l.mode === 11)) {
+    const axis = l.mode === 10 ? y : x;
+    const phase = ((axis - dirSign * ph) % 1 + 1) % 1;
+    const distance = Math.min(phase, 1 - phase);
+    const level = 1 - 0.65 * Math.max(0, 1 - distance * 8);
+    return scale(colorAt(axis), bright * level);
+  }
+  if (s75 && l.mode === 16) {
+    // A few LEDs scan each row left-to-right, then restart after the bottom row.
+    const head = Math.floor(ph * (s75.scanLength + 2));
+    const ordinal = dirSign < 0 ? s75.scanLength - 1 - idx : idx;
+    const distance = head - ordinal;
+    return distance >= 0 && distance < 3 ? scale(colorAt(ph), bright * (1 - distance / 3)) : null;
+  }
+  if (s75?.pulseAxis && l.mode === 17) {
+    // Source line follows key 9 to Space's right edge; equal phases travel outward on both sides.
+    const axisX = (s75.pulseAxis.x + (k.y + k.h / 2 - s75.pulseAxis.y) * s75.pulseAxis.slope - b.minX) / b.w;
+    const distance = Math.abs(x - axisX);
+    const waveY = 0.5 + 0.44 * Math.sin((distance * 1.5 - ph) * Math.PI * 2);
+    const level = Math.max(0, 1 - Math.abs(y - waveY) / 0.18);
+    return level > 0 ? scale(colorAt(x), bright * level) : null;
+  }
   const recent = presses.filter((p) => t - p.t < 2.5);
   let c: RGB | null;
   switch (l.mode) {
@@ -99,7 +123,7 @@ export function keyColor(l: LightingState, k: KeyDef, b: Bounds, t: number, idx:
   return c ? scale(c, bright) : null;
 }
 
-const REACTIVE = new Set([2, 3, 13, 14, 15]);
+const REACTIVE = REACTIVE_MODES;
 
 export const boundsOf = (keys: KeyDef[]): Bounds => {
   const minX = Math.min(...keys.map((k) => k.x)), minY = Math.min(...keys.map((k) => k.y));
@@ -107,39 +131,67 @@ export const boundsOf = (keys: KeyDef[]): Bounds => {
 };
 
 /** Live colour map for the on-screen keyboard. */
-export function useEffectPreview(l: LightingState | undefined, keys: KeyDef[], perKey: Record<number, RGB> | undefined): Record<number, RGB> {
+export function useEffectPreview(l: LightingState | undefined, keys: KeyDef[], perKey: Record<number, RGB> | undefined, calibrateS75 = false, demo?: { enabled: boolean; request: number; onPlaying: (playing: boolean) => void }): Record<number, RGB> {
   const [colors, setColors] = useState<Record<number, RGB>>({});
   const raf = useRef(0);
+  const demoRef = useRef<{ clock: PreviewDemo; request: number; playing: boolean; key: number } | null>(null);
   useEffect(() => {
     if (!l || !keys.length) return;
     if (l.mode === USER_LIGHT_MODE) { setColors(perKey ?? {}); return; }
     const b = boundsOf(keys);
+    const previewKeys = calibrateS75 && l.mode === 16 ? [...keys].sort((a, b) => a.y - b.y || a.x - b.x) : keys;
+    const nine = calibrateS75 && l.mode === 17 ? keys.find(k => k.code === 0x26) : undefined;
+    const space = calibrateS75 && l.mode === 17 ? keys.find(k => k.code === 0x2c) : undefined;
+    const pulseAxis = nine && space ? {
+      x: nine.x + nine.w / 2, y: nine.y + nine.h / 2,
+      slope: (space.x + space.w - nine.x - nine.w / 2) / (space.y + space.h / 2 - nine.y - nine.h / 2),
+    } : undefined;
+    const s75 = calibrateS75 ? { scanLength: keys.length, pulseAxis } : undefined;
     const animated = ![0, 1, 6].includes(l.mode);
     const start = performance.now();
+    if (!demoRef.current) demoRef.current = { clock: new PreviewDemo(), request: demo?.request ?? 0, playing: false, key: 0 };
+    const state = demoRef.current;
+    state.clock.select(l.mode, start);
+    if (!demo?.enabled) state.clock.cancel();
+    else if (state.request !== demo.request) state.clock.replay(start);
+    state.request = demo?.request ?? 0;
+    const setPlaying = (value: boolean): void => {
+      if (value !== state.playing) { state.playing = value; demo?.onPlaying(value); }
+    };
+    const onBlur = (): void => {
+      state.clock.tick(performance.now(), false);
+      if (state.playing) presses = [];
+      setPlaying(false);
+    };
     presses = [];
-    let last = 0, nextIdle = 1.2;
+    let last = 0;
     const onKey = (e: KeyboardEvent): void => {
+      if (state.clock.cancel()) presses = [];
+      setPlaying(false);
       const hid = hidFromDomCode(e.code); const k = keys.find((x) => x.code === hid);
       if (k && !e.repeat) notifyPress(k, b, (performance.now() - start) / 1000);
     };
     if (REACTIVE.has(l.mode)) window.addEventListener('keydown', onKey);
+    if (demo) window.addEventListener('blur', onBlur);
     const frame = (): void => {
       const now = performance.now();
       const t = (now - start) / 1000;
-      if (REACTIVE.has(l.mode) && t > nextIdle && t - lastReal > 3) {
-        notifyPress(keys[Math.floor(hash(Math.floor(t * 7)) * keys.length)], b, t, false);
-        nextIdle = t + 0.9 + hash(Math.floor(t * 3)) * 1.2;
+      if (demo?.enabled) {
+        const status = state.clock.tick(now, document.hasFocus() && !document.hidden);
+        if (state.playing && !status.playing) presses = [];
+        setPlaying(status.playing);
+        if (status.trigger) notifyPress(keys[state.key++ % keys.length], b, t);
       }
       if (now - last > 33) {
         last = now;
         const out: Record<number, RGB> = {};
-        keys.forEach((k, i) => { const c = keyColor(l, k, b, t, i); if (c) out[k.code] = c; });
+        previewKeys.forEach((k, i) => { const c = keyColor(l, k, b, t, i, s75); if (c) out[k.code] = c; });
         setColors(out);
       }
       if (animated) raf.current = requestAnimationFrame(frame);
     };
     frame();
-    return () => { cancelAnimationFrame(raf.current); window.removeEventListener('keydown', onKey); };
-  }, [l, keys, perKey]);
+    return () => { cancelAnimationFrame(raf.current); window.removeEventListener('keydown', onKey); window.removeEventListener('blur', onBlur); setPlaying(false); };
+  }, [l, keys, perKey, calibrateS75, demo?.enabled, demo?.request, demo?.onPlaying]);
   return colors;
 }

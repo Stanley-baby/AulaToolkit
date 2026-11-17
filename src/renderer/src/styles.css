@@ -41,6 +41,8 @@ body {
   user-select: none;
 }
 
+:root:not([data-theme]) body { background: transparent; }
+
 .drag { -webkit-app-region: drag; }
 .no-drag { -webkit-app-region: no-drag; }
 
@@ -154,3 +156,17 @@ input[type='color']::-webkit-color-swatch { border: none; border-radius: 7px; }
 /* On-screen display pop-in */
 @keyframes osd-pop { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
 .osd-pop { animation: osd-pop .18s ease-out; }
+
+.s75-overview-dark { display: none; }
+[data-theme='dark'] .s75-overview-light { display: none; }
+[data-theme='dark'] .s75-overview-dark { display: block; }
+
+/* Continuous device-state preview, independent of the keyboard's HID write path. */
+.s75-slot-flow { animation: s75-slot-flow 3s linear infinite; }
+@keyframes s75-slot-flow { to { transform: translateY(-55.2px); } }
+@media (prefers-reduced-motion: reduce) { .s75-slot-flow { animation: none; } }
+.s75-side-flow { animation: s75-side-flow 3s linear infinite; }
+.s75-side-cycle { animation: s75-side-cycle 8s linear infinite; }
+@keyframes s75-side-flow { to { transform: translateY(-201.4px); } }
+@keyframes s75-side-cycle { to { filter: hue-rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .s75-side-flow, .s75-side-cycle { animation: none; } }

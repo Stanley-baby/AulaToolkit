@@ -10,6 +10,9 @@ import type { Driver, DriverContext } from './types';
 const LIVE_POLL_MS = 140; // plus ~22 ms per read: about six readings a second; the view fills in between
 const WATCH_EVERY_MS = 300;
 const HOLD_MS = 1200;
+// Calibrated on the original unit; V1.03 and its F104–F106 derivatives use standard wire IDs.
+const MAC_S75_LIGHT_MODES = [0, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const STANDARD_LIGHT_RELEASES = new Set([0x0103, 0xf104, 0xf105, 0xf106]);
 
 interface Ports { main?: HidPort; dongle?: HidPort; screenCandidates: Device[]; screen?: HidPort }
 
@@ -21,12 +24,14 @@ export class Aula04Driver implements Driver {
   private liveBusy = 0;
   private liveBusyLogged = 0;
   private screenBusy = false;
+  private liveRestore?: { colors: Record<number, [number, number, number]>; brightness: number };
 
-  private constructor(readonly model: DeviceModel, private ports: Ports, private ctx: DriverContext) {
+  private constructor(readonly model: DeviceModel, private ports: Ports, private ctx: DriverContext, private readonly customSleep = false, private readonly fastWakeControl = false, private readonly smartSleepControl = false, private readonly standardLightModes = false) {
     this.link = ports.main ? 'usb' : '2.4g';
     this.key = `${model.id}:${this.link}`;
     this.watcher = new LightWatcher(model.lightRange?.brightness ?? 5);
-    this.effects = model.id === 's75pro' ? new EffectTracker(this.keys) : null;
+    // shortcut: this Mac firmware's effect order is unverified; do not overwrite selections with LED-pattern guesses.
+    this.effects = model.id === 's75pro' && process.platform !== 'darwin' ? new EffectTracker(this.keys) : null;
   }
 
   private get keys(): KeyDef[] { return (this.model.layout ?? []) as KeyDef[]; }
@@ -74,7 +79,9 @@ export class Aula04Driver implements Driver {
     }
 
     if (!ports.main && !ports.dongle) return null;
-    const drv = new Aula04Driver(model, ports, ctx);
+    let release = ports.main ? firmwareReleaseUsb(model, ports.main.info) : null;
+    if (ports.dongle && model.id === 's75pro') release = await firmwareReleaseRadio(ports.dongle).catch(() => null);
+    const drv = new Aula04Driver(model, ports, ctx, release !== null && release !== 0x0103, release === 0xf105 || release === 0xf106, release === 0xf106, release !== null);
     ctx.log('i', `${model.name} attached over ${drv.link.toUpperCase()}`);
     if (drv.link === 'usb' && model.features.perkey) drv.watchLight();
     return drv;
@@ -168,10 +175,11 @@ export class Aula04Driver implements Driver {
       const b = await this.readBattery();
       if (b !== null) { this.battery = b; this.batteryAt = Date.now(); }
     }
-    return { key: this.key, modelId: this.model.id, link: this.link, productName: this.productName, battery: this.battery, batteryAt: this.batteryAt, charging: this.link === 'usb' };
+    return { key: this.key, modelId: this.model.id, link: this.link, productName: this.productName, battery: this.battery, batteryAt: this.batteryAt, charging: this.link === 'usb', customSleep: this.customSleep, fastWakeControl: this.fastWakeControl, smartSleepControl: this.smartSleepControl };
   }
 
   async call(method: string, args: unknown[]): Promise<unknown> {
+    if (this.closed) throw new Error('Device is closed');
     const fn = (this as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>)[method];
     if (typeof fn !== 'function' || method === 'call' || method === 'close' || method === 'watchLight' || method === 'readLive') throw new Error(`Unknown method ${method}`);
     const writes = !/^(read|status|note)/.test(method);
@@ -186,6 +194,11 @@ export class Aula04Driver implements Driver {
   async close(): Promise<void> {
     this.closed = true;
     if (this.watchTimer) clearTimeout(this.watchTimer);
+    if (this.liveRestore) {
+      const restore = this.liveRestore;
+      await this.setUserLight(restore.colors, restore.brightness).catch(e => this.ctx.log('!', `restore per-key light: ${e.message}`));
+    }
+    await Promise.all([this.ports.main?.drain(), this.ports.dongle?.drain(), this.ports.screen?.drain()]);
     await Promise.all([this.ports.main?.close(), this.ports.dongle?.close(), this.ports.screen?.close()]);
   }
 
@@ -261,13 +274,11 @@ export class Aula04Driver implements Driver {
 
   // ---- public API (reached through IPC `call`) ----
   setLighting(l: LightingState): Promise<void> {
-    // shortcut: this Mac S75 revision animates mode 1; use verified per-key static until its firmware mapping is known.
-    if (process.platform === 'darwin' && this.model.id === 's75pro' && l.mode === 1 && !l.colorful) {
-      return this.setUserLight(Object.fromEntries(this.keys.map((k) => [k.code, l.color])), l.brightness);
-    }
+    this.liveRestore = undefined;
+    const mode = process.platform === 'darwin' && this.model.id === 's75pro' && !this.standardLightModes ? MAC_S75_LIGHT_MODES[l.mode] ?? l.mode : l.mode;
     this.effects?.setMode(l.mode);
     return this.port.exclusive(async () => {
-      const p = P.lightPayload(l);
+      const p = P.lightPayload({ ...l, mode });
       if (this.link === '2.4g') { await this.radio(P.dongleShort(P.DONGLE_CMD.LIGHT, p)); return; }
       await this.usbWrite(P.OP.LIGHT, p);
     });
@@ -288,6 +299,7 @@ export class Aula04Driver implements Driver {
   }
 
   setUserLight(colors: Record<number, [number, number, number]>, brightness = 5): Promise<void> {
+    this.liveRestore = undefined;
     this.effects?.setMode(null); // per-key lighting is not one of the knob's effects
     return this.port.exclusive(async () => {
       const keys = this.model.layout as KeyDef[];
@@ -304,8 +316,9 @@ export class Aula04Driver implements Driver {
   }
 
   // live frame, see liveLightBlock. usb only, not logged (runs every frame)
-  setLiveLight(colors: Record<number, [number, number, number]>): Promise<boolean> {
+  setLiveLight(colors: Record<number, [number, number, number]>, restore?: { colors: Record<number, [number, number, number]>; brightness: number }): Promise<boolean> {
     if (this.link !== 'usb') return Promise.reject(new Error('Live lighting needs the USB cable'));
+    this.liveRestore = restore;
     return this.port.exclusive(async () => {
       const main = this.ports.main!;
       // 0xff = busy, happens now and then. retry twice, then drop the frame
@@ -330,13 +343,23 @@ export class Aula04Driver implements Driver {
       await main.sendFeature(0, P.command(P.OP.END));
       await waitPrecise(5);
       await main.getFeature(0, 65);
+      // Acknowledged stream frames supply the preview; do not replace them with an F5 readback.
+      this.quietUntil = Math.max(this.quietUntil, Date.now() + 250);
       return true;
     });
   }
 
   setSettings(s: Record<string, number>): Promise<void> {
+    const sleep = s.sleep;
+    if (!Number.isInteger(sleep) || sleep < 0 || (sleep > 3 && P.customSleepMinutes(sleep) === null)) throw new Error('CUSTOM_SLEEP_RANGE');
+    if (P.customSleepMinutes(sleep) !== null && !this.customSleep) throw new Error('CUSTOM_SLEEP_UNSUPPORTED');
+    if (s.fastWake !== undefined && s.fastWake !== 0 && s.fastWake !== 1 && s.fastWake !== 2) throw new Error('FAST_WAKE_RANGE');
+    if (s.fastWake !== undefined && !this.fastWakeControl) throw new Error('FAST_WAKE_UNSUPPORTED');
+    if (s.fastWake === 2 && !this.smartSleepControl) throw new Error('SMART_SLEEP_UNSUPPORTED');
     return this.port.exclusive(async () => {
-      const p = P.settingsPayload(s);
+      const p = s.fastWake === 2
+        ? P.smartSleepPayload(s, P.sleepMinutes(sleep) ?? 0, s.deepSleepMinutes ?? 0)
+        : P.settingsPayload(this.fastWakeControl ? { ...s, sleep: P.sleepModeSelector(sleep, s.fastWake !== 0) } : s);
       if (this.link === '2.4g') { await this.radio(P.dongleShort(P.DONGLE_CMD.SETTINGS, p)); return; }
       await this.cmd(P.OP.BEGIN);
       await this.cmd(P.OP.SETTINGS, 1, 1);
@@ -480,6 +503,24 @@ async function radioOnce(port: HidPort, frame: Uint8Array): Promise<Buffer | nul
     if (body[0] === frame[0] && body[1] === frame[1] && body[2] === frame[2]) return Buffer.from(body);
   }
   return null;
+}
+
+function firmwareReleaseUsb(model: DeviceModel, info: Device): number | null {
+  return model.id === 's75pro' && info.vendorId === 0x0c45 && info.productId === 0x800a &&
+    STANDARD_LIGHT_RELEASES.has(info.release) ? info.release : null;
+}
+
+function validRadioChecksum(frame: Uint8Array): boolean {
+  return frame.length === 32 && frame[31] === frame.subarray(0, 31).reduce((sum, byte) => (sum + byte) & 0xff, 0);
+}
+
+async function firmwareReleaseRadio(port: HidPort): Promise<number | null> {
+  const reply = await radioOnce(port, P.dongleFrame(P.DONGLE_CMD.IDENTITY, 0x1c, 0));
+  if (!reply || !validRadioChecksum(reply)) return null;
+  const data = reply.subarray(3);
+  const release = data[8] | (data[9] << 8);
+  return data[4] === 0x45 && data[5] === 0x0c && data[6] === 0x0a && data[7] === 0x80 &&
+    STANDARD_LIGHT_RELEASES.has(release) ? release : null;
 }
 
 function toU8(v: unknown): Uint8Array {

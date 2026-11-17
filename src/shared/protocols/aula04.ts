@@ -19,6 +19,41 @@ export const OP = {
 export const USER_LIGHT_MODE = 0x80;
 export const BLOCK = 0x240; // 9 x 64 bytes
 export const CMD_DELAY_MS = 35;
+export const CUSTOM_SLEEP_MINUTES = { min: 1, max: 120, base: 0x80 } as const;
+export const SMART_SLEEP_SELECTOR = 0x7c;
+
+/** Firmware selectors 0..3 are vendor presets; 0x80..0xf7 carry custom 1..120 minutes. */
+export function customSleepSelector(minutes: number): number {
+  if (!Number.isInteger(minutes) || minutes < CUSTOM_SLEEP_MINUTES.min || minutes > CUSTOM_SLEEP_MINUTES.max) throw new Error('CUSTOM_SLEEP_RANGE');
+  return CUSTOM_SLEEP_MINUTES.base + minutes - 1;
+}
+
+export function customSleepMinutes(selector: number): number | null {
+  const minutes = selector - CUSTOM_SLEEP_MINUTES.base + 1;
+  return Number.isInteger(selector) && minutes >= CUSTOM_SLEEP_MINUTES.min && minutes <= CUSTOM_SLEEP_MINUTES.max ? minutes : null;
+}
+
+/** Converts a saved preset/custom selector into a real timeout. */
+export function sleepMinutes(selector: number): number | null {
+  return customSleepMinutes(selector) ?? [0, 1, 5, 30][selector] ?? null;
+}
+
+export function smartSleepPayload(s: Record<string, number>, firstMinutes: number, deepMinutes: number): Uint8Array {
+  if (!Number.isInteger(firstMinutes) || !Number.isInteger(deepMinutes) || firstMinutes < 1 || firstMinutes >= deepMinutes || deepMinutes > CUSTOM_SLEEP_MINUTES.max) throw new Error('SMART_SLEEP_RANGE');
+  const p = settingsPayload({ ...s, sleep: SMART_SLEEP_SELECTOR });
+  p[7] = firstMinutes;
+  p[9] = deepMinutes;
+  return p;
+}
+
+/** F105 stores mode and time in one persisted byte; profile selectors stay unchanged. */
+export function sleepModeSelector(selector: number, fastWake: boolean): number {
+  if (!Number.isInteger(selector)) throw new Error('CUSTOM_SLEEP_RANGE');
+  const minutes = sleepMinutes(selector);
+  if (minutes === null) throw new Error('CUSTOM_SLEEP_RANGE');
+  if (minutes === 0) return 0;
+  return fastWake ? customSleepSelector(minutes) : selector <= 3 ? selector : minutes + 3;
+}
 
 const tag = (buf: Uint8Array, off: number): void => { buf[off] = 0xaa; buf[off + 1] = 0x55; };
 
@@ -231,4 +266,4 @@ export function dongleBlock(cmd: number, block: Uint8Array): Uint8Array[] {
   return frames;
 }
 
-export const DONGLE_CMD = { LIGHT: 0x05, SETTINGS: 0x07, MACRO: 0x09, TIME: 0x0c, KEYMAP: 0x10, KEYMAP_FN: 0x12, USER_LIGHT: 0x14, BATTERY: 0x20 } as const;
+export const DONGLE_CMD = { IDENTITY: 0x02, LIGHT: 0x05, SETTINGS: 0x07, MACRO: 0x09, TIME: 0x0c, KEYMAP: 0x10, KEYMAP_FN: 0x12, USER_LIGHT: 0x14, BATTERY: 0x20 } as const;

@@ -6,6 +6,18 @@ import { S75PRO_KEYS } from '@shared/models/s75pro.layout';
 const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join(' ');
 
 describe('aula04 USB framing', () => {
+  it('encodes only custom sleep values in the reserved selector range', () => {
+    expect(P.customSleepSelector(1)).toBe(0x80);
+    expect(P.customSleepSelector(120)).toBe(0xf7);
+    expect(P.customSleepMinutes(0x80)).toBe(1);
+    expect(P.customSleepMinutes(0xf7)).toBe(120);
+    expect(P.customSleepMinutes(3)).toBeNull();
+    expect(P.customSleepMinutes(0xf8)).toBeNull();
+    expect(() => P.customSleepSelector(0)).toThrow('CUSTOM_SLEEP_RANGE');
+    expect(() => P.customSleepSelector(121)).toThrow('CUSTOM_SLEEP_RANGE');
+    expect(() => P.customSleepSelector(1.5)).toThrow('CUSTOM_SLEEP_RANGE');
+  });
+
   it('places the side-light marker at bytes 14/15, as in vendor FUN_00433fd0', () => {
     const p = P.barPayload(0x23);
     expect(p.length).toBe(64);

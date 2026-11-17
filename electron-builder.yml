@@ -13,6 +13,8 @@ files:
   - package.json
   - resources/icon.png
 extraResources:
+  - from: resources/firmware
+    to: firmware
   - from: resources/mac
     to: mac
     filter:

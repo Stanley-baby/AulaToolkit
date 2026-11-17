@@ -30,6 +30,9 @@ export class DeviceManager extends EventEmitter {
   private statusTimer: NodeJS.Timeout | null = null;
   private lastSignature = '';
   private failedSignatures = new Map<string, { at: number; count: number }>();
+  private maintenance = false;
+  private activeOperations = 0;
+  private blockedModels = new Set<string>();
 
   start(): void {
     for (const id of (process.env.AULA_SIM ?? '').split(',').map((x) => x.trim()).filter(Boolean)) {
@@ -80,21 +83,71 @@ export class DeviceManager extends EventEmitter {
   }
 
   async call(key: string, method: string, args: unknown[]): Promise<unknown> {
+    if (this.maintenance) throw new Error('Device communication is paused for a firmware update');
     const d = this.drivers.get(key);
     if (!d) throw new Error('Device not connected');
+    this.activeOperations++;
     try {
       return await d.call(method, args);
     } catch (e) {
       this.addLog('!', `${method}: ${(e as Error).message}`, key);
       throw e;
+    } finally {
+      this.activeOperations--;
     }
   }
 
   async rescan(): Promise<void> { this.lastSignature = ''; this.failedSignatures.clear(); await this.scan(true); }
 
+  blockModel(modelId: string): void { this.blockedModels.add(modelId); }
+
+  async pauseForFirmware(modelId: string): Promise<void> {
+    if (this.maintenance) throw new Error('A firmware update is already in progress');
+    this.maintenance = true;
+    try {
+      const deadline = Date.now() + 15000;
+      while (this.scanning || this.activeOperations) {
+        if (Date.now() >= deadline) throw new Error('Device is busy; finish the current operation first');
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      for (const [key, driver] of [...this.drivers]) {
+        if (driver.model.id !== modelId) continue;
+        let timeout: NodeJS.Timeout | undefined;
+        try {
+          await Promise.race([
+            driver.close(),
+            new Promise<never>((_, reject) => {
+              timeout = setTimeout(() => reject(new Error('The keyboard did not release its connection')), Math.max(1, deadline - Date.now()));
+            }),
+          ]);
+        } finally {
+          if (timeout) clearTimeout(timeout);
+        }
+        this.drivers.delete(key);
+      }
+    } catch (error) {
+      this.maintenance = false;
+      throw error;
+    }
+  }
+
+  async resumeAfterFirmware(modelId: string, block: boolean): Promise<void> {
+    if (block) this.blockModel(modelId);
+    else this.blockedModels.delete(modelId);
+    for (const [key, status] of [...this.statuses]) {
+      if (status.modelId === modelId) this.statuses.delete(key);
+    }
+    this.lastSignature = '';
+    this.failedSignatures.clear();
+    this.maintenance = false;
+    this.emitDevices();
+    await this.scan(true);
+  }
+
   private groups(devices: Device[]): Map<string, { model: DeviceModel; devices: Device[] }> {
     const out = new Map<string, { model: DeviceModel; devices: Device[] }>();
     for (const model of MODELS) {
+      if (this.blockedModels.has(model.id)) continue;
       const mine = devices.filter((d) => model.usb.some((u) => u.vendorId === d.vendorId && u.productId === d.productId));
       if (mine.length) out.set(model.id, { model, devices: mine });
     }
@@ -102,10 +155,10 @@ export class DeviceManager extends EventEmitter {
   }
 
   private async scan(force: boolean): Promise<void> {
-    if (this.scanning) return;
+    if (this.scanning || this.maintenance) return;
     this.scanning = true;
     try {
-      const devices = listDevices();
+      const devices = await listDevices();
       const signature = devices.map((d) => d.path).sort().join('|');
       if (!force && signature === this.lastSignature) return;
       this.lastSignature = signature;
@@ -185,18 +238,24 @@ export class DeviceManager extends EventEmitter {
   }
 
   async refresh(...keys: string[]): Promise<void> {
-    for (const key of keys) {
-      const d = this.drivers.get(key);
-      if (!d) continue;
-      try {
-        const s = await d.status();
-        // unplugged while reading
-        if (this.drivers.get(key) !== d) continue;
-        this.statuses.set(key, s);
-        this.emitDevices();
-      } catch (e) {
-        if (this.drivers.get(key) === d) this.addLog('!', `status: ${(e as Error).message}`, key);
+    if (this.maintenance) return;
+    this.activeOperations++;
+    try {
+      for (const key of keys) {
+        const d = this.drivers.get(key);
+        if (!d) continue;
+        try {
+          const s = await d.status();
+          // unplugged while reading
+          if (this.drivers.get(key) !== d) continue;
+          this.statuses.set(key, s);
+          this.emitDevices();
+        } catch (e) {
+          if (this.drivers.get(key) === d) this.addLog('!', `status: ${(e as Error).message}`, key);
+        }
       }
+    } finally {
+      this.activeOperations--;
     }
   }
 

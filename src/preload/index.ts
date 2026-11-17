@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH, type AulaApi } from '@shared/ipc';
 import type { DeviceStatus, LogEntry } from '@shared/types';
-import type { BluetoothState, CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
+import type { BluetoothState, CliRequest, CliResult, DeviceProgress, DevNavigate, DisplayPowerState, FirmwareState, HwEvent, LiveLight, MediaPlaybackState, OsdPayload, UpdateState } from '@shared/ipc';
 
 const api: AulaApi = {
   platform: process.platform,
@@ -46,6 +46,17 @@ const api: AulaApi = {
   updateDownload: () => ipcRenderer.invoke(CH.UPDATE_DOWNLOAD),
   updateInstall: () => ipcRenderer.send(CH.UPDATE_INSTALL),
   updateState: () => ipcRenderer.invoke(CH.UPDATE_STATE),
+  firmwareState: () => ipcRenderer.invoke(CH.FIRMWARE_STATE),
+  firmwareSelect: () => ipcRenderer.invoke(CH.FIRMWARE_SELECT),
+  firmwareBundled: () => ipcRenderer.invoke(CH.FIRMWARE_BUNDLED),
+  firmwarePrevious: () => ipcRenderer.invoke(CH.FIRMWARE_PREVIOUS),
+  firmwareStart: () => ipcRenderer.invoke(CH.FIRMWARE_START),
+  firmwareRecheck: () => ipcRenderer.invoke(CH.FIRMWARE_RECHECK),
+  onFirmware: (cb) => {
+    const h = (_e: unknown, state: FirmwareState): void => cb(state);
+    ipcRenderer.on(CH.FIRMWARE_EVENT, h);
+    return () => ipcRenderer.off(CH.FIRMWARE_EVENT, h);
+  },
   batteryStats: (id, pack) => ipcRenderer.invoke(CH.BATTERY_STATS, id, pack),
   batteryClear: (id) => ipcRenderer.invoke(CH.BATTERY_CLEAR, id),
   onUpdate: (cb) => {

@@ -20,7 +20,7 @@ interface State {
   busy: Record<string, boolean>;
   dirty: Record<string, boolean>;
   /** Latest live LED colours per keyboard model, with the time they arrived. */
-  liveLight: Record<string, { colors: Record<number, [number, number, number]>; at: number }>;
+  liveLight: Record<string, { colors: Record<number, [number, number, number]>; at: number; source?: 'animation' | 'rhythm' | 'breathing' }>;
   /** Bluetooth links from Windows, per model. */
   bluetooth: BluetoothState;
   page: 'home' | 'device' | 'settings';
@@ -81,9 +81,9 @@ export const useStore = create<State>((set, get) => ({
   async init() {
     const [devices, prefs, log] = await Promise.all([window.aula.getDevices(), window.aula.loadPrefs(), window.aula.getLog()]);
     const lang: Lang = prefs.language && DICT[prefs.language] ? prefs.language : detectLang(navigator.language);
-    set({ devices, prefs: { ...prefs, language: lang }, log: log.slice(-500), ready: true });
-    await initTheme();
     applyTheme(prefs);
+    set({ devices, prefs: { ...prefs, language: lang }, log: log.slice(-500), ready: true });
+    void initTheme().then(() => applyTheme(get().prefs));
     if (devices.length) set({ selectedModel: devices[0].modelId });
     else if ((prefs.knownDevices ?? []).length) set({ selectedModel: prefs.knownDevices[0] });
     // Stay on the home screen at startup; only a new hot-plug jumps to the device page.
@@ -132,11 +132,11 @@ export const useStore = create<State>((set, get) => ({
     scheduleSave(modelId, get);
   },
   setMusic(modelId, music) {
-    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], music } } }));
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], music, ...(music.enabled && s.settings[modelId].keyAnimation ? { keyAnimation: { ...s.settings[modelId].keyAnimation, enabled: false } } : {}) } } }));
     scheduleSave(modelId, get);
   },
   setKeyAnimation(modelId, keyAnimation) {
-    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], keyAnimation } } }));
+    set((s) => ({ settings: { ...s.settings, [modelId]: { ...s.settings[modelId], keyAnimation, ...(keyAnimation.enabled && s.settings[modelId].music ? { music: { ...s.settings[modelId].music, enabled: false } } : {}) } } }));
     scheduleSave(modelId, get);
   },
   setBatteryPacks(modelId, batteries) {
@@ -186,7 +186,7 @@ export const useStore = create<State>((set, get) => ({
         fn(copy);
         return copy;
       });
-      return { settings: { ...s.settings, [modelId]: { ...file, profiles } } };
+      return { settings: { ...s.settings, [modelId]: { ...file, profiles, ...((section === 'lighting' || section === 'perKey') ? { ...(file.keyAnimation ? { keyAnimation: { ...file.keyAnimation, enabled: false } } : {}), ...(file.music ? { music: { ...file.music, enabled: false } } : {}) } : {}) } } };
     });
     scheduleSave(modelId, get);
     if (section) schedule(modelId, section);

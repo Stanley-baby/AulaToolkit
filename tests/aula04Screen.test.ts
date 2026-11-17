@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks=vi.hoisted(()=>({reply:vi.fn(),write:vi.fn(),send:vi.fn(),log:vi.fn(),progress:vi.fn()}));
 vi.mock('../src/main/hid/transport',()=>({
-  HidPort:{open:async(info:{path:string})=>({info,path:info.path,close:async()=>undefined,exclusive:async(fn:()=>Promise<unknown>)=>fn(),sendFeature:mocks.send,getFeature:async()=>Buffer.alloc(65),write:mocks.write,flushInput:()=>undefined,nextInput:mocks.reply})},
+  HidPort:{open:async(info:{path:string})=>({info,path:info.path,close:async()=>undefined,drain:async()=>undefined,exclusive:async(fn:()=>Promise<unknown>)=>fn(),sendFeature:mocks.send,getFeature:async()=>Buffer.alloc(65),write:mocks.write,flushInput:()=>undefined,nextInput:mocks.reply})},
   hasFeatureReport:async(info:{path:string})=>info.path==='main',pathIface:(d:{interface:number})=>d.interface,
   hex:()=>'',sleep:async()=>undefined,waitPrecise:async()=>undefined,
 }));

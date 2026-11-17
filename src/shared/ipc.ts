@@ -38,6 +38,13 @@ export const CH = {
   UPDATE_INSTALL: 'update:install',
   UPDATE_STATE: 'update:state',
   UPDATE_EVENT: 'update:event',
+  FIRMWARE_STATE: 'firmware:state',
+  FIRMWARE_SELECT: 'firmware:select',
+  FIRMWARE_BUNDLED: 'firmware:bundled',
+  FIRMWARE_PREVIOUS: 'firmware:previous',
+  FIRMWARE_START: 'firmware:start',
+  FIRMWARE_RECHECK: 'firmware:recheck',
+  FIRMWARE_EVENT: 'firmware:event',
   BATTERY_STATS: 'battery:stats',
   BATTERY_CLEAR: 'battery:clear',
   DEVICE_HW_EVENT: 'device:hwEvent',
@@ -120,6 +127,17 @@ export interface UpdateState {
   checkedAt?: number;
 }
 
+export type FirmwarePhase = 'ready' | 'preparing' | 'erasing' | 'programming' | 'verifying' | 'restarting' | 'success' | 'error';
+export interface FirmwareState {
+  phase: FirmwarePhase;
+  busy: boolean;
+  progress: number;
+  selected: { version: string; sha256: string; source: 'bundled' | 'previous' | 'file' } | null;
+  deviceVersion: string | null;
+  recoveryRequired: boolean;
+  error?: string;
+}
+
 export const DEFAULT_PREFS: AppPrefs = { language: 'tr', autostart: 'on', minimizeToTray: true, minimizeToTrayOnMinimize: false, theme: 'system', accent: 'ember', knownDevices: [], userName: '', onboarded: false, batteryAlerts: true, batteryThreshold: 20, blockVendorSoftware: false, updateChannel: 'beta', updateInterval: 'daily', autoDownload: true, batteryStats: false, batteryCare: true, osd: true, osdOnTop: true, osdAllDisplays: false, osdPosition: 'bottom-center', osdDuration: 'normal', restartHotkey: true };
 
 export interface AulaApi {
@@ -162,6 +180,13 @@ export interface AulaApi {
   updateInstall(): void;
   updateState(): Promise<UpdateState>;
   onUpdate(cb: (s: UpdateState) => void): () => void;
+  firmwareState(): Promise<FirmwareState>;
+  firmwareSelect(): Promise<FirmwareState>;
+  firmwareBundled(): Promise<FirmwareState>;
+  firmwarePrevious(): Promise<FirmwareState>;
+  firmwareStart(): Promise<FirmwareState>;
+  firmwareRecheck(): Promise<FirmwareState>;
+  onFirmware(cb: (s: FirmwareState) => void): () => void;
   batteryStats(modelId: string, pack?: string): Promise<BatteryStats>;
   batteryClear(modelId: string): Promise<void>;
   /** Changes that originated on the device itself (e.g. the DPI button). */

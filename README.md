@@ -1,345 +1,91 @@
-<div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.png">
-    <img height="88" src="docs/brand/wordmark-light.png" alt="AULA Toolkit">
-  </picture>
+<p align="center">
+  <img src="assets/readme/title.svg" width="100%" alt="AULA Toolkit：在 Mac 上管理 S75 Pro 的灯光、按键、小屏幕与休眠">
+</p>
 
-  [![Latest Release](https://img.shields.io/github/v/release/Livvaa/aula-toolkit?include_prereleases&logo=github&logoColor=white&color=blue&label=version)](https://github.com/Livvaa/aula-toolkit/releases)
-  [![Release Date](https://img.shields.io/github/release-date-pre/Livvaa/aula-toolkit?logo=github&logoColor=white&label=updated)](https://github.com/Livvaa/aula-toolkit/releases)
-  [![Downloads](https://img.shields.io/github/downloads/Livvaa/aula-toolkit/total?color=brightgreen)](https://github.com/Livvaa/aula-toolkit/releases)
-  <br>
-  [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6?logo=windows&logoColor=white)](https://github.com/Livvaa/aula-toolkit)
-  [![Electron](https://img.shields.io/badge/Electron-React%20%2B%20TypeScript-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
-  [![Architecture](https://img.shields.io/badge/Arch-x64-informational?logo=intel&logoColor=white)](https://github.com/Livvaa/aula-toolkit)
-  [![License](https://img.shields.io/badge/License-GPLv3-informational?logo=gnu&logoColor=white)](LICENSE)
-  <br>
-  [![GitHub Stars](https://img.shields.io/github/stars/Livvaa/aula-toolkit?logo=github&style=flat)](https://github.com/Livvaa/aula-toolkit/stargazers)
-  [![Contributors](https://img.shields.io/github/contributors/Livvaa/aula-toolkit?logo=github)](https://github.com/Livvaa/aula-toolkit/graphs/contributors)
-  [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/u9FbaJGtCe)
-</div>
+# AULA Toolkit for macOS
 
-## macOS port
+**让 S75 Pro 在 Mac 上也有完整的配置界面。** 这个非官方分支基于 [livvaa/AulaToolkit](https://github.com/livvaa/AulaToolkit)，保留原项目的键盘、鼠标、配置文件和命令行功能，重点适配并实测 AULA S75 Pro。
 
-This fork adds macOS support while retaining Windows functionality. See [macOS build, permissions and feature notes](docs/macos.md). Development happens on `feat/macos-support`.
+[下载 0.3.0](https://github.com/Stanley-baby/AulaToolkit/releases/tag/v0.3.0) · [Mac 安装与权限](docs/macos.md) · [F106 固件说明](firmware/s75pro/README.md) · [已知问题](#已知问题)
 
-## 🚨 Project Status Notice
+> Unofficial macOS fork of AulaToolkit. Configure lighting, keys, macros, the S75 Pro screen and hardware sleep. See the [English macOS guide](docs/macos.md).
 
-> [!IMPORTANT]
-> - AULA Toolkit is in **early development** (version 0.x). Expect rough edges.
-> - It is an **unofficial** project and is **not affiliated with AULA**. Product names and images belong to their owners.
-> - Only some devices have been tested on real hardware; see [Compatibility](#compatibility).
+![Mac 版灯效页面，展示黑透键盘预览与灯效设置](assets/readme/lighting.png)
 
-#### Other language versions of this README file:
-* [Türkçe README](README_tr-TR.md)
-* [Русский README](README_ru-RU.md)
+*截图来自真实运行的 App，使用隔离的模拟设备展示界面；实机验证范围另列于下方。*
 
----
+## 一套界面，管理这些事情
 
-AULA Toolkit is a Windows desktop app that controls AULA keyboards and mice from one place, in the spirit of Logitech G HUB. It replaces the separate driver that AULA ships for every model.
+- **灯光**：主灯与侧灯模式、单键配色、有线单键呼吸；USB 下显示实体灯光读回预览。
+- **按键与宏**：基础层、Fn 层改键，录制和编辑宏，保存多份配置。
+- **动画与小屏幕**：在按键上播放图片或 GIF，选择方向和平均取色；通过 USB 上传 TFT 图片与 GIF、同步时间。
+- **Mac 使用体验**：原生窗口按钮、可调整窗口、深浅主题、中文界面、菜单栏与 Dock、系统音频灯效、备份及诊断。
+- **F106 硬件休眠**：自定义 1～120 分钟，选择深睡、快速唤醒，或先关闭灯屏再进入深睡。
+- **App 内升级**：选择已核验固件，查看准备、擦除、写入、校验和重连进度；提供 F105 上一版恢复入口。
 
-It runs no background services, keeps no telemetry and only talks to the internet to check GitHub for updates. Changes are written to the device the moment you make them and are stored in the device's own memory, so they keep working on other computers and over Bluetooth.
+![Mac 版概览页面](assets/readme/overview.png)
 
-# Screenshots
+## 从这里开始
 
-### Home and device overview
-<img src="docs/screenshots/home.png" width="49%" /> <img src="docs/screenshots/keyboard-overview.png" width="49%" />
+1. 在 [Releases](https://github.com/Stanley-baby/AulaToolkit/releases) 下载与你的 Mac 架构对应的 DMG：Apple Silicon 选 `arm64`，Intel 选 `x64`。
+2. 将 **AULA Toolkit.app** 拖到“应用程序”，打开 App。要求 **macOS 14.2 或更新版本**。
+3. 使用支持数据传输的 USB 线连接 S75 Pro，切到有线模式，确认 App 识别设备。
+4. 先试用灯效或保存一份配置。**普通配置不要求刷写 F106**；自定义硬件休眠和快速唤醒需要配套固件。
 
-### Keyboards
-<img src="docs/screenshots/keyboard-lighting.png" width="49%" /> <img src="docs/screenshots/keyboard-keys.png" width="49%" />
-<img src="docs/screenshots/keyboard-screen.png" width="49%" /> <img src="docs/screenshots/f75-lighting.png" width="49%" />
+本次 Mac 安装包使用临时自签名，未经过 Apple 公证。若系统拦截，请按 [Mac 安装说明](docs/macos.md#opening-the-app) 在“隐私与安全性”中手动允许。系统音频灯效所需的录音权限，以及 HID 访问所需的权限，也在该说明中列出。
 
-### Mice
-<img src="docs/screenshots/mouse-overview.png" width="49%" /> <img src="docs/screenshots/mouse-dpi.png" width="49%" />
-<img src="docs/screenshots/mouse-buttons.png" width="49%" /> <img src="docs/screenshots/mouse-performance.png" width="49%" />
+## 连接方式决定可用功能
 
-### Tray summary and on-screen display
-<img src="docs/screenshots/tray-flyout.png" width="30%" /> &nbsp; <img src="docs/screenshots/osd.png" width="40%" />
+| 功能 | USB 有线 | 2.4 GHz | 蓝牙 |
+| --- | :---: | :---: | :---: |
+| 配置主灯、侧灯、改键、宏 | ✓ | ✓ | 先经 USB／2.4G 设置 |
+| 实时灯光读回、按键动画、单键呼吸 | ✓ | — | — |
+| 上传 TFT 图片／GIF | ✓ | — | — |
+| 设置 F106 休眠策略 | ✓ | ✓ | 先经 USB／2.4G 设置 |
+| 使用已保存的 F106 休眠策略 | ✓* | ✓ | ✓ |
+| 固件升级与恢复 | ✓ | — | — |
 
-### Settings
-<img src="docs/screenshots/settings-general.png" width="49%" /> <img src="docs/screenshots/settings-software.png" width="49%" />
-<img src="docs/screenshots/settings-updates.png" width="49%" /> <img src="docs/screenshots/settings-about.png" width="49%" />
-<img src="docs/screenshots/settings-notifications.png" width="49%" /> <img src="docs/screenshots/settings-backup.png" width="49%" />
+\* 完整灯屏自动熄灭及快速唤醒的实机验收重点为拔掉 USB 的无线模式；有线／充电状态可能保留灯屏，不等同于无线低功耗行为。
 
----
+S75 Pro 已完成有线与无线功能的多轮人工验收。F75、SC900 Pro 等原项目设备的驱动和编辑界面继续保留，**本分支没有逐一完成它们的 Mac 实机验收**。
 
-# Table of Contents
-  - [Disclaimer](#disclaimer)
-  - [Download](#download)
-  - [Compatibility](#compatibility)
-  - [Features](#features)
-  - [Credits](#credits)
-  - [FAQ](#faq)
-  - [Arguments](#arguments)
-  - [How to collect logs?](#how-to-collect-logs)
-  - [Contribution](#contribution)
-  - [License](#license)
-
-## Disclaimer
-
-**The tool comes with no warranty. Use at your own risk.**
-
-AULA Toolkit talks to your devices with protocols that were reverse-engineered from the official drivers. Please read this file before reporting problems — it answers the most common questions.
-
-## Download
-
-[![Download](https://img.shields.io/badge/Download-Latest%20Installer-success?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Livvaa/aula-toolkit/releases)
-
-Two builds are published with every release:
-* **Installer** — installs for the current user only, so no administrator rights are needed.
-* **Portable** — a single `.exe` that runs without installing.
-
-#### Updating
-
-AULA Toolkit can update itself. Configure it in **Settings → Updates**:
-* **Channel** — **Stable** or **Beta** releases.
-* **Check frequency** — from every hour to monthly, or never.
-* **Download and install updates automatically** — updates download in the background and install when you close the app. You can also install them right away.
+## F106：让休眠由你选择
 
-Installing a new version over an existing one keeps your settings, profiles and macros.
+![F106 分阶段休眠：3 分钟关闭灯屏，累计 5 分钟进入深睡](assets/readme/smart-sleep.svg)
 
-#### Next steps
+| 策略 | 达到设定时间后 | 再次打字时 |
+| --- | --- | --- |
+| 深睡 | 关闭灯屏，进入原版深睡路径 | 可能需要唤醒或重连等待 |
+| 快速唤醒 | 关闭灯屏，保留无线通信与按键扫描 | 已测蓝牙／2.4G 可完整输入，无明显重连等待 |
+| 分阶段休眠 | 先关闭灯屏，累计空闲达到第二个时间后深睡 | 第一阶段快速响应，深睡后恢复原版等待行为 |
 
-AULA Toolkit works best when it runs in the tray. In **Settings → General**:
-1. Set **Autorun** to *Enabled* (or *Enabled (delayed)* to start 30 seconds after sign-in).
-2. Turn on **Minimise to tray on close**.
-3. In **Settings → Software control**, turn on **Disable official AULA software** so the AULA drivers do not fight AULA Toolkit over the same device.
-
-> [!WARNING]
-> If you close AULA Toolkit completely, features that need it running stop: the on-screen display, battery notifications, the tray summary, the music rhythm and animations on the keys, and the `aula` command. Settings already written to your devices keep working.
+例如设置 **3 分钟关闭灯屏、5 分钟进入深睡**：两个时间都从最后一次按键起计算，完整输入会重新计时。设置保存在键盘中，App 退出后仍生效。快速唤醒保留无线工作状态；其实际电流和续航差异尚未测量。
 
-## Compatibility
-
-| Device | Connection | Status |
-|---|---|---|
-| **AULA S75 Pro** | USB, 2.4 GHz receiver, Bluetooth (status and battery) | ✅ Tested on hardware |
-| **AULA SC900 Pro** | USB, 2.4 GHz receiver, Bluetooth (status and battery) | ✅ Tested on hardware |
-| **AULA SC900** (other versions that use the SC900 Pro driver) | USB, 2.4 GHz receiver | ⚠️ Recognised, not yet tested on hardware |
-| **AULA F75** | USB | ⚠️ Recognised, not yet tested on hardware |
+本次提供 **F106 主版本 + F105 上一版**，包含二进制、文件指纹、补丁源代码和复现构建脚本。只针对已核对的 S75 Pro 硬件版本；请先阅读 [固件安装、恢复和验证记录](firmware/s75pro/README.md)。
 
-AULA sells the same mouse in several colours under one USB ID, so AULA Toolkit cannot tell them apart. Pick your colour during device setup or in the device's **Device** tab.
+## 已知问题
 
-Your AULA device is not on the list? It may still use one of the protocols above — see [Can you add support for my AULA device?](#can-you-add-support-for-my-aula-device).
+- **渐灭尾段偏色**：`#ff4747` 的单键渐灭尾段仍可能偏红。两种补偿实验均未解决，因此未收入本次发布。
+- **偶发亮度提示**：动态灯效的明暗可能被旧监测逻辑误判为亮度变化。该项修复尚未发布；可在“设置 → 通知”中暂时关闭屏幕提示。
+- **侧灯选色**：已验证流动、轮换、常亮和关闭；常亮颜色沿用键盘自身设置，尚未实现任意 RGB 直接选色。
+- **Mac 熄屏与键盘休眠不同**：App 可随 Mac 熄屏关闭主灯和侧灯；小屏幕完整熄灭仍依赖键盘的休眠计时。
+- **版本标识不是完整读回**：支持识别已核对的固件版本标识；无法完整读回键盘上的屏幕素材、所有配置或原始固件。
 
-#### What works over which connection
+## 构建与参与
 
-| Feature | S75 Pro · USB | S75 Pro · 2.4 GHz | SC900 Pro · USB / 2.4 GHz | F75 · USB |
-|---|:---:|:---:|:---:|:---:|
-| Lighting effects | ✅ | ✅ | — | ✅ |
-| Per-key lighting | ✅ | ✅ | — | — |
-| Music rhythm and animation on the keys (streamed from the PC) | ✅ | — | — | — |
-| Lights off while the monitor is off | ✅ | ✅ | — | — |
-| Live keyboard view, knob / Fn changes followed | ✅ | — | — | — |
-| Key mapping, Fn layer, macros | ✅ | ✅ | — | ✅ |
-| Keyboard settings (Win lock, sleep, debounce) | ✅ | ✅ | — | ✅ |
-| TFT screen and clock (synced on connect) | ✅ | Clock only | — | — |
-| Side light bar | ✅ | ✅ | — | — |
-| DPI, polling rate, sensor, buttons, macros | — | — | ✅ | — |
-| Battery level | — | ✅ | ✅ | — |
-| Settings read back when connecting | — | — | ✅ | ✅ |
-| On-screen display for changes made on the device | ✅ | — | ✅ (DPI button) | — |
+```sh
+npm ci
+npm run typecheck
+npm test
+npm run dist:mac
+```
 
-> [!NOTE]
-> Devices can only be configured over **USB** or the **2.4 GHz receiver**. Over Bluetooth the device does not expose its configuration interface — the official AULA software has the same limitation. Settings you saved earlier keep working over Bluetooth, and AULA Toolkit still shows the device as connected there, with the battery level Windows reports.
+本机生成当前架构的 DMG 和 ZIP；CI 分别检查 Apple Silicon、Intel 与 Windows。更多权限、命令行、签名及平台差异见 [macOS 指南](docs/macos.md)。故障反馈请附“设置 → 关于”导出的诊断包；提交前可先查看其中的设备和日志内容。
 
-### AULA's software
+欢迎通过 [Pull Request](https://github.com/Stanley-baby/AulaToolkit/pulls) 提交修复，也可参考 [贡献说明](CONTRIBUTING.md)。原项目其他语言文档：[Türkçe](README_tr-TR.md) · [Русский](README_ru-RU.md)，其内容可能尚未覆盖此分支的 Mac 与固件改动。
 
-Running the official AULA driver and AULA Toolkit at the same time makes both talk to the same device, which can undo changes or cause read errors. AULA Toolkit shows a warning band at the bottom of the window when it detects an official AULA program. **Settings → Software control → Disable official AULA software** keeps them from starting at all: they stay installed, but their programs are disabled (Windows asks once for administrator approval) and their autostart entries are parked. Turning the option off makes them usable again, and uninstalling AULA Toolkit restores them too.
+## 来源与许可
 
-## Features
+原项目由 **[Livvaa](https://github.com/livvaa/AulaToolkit)** 创建，本仓库提供 macOS 适配与 S75 Pro 配套固件工作。协议研究参考 [open-aula](https://github.com/paulcoding810/open-aula)、[AulaSofwareLinux](https://github.com/thought-train/AulaSofwareLinux)、[IncottHIDApp](https://github.com/romkazor/IncottHIDApp) 和 [OpenMouse](https://github.com/OpenMouse-Project/mouse-protocol)。
 
-The app allows you to:
-
-- Configure every supported device from one window, with changes applied instantly.
-- Never overwrite what is already on a device by itself: the mouse's settings are read back when it connects, and on the S75 Pro the effect, colour and brightness you change with the knob or Fn keys are picked up live and saved to your profile.
-- Keep several **profiles** per device and export or import them as files.
-- See a live **on-screen display** when you press the DPI button on the mouse or run a command.
-- Play **music rhythm** bars and **animations (GIF)** on the keys of the S75 Pro, streamed from the PC.
-- Turn the keyboard lighting **off while the monitor is off**, and back on when it wakes.
-- Restart the app from anywhere with **Ctrl + Alt + Shift + A** when something gets stuck.
-- Get a detailed **tray summary** of every connected device by hovering the tray icon.
-- Receive **low-battery notifications**, a **battery care** reminder at 80 % while charging and, if you like, view **battery statistics**.
-- Disable the official AULA software without uninstalling it.
-- Control devices from the **command line** with `aula`.
-- Use it in **10 languages**: English, Türkçe, Русский, 简体中文, Українська, Tiếng Việt, Português (Brasil), Español, Deutsch and Français.
-- Pick a **light, dark or system theme** and an accent colour.
-
-### Keyboards
-
-* **Lighting** — every hardware effect with colour, brightness, speed and direction, plus a preview drawn on a photo of your keyboard.
-* **Live view** (S75 Pro, USB) — the keyboard picture shows what the LEDs show right now. When you change the effect with the knob or the Fn keys, the app recognises it within a few seconds, selects it and shows it on screen. The keyboard does not report its effect, so this works from the LED colours: effects that stay dark until you press a key look the same while idle, and very quick turns can skip an effect in between.
-* **Per-key lighting** (S75 Pro) — paint keys one by one or fill the whole board.
-* **While music plays** — bars on the keys follow the sound playing on the PC (12 colour schemes, amplitude and background, as in the official driver), or the keyboard switches to an effect you pick. The bars need the USB cable; on the receiver the effect is used.
-* **Animation on the keys** (S75 Pro, USB) — plays a picture or GIF from your library on the keys, at about 20 frames a second.
-* **Display off** (S75 Pro) — the keys and the side bar go dark while the monitor is off.
-* **Key mapping** — remap keys on the base layer and the Fn layer to keys, mouse buttons, media keys, shortcuts or macros.
-* **Macros** — record keystrokes with real timing and edit them afterwards.
-* **TFT screen** (S75 Pro, USB) — upload a picture or an animated GIF from your library. Drag the preview to choose the visible part; long GIFs are fitted to the screen's 141 frames without changing their pace. The clock is synced every time the keyboard connects.
-* **Configuration** — lock the Windows key, Alt+F4 and Alt+Tab, set sleep time and key response time.
-* **Reset** — restore the keyboard's defaults or do a full factory reset.
-
-### Mice
-
-* **DPI** — up to six stages, the active stage, the number of stages in the cycle and the DPI indicator LED.
-* **Polling rate** — up to 8000 Hz. Rates above 1000 Hz need the 2.4 GHz receiver.
-* **Sensor** — lift-off distance, motion sync, angle snapping, ripple control and sensor mode.
-* **Buttons** — remap any button except left click, including rapid fire and macros.
-* **Timing** — click debounce and sleep time.
-* **Battery** — level and charging state. The SC900 Pro's two batteries (and any extra ones you add) are tracked separately.
-
-### On-screen display
-
-When you change the DPI with the mouse's own button, a small indicator appears on the screen with the new value and the active stage. On the S75 Pro (USB) it also shows the new effect, colour or brightness when you change them on the keyboard, and it confirms changes made with the `aula` command. Screen uploads, the 80 % reminder and restarts show up there too. In **Settings → Notifications** you can turn it off, choose its position and duration, keep it above full-screen games, or show it on every display.
-
-### Backups
-
-**Settings → Backup settings** saves the app settings and every device profile to a single file, and restores them from one later, for example after reinstalling Windows.
-
-### Battery statistics
-
-Turn on **Settings → General → Battery statistics** to see a battery card in each device's overview:
-
-* **Level** — the current level, or the last one with how long ago it was read. On the cable without a reading, an estimate and then 99+.
-* **1 % in use** — how long 1 % lasts while the device is in use on the receiver.
-* **Daily drain** and **time left** — over calendar time, including the hours it sleeps or the app is closed.
-* **Full charge** and **health** — from how fast the battery charges in the middle of its range.
-* **Equivalent cycles**, **last full charge** and a chart of the level over time.
-
-Figures are shown with a range, once enough has been recorded. Levels are recorded over USB, the 2.4 GHz receiver and Bluetooth (read from Windows). **Battery care**, on by default with the statistics, reminds you at 80 % while charging to unplug the device.
-
-> [!NOTE]
-> AULA devices only report their battery percentage. Every figure above is an **estimate** calculated from the levels AULA Toolkit records.
-
-> [!WARNING]
-> Don't use a fast charger, the boxes say so too.
-
-### CLI
-
-You can control AULA Toolkit from the command line. The command is called `aula` and is installed in `resources\bin` inside the install folder (by default `%LOCALAPPDATA%\Programs\AULA Toolkit\resources\bin\aula.cmd`). Add that folder to your `PATH` to call it from anywhere. **Settings → General → Command line** shows the exact path with a copy button.
-
-The command talks to the running app. If AULA Toolkit is not running, `aula` starts it in the tray first. It does not need administrator rights.
-
-<details>
-<summary>Commands</summary>
-
-* `aula status` — list connected devices (add `--json` for machine-readable output)
-* `aula profile list` — list the profiles of a device
-* `aula profile set <name>` — switch to a profile
-* `aula dpi` — show the mouse's DPI stages
-* `aula dpi stage <n>` — activate DPI stage `<n>` (1-based)
-* `aula dpi <value>` — set the active stage to `<value>` DPI
-* `aula polling <hz>` — set the mouse polling rate
-* `aula light list` — list the keyboard's effects
-* `aula light <effect> [--color #rrggbb] [--brightness n] [--speed n]` — set the keyboard effect
-* `aula brightness <n>` — set the keyboard lighting brightness
-* `aula osd on|off` — turn the on-screen display on or off
-* `aula show` / `aula hide` — show or hide the window
-* `aula version` — print the app version
-
-When more than one device of a kind is connected, pick one with `-d <id>`, for example `aula profile list -d sc900`. The command exits with code `0` on success and `1` on failure, so it can be used in scripts.
-
-</details>
-
-## Credits
-
-AULA Toolkit is created and maintained by **Livvaa** ([GitHub](https://github.com/Livvaa)).
-
-Special thanks to the projects whose public reverse-engineering work made this possible:
-* [open-aula](https://github.com/paulcoding810/open-aula) — AULA keyboard protocols.
-* [AulaSofwareLinux](https://github.com/thought-train/AulaSofwareLinux) — the protocol used by the AULA F75 family.
-* [IncottHIDApp](https://github.com/romkazor/IncottHIDApp) and [OpenMouse](https://github.com/OpenMouse-Project/mouse-protocol) — the PixArt 8K mouse protocol.
-
-All protocol details were cross-checked against the official AULA drivers. Product images © AULA ([aulastar.com](https://www.aulastar.com)).
-
-### Third-party libraries
-
-* **Electron** ([electron/electron](https://github.com/electron/electron))
-* **React** ([facebook/react](https://github.com/facebook/react))
-* **node-hid** ([node-hid/node-hid](https://github.com/node-hid/node-hid))
-* **Tailwind CSS** ([tailwindlabs/tailwindcss](https://github.com/tailwindlabs/tailwindcss))
-* **Zustand** ([pmndrs/zustand](https://github.com/pmndrs/zustand))
-* **Lucide** ([lucide-icons/lucide](https://github.com/lucide-icons/lucide))
-* **electron-vite** ([alex8088/electron-vite](https://github.com/alex8088/electron-vite)), **Vite** ([vitejs/vite](https://github.com/vitejs/vite)) and **Vitest** ([vitest-dev/vitest](https://github.com/vitest-dev/vitest))
-* **electron-builder** and **electron-updater** ([electron-userland/electron-builder](https://github.com/electron-userland/electron-builder))
-
-### Translations
-
-The interface is available in 10 languages. Not all translations have been reviewed by native speakers yet. If you spot a mistake, please open a pull request — each language is a single file in [`src/shared/locales`](src/shared/locales).
-
-## FAQ
-
-#### Why can't I change settings over Bluetooth?
-
-Over Bluetooth the keyboard and mouse only appear to Windows as a standard keyboard and mouse. The configuration interface that USB and the 2.4 GHz receiver provide does not exist there, so neither AULA Toolkit nor the official software can change settings. Connect with the cable or the receiver, make your changes, and switch back to Bluetooth — the settings stay on the device. Over Bluetooth AULA Toolkit shows the connection and the battery level that Windows reports.
-
-#### Why doesn't my keyboard show a battery level?
-
-The S75 Pro reports its battery level over the 2.4 GHz receiver, and Windows reports it over Bluetooth. Over USB it is charging and the firmware reports no level: AULA Toolkit shows an estimate from the measured charge speed, then 99+.
-
-#### Why are battery cycles and health only estimates?
-
-AULA devices have no battery chip that counts cycles or measures wear. They only report a percentage, so AULA Toolkit estimates everything else from when that percentage changes. Health comes from how fast the battery charges, so it needs several charges over a month or more.
-
-#### Can AULA Toolkit read the picture on the S75 Pro screen or the firmware version?
-
-No. The keyboard firmware can receive a picture but has no command to send it back, and none of the supported devices report their firmware version. The official software cannot do this either.
-
-#### Why does Windows warn me when I run the installer?
-
-The installers are not code-signed yet, so Windows SmartScreen shows a warning for an unknown publisher. AULA Toolkit is open source and you can build it yourself from this repository. Choose **More info → Run anyway** to continue.
-
-#### My mouse is a different colour than the picture.
-
-AULA uses the same USB ID for every colour of a model. Choose your colour in the device's **Device** tab.
-
-#### Can you add support for my AULA device?
-
-Possibly. Most AULA keyboards and mice reuse one of the protocol families AULA Toolkit already speaks. See [Contribution](#contribution) for what to include in a request.
-
-## Arguments
-
-* `--hidden` — start minimised to the tray. Used by *Autorun*.
-* `--delayed` — wait 30 seconds before connecting to devices. Used by *Autorun → Enabled (delayed)*.
-
-## How to collect logs?
-
-Logs help a lot with any problem. **Always** attach them to your issues.
-
-#### Method 1: Diagnostics bundle (recommended)
-1. Open **AULA Toolkit**.
-2. Go to **Settings → About**.
-3. Click **Save diagnostics bundle**. It saves the device status and the communication log into one file you can attach to your issue.
-
-#### Method 2: Log files
-1. Reproduce the problem.
-2. Open `Run` (Win+R), type `"%APPDATA%\AULA Toolkit\logs"` and press OK.
-3. Attach the newest `hid-<date>.log` file.
-
-You can also watch the log live in **Settings → General → Advanced**.
-
-## Contribution
-
-Feedback is very welcome, so please don't hesitate to report issues. Pull requests are welcome too. Please read the [contributing guide](CONTRIBUTING.md) first.
-
-Questions, ideas or just want to chat? Join the [Discord server](https://discord.gg/u9FbaJGtCe).
-
-#### Device support
-
-Support for more AULA devices needs testers. When you open a request, please include:
-
-1. The full model name (for example *AULA F87 Pro*).
-2. The USB IDs, found in **Device Manager → your device → Details → Hardware Ids** (for example `VID_0C45&PID_800A`).
-3. Which connection you used (USB or 2.4 GHz).
-4. A diagnostics bundle (see [How to collect logs?](#how-to-collect-logs)).
-
-## License
-
-Copyright (C) 2026 Livvaa
-
-AULA Toolkit is free software: you can redistribute it and/or modify it under the terms of the
-GNU General Public License as published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version. See [LICENSE](LICENSE) for the full text.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-AULA Toolkit is not affiliated with AULA. Product names and images belong to their owners.
+应用代码按 [GPL-3.0-or-later](LICENSE) 提供。固件包含第三方厂商二进制，来源及本仓库补丁的范围见 [固件说明](firmware/s75pro/README.md#来源与范围)。产品名称、商标及原始产品图片归各自权利人；本项目与 AULA 无隶属关系。

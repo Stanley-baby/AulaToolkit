@@ -1,0 +1,32 @@
+{
+  "model": "AULA S75 Pro",
+  "base": "Vendor V1.03; exact tested 0C45:800A revision only",
+  "images": [
+    {
+      "version": "F106",
+      "file": "../../resources/firmware/S75Pro-F106.bin",
+      "sha256": "5f8425131cf96e8878dee95950380b7fa788004e91540fbcf30b49d9b2ef2931",
+      "bytes": 262144,
+      "checksum": "025F",
+      "features": [
+        "custom1-120minute sleep",
+        "Bluetooth and2.4G quick/deep selection",
+        "two-stage smart sleep"
+      ],
+      "status": "physically accepted on tested unit"
+    },
+    {
+      "version": "F105",
+      "file": "../../resources/firmware/S75Pro-F105.bin",
+      "sha256": "ed95aa99b162b8f3746288c02bc04e403b21c86e1792f9c8cb662b1c6c2e8ab3",
+      "bytes": 262144,
+      "checksum": "67CC",
+      "features": [
+        "custom1-120minute sleep",
+        "Bluetooth and2.4G quick/deep selection"
+      ],
+      "status": "previous physically accepted image; bundled recovery option"
+    }
+  ],
+  "excluded": "A1 rounding and B1 scan-dither experiments are not shipped"
+}

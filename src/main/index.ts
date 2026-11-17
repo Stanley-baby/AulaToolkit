@@ -1,5 +1,6 @@
 import './elevatedHelper'; // must stay first
-import { app, BrowserWindow, desktopCapturer, dialog, globalShortcut, ipcMain, Menu, nativeImage, Notification, screen, session, shell, systemPreferences, Tray } from 'electron';
+import { app, BrowserWindow, desktopCapturer, dialog, globalShortcut, ipcMain, Menu, nativeImage, nativeTheme, Notification, powerSaveBlocker, screen, session, shell, systemPreferences, Tray } from 'electron';
+import HID from 'node-hid';
 import { MODELS } from '@shared/models';
 import { en } from '@shared/locales/en';
 import { tr } from '@shared/locales/tr';
@@ -33,6 +34,8 @@ import * as library from './library';
 import { readBluetoothBatteries } from './bluetoothBattery';
 import { watchDisplayPower } from './displayPower';
 import { setMediaWatch, stopMediaWatch } from './mediaPlayback';
+import { FirmwareUpdater } from './firmware';
+import { runFirmwareWorker } from './firmwareWorker';
 
 declare const __BUILD_STAMP__: string;
 const BUILD_STAMP = typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev';
@@ -132,6 +135,7 @@ function checkBatteryCare(): void {
 // Ctrl+Alt+Shift+A restarts the app, for when something hangs.
 const RESTART_KEYS = 'Control+Alt+Shift+A';
 function restartApp(): void {
+  if (firmwareUpdater?.snapshot().busy) return;
   showOsd({ device: 'AULA Toolkit', kind: 'restart', value: tx('restarting') });
   setTimeout(() => {
     const args = process.argv.slice(1).filter((a) => a !== '--hidden' && a !== '--delayed');
@@ -153,6 +157,7 @@ let tray: Tray | null = null;
 let flyout: BrowserWindow | null = null;
 let flyoutHideTimer: NodeJS.Timeout | null = null;
 let quitting = false;
+let firmwareUpdater: FirmwareUpdater | null = null;
 const startHidden = process.argv.includes('--hidden') || (process.platform === 'darwin' && app.getLoginItemSettings().wasOpenedAtLogin);
 const startDelayed = process.argv.includes('--delayed');
 
@@ -168,15 +173,18 @@ let bluetoothState: BluetoothState = {};
 const iconPath = (): string => join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
+  const mac = process.platform === 'darwin';
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   win = new BrowserWindow({
-    width: Math.min(1360, screen.getPrimaryDisplay().workAreaSize.width),
-    height: Math.min(780, screen.getPrimaryDisplay().workAreaSize.height),
-    resizable: false,
-    maximizable: false,
-    fullscreenable: false,
+    width: Math.min(1360, width),
+    height: Math.min(780, height),
+    ...(mac ? { minWidth: Math.min(900, width), minHeight: Math.min(600, height), trafficLightPosition: { x: 16, y: 15 } } : {}),
+    resizable: mac,
+    maximizable: mac,
+    fullscreenable: mac,
     show: false,
-    frame: false,
-    backgroundColor: '#0b0d12',
+    frame: mac,
+    backgroundColor: prefs.theme === 'dark' || (prefs.theme === 'system' && nativeTheme.shouldUseDarkColors) ? '#0b0d12' : '#f3f4f8',
     titleBarStyle: 'hidden',
     icon: iconPath(),
     webPreferences: {
@@ -189,12 +197,12 @@ function createWindow(): void {
   });
 
   win.on('ready-to-show', () => { if (!startHidden) win?.show(); });
-  if (process.platform === 'darwin') win.setWindowButtonVisibility(false);
   win.on('closed', () => { win = null; });
   (win as unknown as { on(ev: 'minimize', cb: (e: { preventDefault(): void }) => void): void }).on('minimize', (e) => {
     if (prefs.minimizeToTrayOnMinimize) { e.preventDefault(); win?.hide(); }
   });
   win.on('close', (e) => {
+    if (firmwareUpdater?.snapshot().busy) { e.preventDefault(); return; }
     if (!quitting && prefs.minimizeToTray) { e.preventDefault(); win?.hide(); }
   });
   win.webContents.setWindowOpenHandler(({ url }) => { void shell.openExternal(url); return { action: 'deny' }; });
@@ -319,6 +327,7 @@ function registerIpc(): void {
     return true;
   });
   ipcMain.handle(CH.APP_FULL_RESET, async () => {
+    if (firmwareUpdater?.snapshot().busy) throw new Error('Firmware update is in progress');
     quitting = true;
     app.setLoginItemSettings({ openAtLogin: false });
     await manager.stop().catch(() => undefined);
@@ -335,6 +344,7 @@ function registerIpc(): void {
     return true;
   });
   ipcMain.handle(CH.APP_RESTORE, async () => {
+    if (firmwareUpdater?.snapshot().busy) throw new Error('Firmware update is in progress');
     const r = await dialog.showOpenDialog(win!, { defaultPath: join(app.getPath('userData'), 'backups'), filters: [{ name: 'AULA Toolkit backup', extensions: ['json'] }], properties: ['openFile'] });
     if (r.canceled || !r.filePaths[0]) return 'canceled';
     let data: unknown;
@@ -356,8 +366,76 @@ function registerIpc(): void {
   ipcMain.handle(CH.APP_BUILD_INFO, () => ({ version: app.getVersion(), build: BUILD_STAMP, electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node, cliPath: app.isPackaged ? join(process.resourcesPath, 'bin', process.platform === 'darwin' ? 'aula' : 'aula.cmd') : join(app.getAppPath(), 'resources', 'cli', 'aula.js') }));
   ipcMain.handle(CH.UPDATE_CHECK, () => updater.check());
   ipcMain.handle(CH.UPDATE_DOWNLOAD, () => updater.download());
-  ipcMain.on(CH.UPDATE_INSTALL, () => { quitting = true; updater.install(); });
+  ipcMain.on(CH.UPDATE_INSTALL, () => { if (!firmwareUpdater?.snapshot().busy) { quitting = true; updater.install(); } });
   ipcMain.handle(CH.UPDATE_STATE, () => updater.getState());
+  if (process.platform === 'darwin') {
+    const journalPath = join(app.getPath('userData'), 'firmware-update-incomplete.json');
+    if (existsSync(journalPath)) manager.blockModel('s75pro');
+    try {
+      const dir = app.isPackaged ? join(process.resourcesPath, 'firmware') : join(app.getAppPath(), 'resources', 'firmware');
+      const writer = require(join(dir, 'stock-flash.cjs'));
+      let lastFirmwareLog = '';
+      firmwareUpdater = new FirmwareUpdater({
+        enabled: !process.env.AULA_SIM && !process.env.AULA_SIM_ONLY,
+        imagePath: join(dir, 'S75Pro-F106.bin'),
+        previousImagePath: join(dir, 'S75Pro-F105.bin'),
+        journalPath,
+        writer: {
+          ...writer,
+          flashFirmware: (_hid, image, progress, target) => runFirmwareWorker(
+            join(dir, 'worker.cjs'), require.resolve('node-hid'), journalPath, image,
+            writer.validateImage(image).sha256, target, progress,
+          ),
+        },
+        hid: HID,
+        manager,
+        publish: (state) => {
+          const entry = state.phase === 'error' ? `${state.phase}: ${state.error ?? 'unknown'}` : state.phase;
+          if (entry !== lastFirmwareLog) {
+            manager.addLog(state.phase === 'error' ? '!' : 'i', `firmware: ${entry}`);
+            lastFirmwareLog = entry;
+          }
+          win?.webContents.send(CH.FIRMWARE_EVENT, state);
+        },
+        confirm: async (state) => {
+          const answer = await dialog.showMessageBox(win!, {
+            type: 'warning', title: tx('firmwareConfirmTitle'),
+            message: tx('firmwareConfirmMessage').replace('{version}', state.selected?.version ?? ''),
+            detail: tx('firmwareConfirmDetail'),
+            buttons: [tx('firmwareCancel'), tx('firmwareConfirmButton')], defaultId: 0, cancelId: 0, noLink: true,
+          });
+          return answer.response === 1;
+        },
+        backup: () => {
+          const backupDir = join(app.getPath('userData'), 'backups');
+          mkdirSync(backupDir, { recursive: true });
+          writeFileSync(join(backupDir, `before-firmware-${Date.now()}.json`),
+            JSON.stringify(createBackup(app.getVersion()), null, 2), { flag: 'wx' });
+        },
+        preventSleep: () => {
+          const id = powerSaveBlocker.start('prevent-app-suspension');
+          return () => { if (powerSaveBlocker.isStarted(id)) powerSaveBlocker.stop(id); };
+        },
+      });
+    } catch (error) {
+      manager.addLog('!', `firmware updater unavailable: ${(error as Error).message}`);
+    }
+  }
+  const requireFirmware = (): FirmwareUpdater => {
+    if (!firmwareUpdater) throw new Error('Firmware updates are unavailable on this platform');
+    return firmwareUpdater;
+  };
+  ipcMain.handle(CH.FIRMWARE_STATE, () => requireFirmware().snapshot());
+  ipcMain.handle(CH.FIRMWARE_BUNDLED, () => requireFirmware().selectBundled());
+  ipcMain.handle(CH.FIRMWARE_PREVIOUS, () => requireFirmware().selectPrevious());
+  ipcMain.handle(CH.FIRMWARE_SELECT, async () => {
+    const firmware = requireFirmware();
+    if (firmware.snapshot().busy) throw new Error('Firmware update is in progress');
+    const selected = await dialog.showOpenDialog(win!, { filters: [{ name: 'S75 Pro firmware', extensions: ['bin'] }], properties: ['openFile'] });
+    return selected.canceled || !selected.filePaths[0] ? firmware.snapshot() : firmware.select(selected.filePaths[0], 'file');
+  });
+  ipcMain.handle(CH.FIRMWARE_START, () => requireFirmware().start());
+  ipcMain.handle(CH.FIRMWARE_RECHECK, () => requireFirmware().recheck());
   ipcMain.handle(CH.APP_DIAGNOSTICS, async () => {
     const r = await dialog.showSaveDialog(win!, { defaultPath: `aula-toolkit-diagnostics-${new Date().toISOString().slice(0, 10)}.json`, filters: [{ name: 'JSON', extensions: ['json'] }] });
     if (r.canceled || !r.filePath) return false;
@@ -554,6 +632,20 @@ if (!gotLock) {
     app.on('activate', () => { if (!win || win.isDestroyed()) createWindow(); else { win.show(); win.focus(); } });
   });
 
-  app.on('before-quit', () => { quitting = true; globalShortcut.unregisterAll(); stopDisplayPowerWatch?.(); stopMediaWatch(); void manager.stop(); });
+  let devicesStopped = false;
+  let stoppingDevices = false;
+  app.on('before-quit', (e) => {
+    if (firmwareUpdater?.snapshot().busy) { e.preventDefault(); win?.show(); return; }
+    if (devicesStopped) return;
+    e.preventDefault();
+    if (stoppingDevices) return;
+    stoppingDevices = true;
+    quitting = true;
+    globalShortcut.unregisterAll(); stopDisplayPowerWatch?.(); stopMediaWatch();
+    void manager.stop().catch(err => manager.addLog('!', `device shutdown: ${err.message}`)).finally(() => {
+      devicesStopped = true;
+      app.quit();
+    });
+  });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }

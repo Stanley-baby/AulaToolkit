@@ -40,6 +40,8 @@ export default function App() {
     for (const k of [...seen.current]) if (!devices.some((d) => d.key === k)) seen.current.delete(k);
   }, [devices]);
 
+  if (!ready) return null;
+
   return (
     <div className="h-full flex flex-col hero-bg">
       <TitleBar />

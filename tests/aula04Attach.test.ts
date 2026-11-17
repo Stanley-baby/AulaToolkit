@@ -17,7 +17,7 @@ afterEach(() => Object.defineProperty(process, 'platform', { value: platform }))
 beforeEach(() => {
   Object.defineProperty(process, 'platform', { value: 'win32' });
   vi.clearAllMocks();
-  mock.open.mockImplementation(async (info) => ({ info, path: info.path, close: async () => undefined }));
+  mock.open.mockImplementation(async (info) => ({ info, path: info.path, close: async () => undefined, drain: async () => undefined }));
   mock.feature.mockResolvedValue(true);
 });
 describe('S75 Pro HID collection selection', () => {

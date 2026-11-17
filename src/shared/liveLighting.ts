@@ -103,10 +103,17 @@ export function settle(prev: number[], next: number[], fall = 0.07): number[] {
   return next.map((v, i) => Math.max(v, (prev[i] ?? 0) - fall));
 }
 
-/** average colour per key */
-export function sampleKeys(cells: KeyCell[], rgba: ArrayLike<number>, w: number, h: number, brightness = 1): Frame {
+/** Area average by default, or nearest pixel at each key centre. */
+export function sampleKeys(cells: KeyCell[], rgba: ArrayLike<number>, w: number, h: number, brightness = 1, averageColor = true): Frame {
   const out: Frame = {};
   for (const c of cells) {
+    if (!averageColor) {
+      const x = Math.max(0, Math.min(w - 1, Math.floor((c.u0 + c.u1) * w / 2)));
+      const y = Math.max(0, Math.min(h - 1, Math.floor((c.v0 + c.v1) * h / 2)));
+      const i = (y * w + x) * 4;
+      out[c.code] = scale([rgba[i], rgba[i + 1], rgba[i + 2]], brightness);
+      continue;
+    }
     const xa = Math.max(0, Math.floor(c.u0 * w)), xb = Math.min(w, Math.max(xa + 1, Math.ceil(c.u1 * w)));
     const ya = Math.max(0, Math.floor(c.v0 * h)), yb = Math.min(h, Math.max(ya + 1, Math.ceil(c.v1 * h)));
     let r = 0, g = 0, b = 0, n = 0;

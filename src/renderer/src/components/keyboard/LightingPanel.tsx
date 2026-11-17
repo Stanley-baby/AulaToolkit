@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { interpolate } from '@shared/colorInterp';
+import { useMemo, useRef, useState } from 'react';
 import { Paintbrush, Eraser, PaintBucket, Cable } from 'lucide-react';
 import { modelById } from '@shared/models';
 import { USER_LIGHT_MODE } from '@shared/protocols/aula04';
 import { activeProfile, useStore, useT, useTn } from '../../store';
 import { Card, ColorField, Segmented, Slider, Toggle, rgbToHex, Select } from '../ui';
 import { KeyboardView } from './KeyboardView';
-import { imageFor } from '../../assets';
+import { imageFor, S75_SMOKED_PHOTO } from '../../assets';
 import { useEffectPreview } from '../../effects';
 import { LibraryGrid } from '../LibraryGrid';
-import { MUSIC_DEFAULTS, animationSource } from '../../liveEngine';
+import { MUSIC_DEFAULTS } from '../../liveEngine';
+import { REACTIVE_MODES } from '../../previewDemo';
 import type { DeviceModel, KeyAnimation, MusicEffect } from '@shared/types';
 
 // live frames only on aula04 keyboards with per-key LEDs
@@ -19,82 +19,19 @@ const CAP = { BRIGHTNESS: 1, SPEED: 2, DIR_LR: 4, DIR_UD: 8, COLORFUL: 16, COLOR
 
 type Rgb = [number, number, number];
 
-/**
- * Playback delay for live readings. They arrive about every 160 ms with some jitter; drawing slightly
- * in the past lets every screen frame sit between two known readings, so the motion stays smooth.
- */
-const LIVE_DELAY_MS = 240;
-
-/**
- * Live LED colours for the screen, interpolated at display rate between the readings and scaled up.
- * At low brightness the keyboard reports dim values (a peak of ~47 at level 1) that look washed out
- * over the photo; the gain follows the brightest reading of the last few seconds, so breathing and
- * fading effects keep their shape.
- */
-function useLiveColors(live: { colors: Record<number, Rgb>; at: number } | undefined): Record<number, Rgb> | undefined {
-  const frames = useRef<{ t: number; colors: Record<number, Rgb>; peak: number }[]>([]);
-  const [out, setOut] = useState<Record<number, Rgb> | undefined>(undefined);
-
-  useEffect(() => {
-    if (!live) return;
-    const list = frames.current;
-    if (list.length && list[list.length - 1].t >= live.at) return;
-    if (list.length && live.at - list[list.length - 1].t > 2000) list.length = 0; // readings paused (window hidden)
-    let peak = 0;
-    for (const c of Object.values(live.colors)) peak = Math.max(peak, c[0], c[1], c[2]);
-    list.push({ t: live.at, colors: live.colors, peak });
-    if (list.length > 16) list.shift();
+// Render received LED frames directly; no extra playback delay or independent GIF timeline.
+function useLiveColors(live: { colors: Record<number, Rgb>; at: number; source?: string } | undefined): Record<number, Rgb> | undefined {
+  const peaks = useRef<{ at: number; peak: number }[]>([]);
+  return useMemo(() => {
+    if (!live) { peaks.current = []; return undefined; }
+    // Auto-exposure would cancel the deliberate brightness change of breathing.
+    if (live.source === 'breathing') { peaks.current = []; return live.colors; }
+    const peak = Math.max(0, ...Object.values(live.colors).flat());
+    peaks.current = [...peaks.current.filter((p) => live.at - p.at < 2000), { at: live.at, peak }].slice(-16);
+    const top = Math.max(...peaks.current.map((p) => p.peak));
+    const gain = top > 0 ? Math.min(6, 255 / top) : 1;
+    return Object.fromEntries(Object.entries(live.colors).map(([key, c]) => [key, c.map((v) => Math.min(255, Math.round(v * gain))) as Rgb]));
   }, [live]);
-
-  const active = !!live;
-  useEffect(() => {
-    if (!active) { setOut(undefined); return; }
-    let raf = 0;
-    const tick = (): void => {
-      const list = frames.current;
-      if (list.length) {
-        const rt = Date.now() - LIVE_DELAY_MS;
-        let i = list.findIndex((f) => f.t > rt);
-        if (i === -1) i = list.length; // past the newest reading: hold it
-        const ia = Math.max(0, i - 1);
-        const a = list[ia], b = list[Math.min(list.length - 1, i)], before = ia > 0 ? list[ia - 1] : undefined;
-        const k = b.t > a.t ? Math.min(1, Math.max(0, (rt - a.t) / (b.t - a.t))) : 1;
-        const top = Math.max(...list.map((f) => f.peak));
-        const gain = top > 0 ? Math.min(6, 255 / top) : 1;
-        const next: Record<number, Rgb> = {};
-        for (const key of Object.keys(b.colors)) {
-          const code = Number(key);
-          const cb = b.colors[code], ca = a.colors[code] ?? cb;
-          const c = k >= 1 ? cb : interpolate(before?.colors[code], ca, cb, k);
-          next[code] = [Math.min(255, Math.round(c[0] * gain)), Math.min(255, Math.round(c[1] * gain)), Math.min(255, Math.round(c[2] * gain))];
-        }
-        setOut(next);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active]);
-
-  return active ? out : undefined;
-}
-
-// Same frames liveEngine sends, for the keyboard picture.
-function useAnimationPreview(modelId: string, anim: KeyAnimation | undefined): Record<number, Rgb> | undefined {
-  const [colors, setColors] = useState<Record<number, Rgb> | undefined>(undefined);
-  const key = anim?.enabled && anim.libraryId ? `${anim.libraryId}|${anim.mode}|${anim.speed}|${anim.brightness}` : '';
-  useEffect(() => {
-    setColors(undefined);
-    if (!key || !anim) return;
-    let stop = false; let timer = 0;
-    void animationSource(modelId, anim).then((src) => {
-      if (!src || stop) return;
-      const tick = (): void => { setColors(src(performance.now())); timer = window.setTimeout(tick, 47); };
-      tick();
-    });
-    return () => { stop = true; window.clearTimeout(timer); };
-  }, [modelId, key]); // eslint-disable-line react-hooks/exhaustive-deps
-  return colors;
 }
 
 export const LightingPanel = ({ modelId }: { modelId: string }) => {
@@ -108,20 +45,24 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
   const kb = profile?.keyboard;
   const modes = model.lightModes ?? [];
   const cur = useMemo(() => modes.find((m) => m.mode === kb?.lighting.mode), [modes, kb?.lighting.mode]);
-  const simulated = useEffectPreview(kb?.lighting, model.layout ?? [], kb?.perKey);
+  const macS75 = window.aula.platform === 'darwin' && modelId === 's75pro';
+  const [demoRequest, setDemoRequest] = useState(0);
+  const [demoPlaying, setDemoPlaying] = useState(false);
   // Over USB the S75 Pro reports what its LEDs show right now; prefer that to the simulation.
   const device = useStore((s) => s.deviceFor(modelId));
-  const macBar = window.aula.platform === 'darwin' && modelId === 's75pro';
-  const barEffects = macBar && (device?.link === 'usb' || device?.link === '2.4g');
+  const barEffects = macS75 && (device?.link === 'usb' || device?.link === '2.4g');
   const deviceLight = useStore((s) => s.liveLight[modelId]);
   const liveColors = useLiveColors(device?.link === 'usb' ? deviceLight : undefined);
   const anim = useStore((s) => s.settings[modelId]?.keyAnimation);
-  const animPreview = useAnimationPreview(modelId, liveCapable(model) ? anim : undefined);
-  if (!kb) return null;
-  const perKey = kb.lighting.mode === USER_LIGHT_MODE;
+
+  const perKey = kb?.lighting.mode === USER_LIGHT_MODE;
   const caps = perKey ? CAP.BRIGHTNESS : cur?.caps ?? 0;
-  const animating = !!anim?.enabled && device?.link === 'usb' && liveCapable(model);
-  const showLive = !!liveColors && device?.link === 'usb' && (!perKey || animating);
+  const animating = !!anim?.enabled && !!anim.libraryId && deviceLight?.source === 'animation' && device?.link === 'usb' && liveCapable(model);
+  const showLive = !!liveColors && device?.link === 'usb' && (!perKey || !!deviceLight?.source);
+
+  const demoAvailable = !!kb && REACTIVE_MODES.has(kb.lighting.mode) && !showLive;
+  const simulated = useEffectPreview(kb?.lighting, model.layout ?? [], kb?.perKey, macS75, { enabled: demoAvailable, request: demoRequest, onPlaying: setDemoPlaying });
+  if (!kb) return null;
 
   const setL = (patch: Partial<typeof kb.lighting>): void => update(modelId, (p) => { if (p.keyboard) Object.assign(p.keyboard.lighting, patch); }, 'lighting');
 
@@ -130,7 +71,7 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
     if (erase) delete p.keyboard.perKey[code]; else p.keyboard.perKey[code] = paint;
   }, 'perKey');
 
-  const previewColors = animPreview ?? (showLive ? liveColors : simulated);
+  const previewColors = showLive ? liveColors : simulated;
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5">
@@ -139,11 +80,16 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
           <KeyboardView
             keys={model.layout ?? []}
             colors={previewColors}
+            barMode={kb.barMode}
             onKey={perKey ? paintKey : undefined}
             glow={perKey ? undefined : rgbToHex(kb.lighting.color)}
             dimUnpainted={perKey}
-            photo={model.topImage ? { src: imageFor(model.topImage.id), width: model.topImage.width, height: model.topImage.height } : undefined}
+            photo={modelId === 's75pro' ? S75_SMOKED_PHOTO : model.topImage ? { src: imageFor(model.topImage.id), width: model.topImage.width, height: model.topImage.height } : undefined}
           />
+          {demoAvailable && <div className="flex items-center gap-3 mt-3 text-sm text-muted">
+            <span role="status">{demoPlaying ? t('lightDemoPlaying') : t('lightDemoHint')}</span>
+            <button className="btn btn-sm ml-auto" onClick={() => setDemoRequest(v => v + 1)}>{t('lightDemoReplay')}</button>
+          </div>}
           {perKey && (
             <div className="flex items-center gap-3 mt-4 flex-wrap">
               <span className="text-xs text-muted">{t('paintHint')}</span>
@@ -178,6 +124,11 @@ export const LightingPanel = ({ modelId }: { modelId: string }) => {
         </Card>
         <Card title={perKey ? t('perKey') : tn(cur?.name ?? '') || t('lighting')}>
           {perKey && <ColorField value={paint} onChange={setPaint} label={t('color')} />}
+          {perKey && liveCapable(model) && <>
+            <Toggle label={t('perKeyBreathing')} hint={t('perKeyBreathingHint')} on={!!kb.perKeyBreathing}
+              onChange={(v) => update(modelId, p => { if (p.keyboard) p.keyboard.perKeyBreathing = v; }, null)} />
+            {kb.perKeyBreathing && device?.link !== 'usb' && <p className="text-xs text-muted py-2">{t('errUsbOnly')}</p>}
+          </>}
           {!!(caps & CAP.COLOR) && !kb.lighting.colorful && <ColorField value={kb.lighting.color} onChange={(c) => setL({ color: c })} label={t('color')} />}
           {!!(caps & CAP.COLORFUL) && <Toggle on={kb.lighting.colorful} onChange={(v) => setL({ colorful: v })} label={t('colorful')} />}
           {!!(caps & CAP.BRIGHTNESS) && <Slider label={t('brightness')} min={0} max={model.lightRange?.brightness ?? 5} value={kb.lighting.brightness} onChange={(v) => setL({ brightness: v })} />}
@@ -274,7 +225,7 @@ const KeyAnimCard = ({ modelId }: { modelId: string }) => {
   const set = (patch: Partial<KeyAnimation>): void => setAnim(modelId, { ...cur, ...patch });
   return (
     <Card title={t('keyAnim')}>
-      <Toggle label={t('keyAnim')} hint={t('keyAnimHint')} on={cur.enabled && !!cur.libraryId} onChange={(v) => set({ enabled: v })} />
+      <Toggle label={t('keyAnim')} hint={t('keyAnimHint')} on={cur.enabled} onChange={(v) => set({ enabled: v })} />
       {cur.enabled && dev && dev.link !== 'usb' && (
         <div className="flex items-center gap-2 text-sm py-2" style={{ color: 'var(--color-warn)' }}><Cable size={16} className="shrink-0" />{t('needsCable')}</div>
       )}
@@ -284,6 +235,10 @@ const KeyAnimCard = ({ modelId }: { modelId: string }) => {
             <span className="text-sm truncate">{cur.name}</span>
             <Segmented value={cur.mode} onChange={(v) => set({ mode: v })} options={[{ value: 'cover', label: t('cover') }, { value: 'fit', label: t('fit') }]} />
           </div>
+          <Select<NonNullable<KeyAnimation['rotation']>> label={t('direction')} value={cur.rotation ?? 0}
+            options={[{ value: 0, label: '0° ↑' }, { value: 90, label: '90° ↻' }, { value: 180, label: '180° ↓' }, { value: 270, label: '90° ↺' }]}
+            onChange={(rotation) => set({ rotation })} />
+          <Toggle label={t('averageColor')} hint={t('averageColorHint')} on={cur.averageColor !== false} onChange={(averageColor) => set({ averageColor })} />
           <Slider label={t('speed')} min={0.25} max={3} step={0.25} value={cur.speed} format={(v) => `${v}×`} onChange={(v) => set({ speed: v })} />
           <Slider label={t('brightness')} min={10} max={100} step={5} value={cur.brightness} format={pct} onChange={(v) => set({ brightness: v })} />
         </>
