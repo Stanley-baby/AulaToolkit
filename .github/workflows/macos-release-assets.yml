@@ -1,0 +1,70 @@
+name: Upload macOS release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: 'Successful macOS workflow run ID'
+        required: true
+      tag:
+        description: 'Existing draft release tag'
+        required: true
+        default: v0.3.0
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN: ${{ inputs.build_run }}
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - name: Verify the build and draft target
+        id: build
+        run: |
+          gh run view "$BUILD_RUN" --json status,conclusion,headSha,workflowName > build.json
+          gh release view "$RELEASE_TAG" --json isDraft,targetCommitish > draft.json
+          python3 - <<'PY'
+          import json, os
+          build = json.load(open('build.json'))
+          draft = json.load(open('draft.json'))
+          assert build['status'] == 'completed' and build['conclusion'] == 'success'
+          assert build['workflowName'] == 'macOS'
+          assert draft['isDraft'] and draft['targetCommitish'] == build['headSha']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('sha=' + build['headSha'] + '\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.build.outputs.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.build_run }}
+          pattern: macOS-*
+          path: packages
+          merge-multiple: true
+      - name: Prepare installers, firmware and checksums
+        run: |
+          mkdir upload
+          cp packages/*.dmg packages/*.zip resources/firmware/S75Pro-F10{5,6}.bin upload/
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          root = Path('upload')
+          version = json.load(open('package.json'))['version']
+          expected = {f'AULA-Toolkit-{version}-mac-{arch}.{ext}'
+                      for arch in ('arm64', 'x64') for ext in ('dmg', 'zip')}
+          expected |= {'S75Pro-F105.bin', 'S75Pro-F106.bin'}
+          assert {p.name for p in root.iterdir()} == expected
+          (root / 'SHA256SUMS.txt').write_text(''.join(
+              f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n'
+              for p in sorted(root.iterdir())))
+          PY
+      - name: Upload to the draft without publishing
+        run: gh release upload "$RELEASE_TAG" upload/* --clobber
