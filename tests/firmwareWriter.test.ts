@@ -13,10 +13,10 @@ const context = {
 };
 runInNewContext(readFileSync(filename, 'utf8'), context, { filename });
 const writer = context.module.exports;
-const image = readFileSync(resolve('resources/firmware/S75Pro-F106.bin'));
 const target = { vendorId: 0x0c45, productId: 0x800a, product: 'AULA-S75Pro', usagePage: 0xff13, usage: 1, path: 'test' };
 
-it('streams the reviewed F106 image and checks both device checksums', async () => {
+it.each([['F106', 0x025f], ['F108', 0xd821]] as const)('streams reviewed %s and checks both device checksums', async (version, checksum) => {
+  const image = readFileSync(resolve(`resources/firmware/S75Pro-${version}.bin`));
   let last: number | string = 0;
   let chunks = 0;
   let programming = false;
@@ -46,7 +46,7 @@ it('streams the reviewed F106 image and checks both device checksums', async () 
         if (last === 1) { b[9] = 32; b[10] = 5; b.writeUInt16LE(0xffff, 13); b.writeUInt16LE(0x5a5a, 15); }
         if (last === 5 && !programmed) programming = true;
         if ((last === 5 && programmed) || last === 6) {
-          b.writeUInt16LE(0x025f, 9);
+          b.writeUInt16LE(checksum, 9);
           image.copy(b, 61, image.length - 4);
         }
         return [...b];

@@ -10,9 +10,9 @@ import type { Driver, DriverContext } from './types';
 const LIVE_POLL_MS = 140; // plus ~22 ms per read: about six readings a second; the view fills in between
 const WATCH_EVERY_MS = 300;
 const HOLD_MS = 1200;
-// Calibrated on the original unit; V1.03 and its F104–F106 derivatives use standard wire IDs.
+// Calibrated on the original unit; V1.03 and its F104–F108 derivatives use standard wire IDs.
 const MAC_S75_LIGHT_MODES = [0, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-const STANDARD_LIGHT_RELEASES = new Set([0x0103, 0xf104, 0xf105, 0xf106]);
+const STANDARD_LIGHT_RELEASES = new Set([0x0103, 0xf104, 0xf105, 0xf106, 0xf107, 0xf108]);
 
 interface Ports { main?: HidPort; dongle?: HidPort; screenCandidates: Device[]; screen?: HidPort }
 
@@ -81,7 +81,7 @@ export class Aula04Driver implements Driver {
     if (!ports.main && !ports.dongle) return null;
     let release = ports.main ? firmwareReleaseUsb(model, ports.main.info) : null;
     if (ports.dongle && model.id === 's75pro') release = await firmwareReleaseRadio(ports.dongle).catch(() => null);
-    const drv = new Aula04Driver(model, ports, ctx, release !== null && release !== 0x0103, release === 0xf105 || release === 0xf106, release === 0xf106, release !== null);
+    const drv = new Aula04Driver(model, ports, ctx, release !== null && release !== 0x0103, release === 0xf105 || release === 0xf106 || release === 0xf107 || release === 0xf108, release === 0xf106 || release === 0xf107 || release === 0xf108, release !== null);
     ctx.log('i', `${model.name} attached over ${drv.link.toUpperCase()}`);
     if (drv.link === 'usb' && model.features.perkey) drv.watchLight();
     return drv;

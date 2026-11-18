@@ -3,11 +3,11 @@ import type { UiDict } from './en';
 
 export const es: UiDict = {
   firmwareTitle: "Keyboard firmware",
-  firmwareHint: "Update a supported S75 Pro over USB. Project-modified F106 smart sleep was tested on Bluetooth and 2.4G; updating F106 over USB through the App passed a hardware test. Only reviewed images can be installed.",
+  firmwareHint: "Update a supported S75 Pro over USB. F108 adds wired idle lights/screen shutdown without a background app; wired sleep/wake was tested on the reviewed unit. It retains F106 wireless sleep. Only reviewed images can be installed.",
   firmwareCurrent: "Current device version",
   firmwareSelected: "Selected firmware",
-  firmwareBundled: "Use bundled F106",
-  firmwarePrevious: "Use previous F105",
+  firmwareBundled: "Use bundled F108",
+  firmwarePrevious: "Use previous F106",
   firmwareRecheck: "Recheck the keyboard",
   firmwareBackup: "App profiles and settings are backed up before installation. The keyboard cannot report all of its settings, so check its keys, lighting, screen and sleep settings afterwards.",
   firmwareChoose: "Choose firmware file",

@@ -3,6 +3,20 @@
   "base": "Vendor V1.03; exact tested 0C45:800A revision only",
   "images": [
     {
+      "version": "F108",
+      "file": "../../resources/firmware/S75Pro-F108.bin",
+      "sha256": "63e953f39bf07d33975e51aa27f985ad940252d642927506a9953c9f7104ebc7",
+      "bytes": 262144,
+      "checksum": "D821",
+      "features": [
+        "F106 custom and wireless deep/quick/two-stage sleep",
+        "wired idle main/body/LCD blackout without resident App",
+        "keep wired lighting dark across host-only USB resume",
+        "clear stale USB wake latch after resume"
+      ],
+      "status": "physically flashed and accepted on tested unit; 90s Mac sleep and post-wake abc123/asd input"
+    },
+    {
       "version": "F106",
       "file": "../../resources/firmware/S75Pro-F106.bin",
       "sha256": "5f8425131cf96e8878dee95950380b7fa788004e91540fbcf30b49d9b2ef2931",
@@ -13,7 +27,7 @@
         "Bluetooth and2.4G quick/deep selection",
         "two-stage smart sleep"
       ],
-      "status": "physically accepted on tested unit"
+      "status": "previous physically accepted image; bundled recovery option"
     },
     {
       "version": "F105",
@@ -25,8 +39,8 @@
         "custom1-120minute sleep",
         "Bluetooth and2.4G quick/deep selection"
       ],
-      "status": "previous physically accepted image; bundled recovery option"
+      "status": "reviewed F106 build input; retained for reproduction"
     }
   ],
-  "excluded": "A1 rounding and B1 scan-dither experiments are not shipped"
+  "excluded": "F107 (post-wake reblanking/first-key regression), A1 rounding and B1 scan-dither experiments are not shipped"
 }

@@ -7,10 +7,10 @@ import { FirmwareUpdater } from '../src/main/firmware';
 
 const require = createRequire(import.meta.url);
 const realWriter = require('../resources/firmware/stock-flash.cjs');
-const imagePath = resolve('resources/firmware/S75Pro-F106.bin');
-const previousImagePath = resolve('resources/firmware/S75Pro-F105.bin');
+const imagePath = resolve('resources/firmware/S75Pro-F108.bin');
+const previousImagePath = resolve('resources/firmware/S75Pro-F106.bin');
 const image = readFileSync(imagePath);
-const target = { vendorId: 0x0c45, productId: 0x800a, product: 'AULA-S75Pro', usagePage: 0xff13, usage: 1, release: 0xf106, path: 'wired-keyboard' };
+const target = { vendorId: 0x0c45, productId: 0x800a, product: 'AULA-S75Pro', usagePage: 0xff13, usage: 1, release: 0xf108, path: 'wired-keyboard' };
 const directories: string[] = [];
 
 afterEach(() => {
@@ -60,7 +60,7 @@ describe('firmware update safeguards', () => {
     const path = join(dir, 'bad.bin');
     writeFileSync(path, bad);
     expect(() => updater.select(path, 'file')).toThrow();
-    expect(updater.snapshot().selected?.version).toBe('F106');
+    expect(updater.snapshot().selected?.version).toBe('F108');
     expect(writer.flashFirmware).not.toHaveBeenCalled();
   });
 
@@ -81,6 +81,16 @@ describe('firmware update safeguards', () => {
     expect(updater.snapshot().deviceVersion).toBeNull();
     await expect(updater.start()).rejects.toThrow('not available');
     expect(writer.flashFirmware).not.toHaveBeenCalled();
+  });
+
+  it.each([0xf107, 0xf108])('allows restoring the previous F106 from wired version %i', async (release) => {
+    const { updater, hid, writer } = setup();
+    updater.selectPrevious();
+    hid.devices.mockReturnValueOnce([{ ...target, release }])
+      .mockReturnValueOnce([{ ...target, release }])
+      .mockReturnValue([{ ...target, release: 0xf106 }]);
+    expect((await updater.start()).phase).toBe('success');
+    expect(writer.flashFirmware).toHaveBeenCalledTimes(1);
   });
 
   it('does nothing to the device when the user cancels', async () => {
@@ -168,10 +178,10 @@ describe('firmware update safeguards', () => {
     expect(manager.resumeAfterFirmware).toHaveBeenCalledWith('s75pro', false);
   });
 
-  it('offers the reviewed F105 image as a separate previous version', () => {
+  it('offers the reviewed F106 image as a separate previous version', () => {
     const { updater } = setup();
-    expect(updater.selectPrevious().selected).toMatchObject({ version: 'F105', source: 'previous' });
-    expect(updater.selectBundled().selected).toMatchObject({ version: 'F106', source: 'bundled' });
+    expect(updater.selectPrevious().selected).toMatchObject({ version: 'F106', source: 'previous' });
+    expect(updater.selectBundled().selected).toMatchObject({ version: 'F108', source: 'bundled' });
   });
 
   it('does not start writing when the app settings backup fails', async () => {
@@ -187,7 +197,7 @@ describe('firmware update safeguards', () => {
   it('rechecks an already verified update without writing again', async () => {
     const { options, writer, manager, journalPath } = setup();
     writeFileSync(journalPath, JSON.stringify({
-      targetVersion: 'F106',
+      targetVersion: 'F108',
       imageSha256: realWriter.validateImage(image).sha256,
       firmwareVerified: true, codeOptionsRestored: true, userModeRequested: true,
     }));
@@ -203,7 +213,7 @@ describe('firmware update safeguards', () => {
 
   it('keeps an incomplete write blocked when no device checksum was recorded', async () => {
     const { options, writer, journalPath } = setup();
-    writeFileSync(journalPath, JSON.stringify({ targetVersion: 'F106', imageSha256: realWriter.validateImage(image).sha256 }));
+    writeFileSync(journalPath, JSON.stringify({ targetVersion: 'F108', imageSha256: realWriter.validateImage(image).sha256 }));
     const result = await new FirmwareUpdater(options).recheck();
     expect(result.recoveryRequired).toBe(true);
     expect(writer.normalCheck).not.toHaveBeenCalled();

@@ -18,6 +18,7 @@ const QUICK_WAKE_SHA256 = 'ed95aa99b162b8f3746288c02bc04e403b21c86e1792f9c8cb662
 const QUICK_WAKE_PATH = path.resolve(__dirname, '../../QUICK_WAKE_SWITCH_20261116/MODIFIED_FILE.bin');
 const SMART_SLEEP_SHA256 = '5f8425131cf96e8878dee95950380b7fa788004e91540fbcf30b49d9b2ef2931';
 const SMART_SLEEP_PATH = path.resolve(__dirname, '../../SMART_SLEEP_20261117/MODIFIED_FILE.bin');
+const WIRED_WAKE_SHA256 = '63e953f39bf07d33975e51aa27f985ad940252d642927506a9953c9f7104ebc7';
 function checksum(image) {
   assert.equal(image.length % 2, 0);
   let sum = 0;
@@ -27,12 +28,12 @@ function checksum(image) {
 function validateImage(image) {
   assert.equal(image.length, 256 * 1024, 'Expected full SN32F29X User ROM');
   const sha256 = crypto.createHash('sha256').update(image).digest('hex');
-  assert.ok([STOCK_SHA256, CANDIDATE_SHA256, CUSTOM_SLEEP_SHA256, RADIO_DARK_SHA256, QUICK_WAKE_SHA256, SMART_SLEEP_SHA256].includes(sha256), 'Expected a reviewed firmware image');
+  assert.ok([STOCK_SHA256, CANDIDATE_SHA256, CUSTOM_SLEEP_SHA256, RADIO_DARK_SHA256, QUICK_WAKE_SHA256, SMART_SLEEP_SHA256, WIRED_WAKE_SHA256].includes(sha256), 'Expected a reviewed firmware image');
   const sp = image.readUInt32LE(0), reset = image.readUInt32LE(4);
   assert.ok(sp >= 0x20000000 && sp < 0x20008000 && (sp & 3) === 0);
   assert.ok((reset & 1) === 1 && reset < image.length);
   const sum = checksum(image);
-  assert.equal(sum, sha256 === STOCK_SHA256 ? 0x1049 : sha256 === CANDIDATE_SHA256 ? 0x2bf9 : sha256 === CUSTOM_SLEEP_SHA256 ? 0x0dfb : sha256 === RADIO_DARK_SHA256 ? 0x42fc : sha256 === QUICK_WAKE_SHA256 ? 0x67cc : 0x025f);
+  assert.equal(sum, sha256 === STOCK_SHA256 ? 0x1049 : sha256 === CANDIDATE_SHA256 ? 0x2bf9 : sha256 === CUSTOM_SLEEP_SHA256 ? 0x0dfb : sha256 === RADIO_DARK_SHA256 ? 0x42fc : sha256 === QUICK_WAKE_SHA256 ? 0x67cc : sha256 === WIRED_WAKE_SHA256 ? 0xd821 : 0x025f);
   return { sha256, bytes: image.length, checksum: sum, pages: 256, chunks: 4096 };
 }
 function command(op) {

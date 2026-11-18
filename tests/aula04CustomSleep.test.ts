@@ -29,7 +29,7 @@ beforeEach(() => { vi.clearAllMocks(); mocks.release = 0xf104; mocks.next.mockIm
 afterEach(() => { Object.defineProperty(process, 'platform', { value: host }); vi.clearAllMocks(); });
 
 describe('S75 Pro lighting after a firmware upgrade', () => {
-  it.each([0x0103, 0xf104, 0xf105, 0xf106].flatMap(release => ['usb', 'radio'].map(link => [release, link] as const)))(
+  it.each([0x0103, 0xf104, 0xf105, 0xf106, 0xf107, 0xf108].flatMap(release => ['usb', 'radio'].map(link => [release, link] as const)))(
     'uses standard effect IDs on firmware %i over %s without changing the profile',
     async (release, link) => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
@@ -119,18 +119,26 @@ describe('S75 Pro custom sleep capability gate', () => {
     await driver.close();
   });
 
-  it.each(['usb', 'radio'])('writes smart 3/5-minute settings on F106 over %s', async (link) => {
-    mocks.release = 0xf106;
+  it.each([0xf106, 0xf107, 0xf108].flatMap(release => ['usb', 'radio'].map(link => [release, link] as const)))('writes smart 3/5-minute settings on %i over %s', async (release, link) => {
+    mocks.release = release;
     const devices = link === 'usb'
-      ? [{ vendorId: 0x0c45, productId: 0x800a, release: 0xf106, path: 'usb', interface: 0 }]
+      ? [{ vendorId: 0x0c45, productId: 0x800a, release, path: 'usb', interface: 0 }]
       : [{ vendorId: 0x05ac, productId: 0x024f, release: 1, path: 'radio', interface: 3, usagePage: 0xff60 }];
     const driver = (await Aula04Driver.attach(model, devices, { log: vi.fn(), onStatus: vi.fn() }))!;
     expect((await driver.status()).smartSleepControl).toBe(true);
+    expect((await driver.status()).fastWakeControl).toBe(true);
+    expect((await driver.status()).customSleep).toBe(true);
     await driver.setSettings({ ...settings, sleep: customSleepSelector(3), fastWake: 2, deepSleepMinutes: 5 });
     const frame = link === 'usb' ? mocks.feature.mock.calls[2][0] : mocks.write.mock.calls.find(([packet]) => packet[0] === 0x07)![0];
     expect(frame[link === 'usb' ? 6 : 9]).toBe(0x7c);
     expect(frame[link === 'usb' ? 7 : 10]).toBe(3);
     expect(frame[link === 'usb' ? 9 : 12]).toBe(5);
+    for (const fastWake of [0, 1]) {
+      mocks.feature.mockClear(); mocks.write.mockClear();
+      await driver.setSettings({ ...settings, fastWake });
+      const packet = link === 'usb' ? mocks.feature.mock.calls[2][0] : mocks.write.mock.calls[0][0];
+      expect(packet[link === 'usb' ? 6 : 9]).toBe(fastWake ? customSleepSelector(42) : 45);
+    }
     await driver.close();
   });
 
