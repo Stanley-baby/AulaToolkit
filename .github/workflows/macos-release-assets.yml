@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Existing draft release tag'
         required: true
-        default: v0.3.0
+        default: v0.3.1
 
 permissions:
   actions: read
@@ -52,7 +52,7 @@ jobs:
       - name: Prepare installers, firmware and checksums
         run: |
           mkdir upload
-          cp packages/*.dmg packages/*.zip resources/firmware/S75Pro-F10{5,6}.bin upload/
+          cp packages/*.dmg packages/*.zip resources/firmware/S75Pro-F10{6,8}.bin upload/
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, json
@@ -60,7 +60,7 @@ jobs:
           version = json.load(open('package.json'))['version']
           expected = {f'AULA-Toolkit-{version}-mac-{arch}.{ext}'
                       for arch in ('arm64', 'x64') for ext in ('dmg', 'zip')}
-          expected |= {'S75Pro-F105.bin', 'S75Pro-F106.bin'}
+          expected |= {'S75Pro-F106.bin', 'S75Pro-F108.bin'}
           assert {p.name for p in root.iterdir()} == expected
           (root / 'SHA256SUMS.txt').write_text(''.join(
               f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n'

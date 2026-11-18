@@ -377,8 +377,8 @@ function registerIpc(): void {
       let lastFirmwareLog = '';
       firmwareUpdater = new FirmwareUpdater({
         enabled: !process.env.AULA_SIM && !process.env.AULA_SIM_ONLY,
-        imagePath: join(dir, 'S75Pro-F106.bin'),
-        previousImagePath: join(dir, 'S75Pro-F105.bin'),
+        imagePath: join(dir, 'S75Pro-F108.bin'),
+        previousImagePath: join(dir, 'S75Pro-F106.bin'),
         journalPath,
         writer: {
           ...writer,

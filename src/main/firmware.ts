@@ -65,8 +65,9 @@ const REVIEWED: Record<string, { version: string; release: number }> = {
   '7ef0d72f267621beef543a8068602db253872a5a2a0291e4ccdb1a651e669e22': { version: 'V1.03', release: 0x0103 },
   'ed95aa99b162b8f3746288c02bc04e403b21c86e1792f9c8cb662b1c6c2e8ab3': { version: 'F105', release: 0xf105 },
   '5f8425131cf96e8878dee95950380b7fa788004e91540fbcf30b49d9b2ef2931': { version: 'F106', release: 0xf106 },
+  '63e953f39bf07d33975e51aa27f985ad940252d642927506a9953c9f7104ebc7': { version: 'F108', release: 0xf108 },
 };
-const SOURCE_RELEASES = new Set([0x0103, 0xf104, 0xf105, 0xf106]);
+const SOURCE_RELEASES = new Set([0x0103, 0xf104, 0xf105, 0xf106, 0xf107, 0xf108]);
 
 const targetDevices = (devices: HidDevice[]): HidDevice[] => devices.filter((d) =>
   d.vendorId === 0x0c45 && d.productId === 0x800a && d.product === 'AULA-S75Pro' &&

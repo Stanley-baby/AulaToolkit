@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="352" viewBox="0 0 1200 352" role="img" aria-labelledby="title desc">
-  <title id="title">F106 分阶段休眠示例</title>
+  <title id="title">F108 分阶段休眠示例</title>
   <desc id="desc">从最后一次按键起计时：3 分钟后关闭主灯、侧灯和小屏幕并保留快速唤醒；累计 5 分钟后进入原版深睡。再次按键后重新计时。</desc>
   <rect width="1200" height="352" rx="18" fill="#121416"/>
   <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif">
     <text x="52" y="64" fill="#f6f5f2" font-size="38" font-weight="600">先熄灯屏，再进入深睡</text>
-    <text x="52" y="106" fill="#bec1c6" font-size="24">F106 · 示例时间，从最后一次按键起计算</text>
+    <text x="52" y="106" fill="#bec1c6" font-size="24">F108 · 示例时间，从最后一次按键起计算</text>
     <path d="M90 170H1090" stroke="#626870" stroke-width="3"/>
     <circle cx="90" cy="170" r="8" fill="#f6f5f2"/><circle cx="490" cy="170" r="8" fill="#ff774c"/><circle cx="970" cy="170" r="8" fill="#f6f5f2"/>
     <text x="52" y="229" fill="#f6f5f2" font-size="36" font-weight="600">正常使用</text>

@@ -3,11 +3,11 @@ import type { UiDict } from './en';
 
 export const zh: UiDict = {
   firmwareTitle: "键盘固件",
-  firmwareHint: "通过 USB 为受支持的 S75 Pro 更新固件。内置 F106 为本项目改版，智能休眠已在蓝牙和 2.4G 下实测；通过 App 有线升级 F106 已通过实机验证。只能安装已核对的文件。",
+  firmwareHint: "通过 USB 为受支持的 S75 Pro 更新固件。内置 F108 增加无需后台的有线灯屏休眠，有线睡眠与唤醒已在核对的键盘上实测；保留 F106 无线休眠策略。只能安装已核对的文件。",
   firmwareCurrent: "键盘当前版本",
   firmwareSelected: "已选固件",
-  firmwareBundled: "使用内置 F106",
-  firmwarePrevious: "选择上一版 F105",
+  firmwareBundled: "使用内置 F108",
+  firmwarePrevious: "选择上一版 F106",
   firmwareRecheck: "重新检查键盘",
   firmwareBackup: "安装前会备份 App 中保存的配置。键盘内的配置无法全部读回，安装后请检查按键、灯效、屏幕和休眠设置。",
   firmwareChoose: "选择固件文件",
